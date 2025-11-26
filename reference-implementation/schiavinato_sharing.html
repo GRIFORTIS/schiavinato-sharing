@@ -183,23 +183,6 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        .connection-status {
-            font-weight: 700;
-            font-size: 0.9rem;
-            text-transform: uppercase;
-            padding: 5px 10px;
-            border-radius: 6px;
-            margin-left: 20px;
-        }
-        .connection-status.online {
-            color: #000;
-            background-color: var(--error-red);
-        }
-        .connection-status.offline {
-            color: var(--text-muted);
-            background-color: var(--input-bg);
-            border: 1px solid var(--border-color);
-        }
         .theme-toggle {
             background: var(--bg-card); border: 1px solid var(--border-color); color: var(--text-main);
             padding: 8px 16px; border-radius: 50px; cursor: pointer; font-weight: 600;
@@ -707,13 +690,12 @@ TERMS OF USE & LIABILITY DISCLAIMER:
     <div class="container">
         <!-- ==========================================================================
         HEADER
-        - Contains the main title, the online status indicator, and theme toggle.
+        - Contains the main title and theme toggle.
         - This header is persistent across all pages.
         ========================================================================== -->
         <header class="header">
             <div style="display: flex; align-items: center;">
                 <h1>Schiavinato Sharing</h1>
-                <div id="connection-status" class="connection-status"></div>
             </div>
             <button id="theme-toggle-btn" class="theme-toggle">
                 <span id="toggle-icon">☀️</span> <span id="toggle-text">Light Mode</span>
@@ -1369,7 +1351,6 @@ TERMS OF USE & LIABILITY DISCLAIMER:
         const modalTitle = document.getElementById('modal-title');
             const modalText = document.getElementById('modal-text');
         
-        const connectionStatusEl = document.getElementById('connection-status');
         const autocompleteContainer = document.getElementById('autocomplete-suggestions');
         const themeToggleBtn = document.getElementById('theme-toggle-btn');
         const btnPrintShares = document.getElementById('btn-print-shares');
@@ -2969,10 +2950,6 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             'All recovered data will be lost forever. This action cannot be undone.'
         );
 
-        // Online Status Listeners
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-
         // DOMContentLoaded Listener (App Initialization)
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('creation-date').valueAsDate = new Date();
@@ -2981,7 +2958,6 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             updateSeedWordInputs();
             updateRecoverSharesInputs();
 
-            updateOnlineStatus();
             // Set initial theme based on user's system preference
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
                 toggleTheme();
@@ -3007,19 +2983,6 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 body.setAttribute('data-theme', 'light');
                 icon.textContent = '🌙';
                 text.textContent = 'Dark Mode';
-            }
-        }
-
-        /**
-         * Checks the browser's online status and updates the UI indicator accordingly.
-         */
-        function updateOnlineStatus() {
-            if (navigator.onLine) {
-                connectionStatusEl.textContent = 'YOU ARE ONLINE - STOP NOW!';
-                connectionStatusEl.className = 'connection-status online';
-            } else {
-                connectionStatusEl.textContent = 'no internet detected';
-                connectionStatusEl.className = 'connection-status offline';
             }
         }
 

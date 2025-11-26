@@ -19,6 +19,9 @@ export default defineConfig({
   reporter: 'html',
   
   use: {
+    // Run browser in headless mode (hidden)
+    headless: true,
+    
     // Base URL to use in actions like `await page.goto('/')`
     trace: 'on-first-retry',
     
@@ -35,6 +38,7 @@ export default defineConfig({
       name: 'chromium',
       use: { 
         ...devices['Desktop Chrome'],
+        headless: true, // Run browser in headless mode (hidden)
         // Critical: Allow file:// protocol access
         launchOptions: {
           args: [
