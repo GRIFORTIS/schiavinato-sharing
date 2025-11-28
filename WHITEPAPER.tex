@@ -1,0 +1,1429 @@
+\documentclass[10pt, twocolumn]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm} % For math equations
+\usepackage{geometry} % Margins
+\usepackage[breaklinks]{hyperref} % Links (Added breaklinks for safety)
+\usepackage{url}
+\usepackage{fancyhdr} % Headers
+\usepackage{titlesec} % Section formatting
+\usepackage{booktabs} % Professional tables
+\usepackage{enumitem} % Better lists
+\usepackage{microtype} % Better typography
+\usepackage{graphicx} % Required to resize tables
+
+% --- Formatting ---
+\geometry{a4paper, margin=0.75in}
+\setlength{\columnsep}{0.25in}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue,
+    pdftitle={Schiavinato Sharing: Human-Executable Secret Sharing for BIP39 Mnemonics},
+    pdfauthor={GRIFORTIS}
+}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small \textbf{Schiavinato Sharing RFC v0.1.0}}
+\fancyhead[R]{\small \today}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+
+% Section Title Spacing
+\titlespacing{\section}{0pt}{12pt plus 4pt minus 2pt}{4pt plus 2pt minus 2pt}
+\titlespacing{\subsection}{0pt}{10pt plus 4pt minus 2pt}{3pt plus 2pt minus 2pt}
+\titlespacing{\subsubsection}{0pt}{8pt plus 4pt minus 2pt}{2pt plus 2pt minus 2pt}
+
+% --- Title Data ---
+\title{\vspace{-1cm} \textbf{\Large Schiavinato Sharing: Human-Executable Secret Sharing for BIP39 Mnemonics} \\ \large A Pencil-and-Paper Arithmetic Scheme for Multi-Chain Inheritance and Disaster Recovery}
+\author{\textbf{GRIFORTIS} \\ \url{https://github.com/GRIFORTIS}}
+\date{\today \\ \small \textit{Status: Request for Comments (RFC) - v0.1.0} \\ \small \textit{Comment Period: Through January 31, 2026}}
+
+\begin{document}
+
+% Makes LaTeX less fussy about spacing in narrow columns (Fixes Underfull warnings)
+\sloppy
+
+\maketitle
+
+\begin{abstract}
+\noindent The Schiavinato BIP39 Mnemonic Sharing Scheme (or \textbf{Schiavinato Sharing}) is a threshold secret-sharing scheme for BIP39 mnemonics, designed explicitly for recovery with pencil and paper. It provides universal protection for multi-chain cryptocurrency portfolios (Bitcoin, Ethereum, and all BIP39-compatible blockchains) using a single sharing instance. The scheme instantiates Shamir's Secret Sharing [1] over the prime field $GF(2053)$, operating directly on BIP39 word indices [9] rather than on the underlying binary entropy. Each word index is sharded independently by a random polynomial, and additional checksum secrets provide robust detection of human arithmetic errors during manual recovery. By pre-computing Lagrange coefficients for common threshold schemes, the scheme reduces recovery to a sequence of additions and multiplications modulo 2053. GRIFORTIS has developed and released reference implementations under the MIT License, including a functional JavaScript/TypeScript library (v0.1.0), an auditable offline HTML tool with comprehensive test coverage, and reproducible test vectors for independent verification, all enabling integration and scrutiny while preserving the security guarantees of standard Shamir secret sharing.
+\end{abstract}
+
+\section{Introduction}
+
+\subsection{The Inheritance Problem in a Digital Age}
+The widespread use of cryptocurrencies and other digital bearer assets has created a new inheritance problem. Long-term control over these assets is typically anchored to a single secret, such as a 24-word BIP39 mnemonic [9], which serves as the master key for Bitcoin, Ethereum, and the vast majority of modern blockchain wallets. If this secret is lost or destroyed, the assets are unrecoverable; if it is exposed, the assets can be stolen. Traditional backup strategies (for example, a single steel plate in a safe) concentrate risk and often fail to account for multi-generational time horizons [4].
+
+Threshold cryptography and secret sharing offer a principled way to spread this risk. Instead of a single point of failure, a secret is divided into multiple shares, of which any $k$ out of $n$ are sufficient for recovery. However, most deployed schemes assume the presence of trusted electronics at the time of recovery. For true disaster resilience, it is desirable to have recovery paths that remain viable even when access to compatible hardware, software, or networks is temporarily or permanently unavailable, or compromised.
+
+\subsection{Existing Solutions and Their Limitations}
+Several practical solutions exist today:
+\begin{itemize}[noitemsep]
+    \item \textbf{Hardware wallets and single backups} rely on secure devices and careful handling of a single mnemonic. They are simple to operate but remain vulnerable to single-point failure and to latent user errors in backup procedures.
+    \item \textbf{Multisignature wallets} distribute signing authority but require ongoing coordination of multiple keys, devices, and software stacks. They do not, by themselves, solve the problem of how each individual key is backed up or inherited.
+    \item \textbf{Computational Shamir schemes}, such as SLIP39 [10] and SSKR, apply Shamir's Secret Sharing [1] at the level of binary entropy, typically over extension fields $GF(2^n)$. These schemes are well-studied and robust, but the field arithmetic---especially multiplication and inversion in $GF(2^n)$---is unsuitable for manual execution. In practice, users must depend on specific software or hardware implementations for both sharding and recovery.
+\end{itemize}
+
+In all these cases, the recovery procedure is ultimately a computational protocol. If an appropriate device is not available at the time of recovery, or if the software ecosystem has changed in incompatible ways, long-term access to the assets is jeopardized.
+
+\subsection{Comparison with Existing Approaches}
+Table \ref{tab:comparison} summarizes the key differences between Schiavinato Sharing and existing backup and recovery schemes. Key observations:
+\begin{itemize}[noitemsep]
+    \item \textbf{Unique value proposition}: Schiavinato Sharing is the only scheme that combines threshold secret sharing with manual recoverability while maintaining full BIP39 compatibility, enabling protection of \textit{all} BIP39-compatible assets (Bitcoin, Ethereum, Polkadot, Cosmos, Solana, etc.) with a single sharing instance.
+    \item \textbf{Indistinguishability and future-proof design}: Recovered mnemonics are identical to standard BIP39 phrases—no special format, no metadata, no version identifiers. This ensures backward compatibility with all wallets since 2013, forward compatibility with all future BIP39 implementations, and zero vendor lock-in. As long as BIP39 exists, Schiavinato Sharing works.
+    \item \textbf{Universal multi-chain support}: Unlike SLIP39 and SSKR (which require custom wallet implementations), Schiavinato produces standard BIP39 mnemonics that work immediately with \textit{any} BIP39-compatible wallet across \textit{any} supported blockchain—no special software needed.
+    \item \textbf{Trade-off}: Manual recovery requires more user effort (arithmetic) compared to SLIP39's purely electronic process, but eliminates the dependency on specific hardware or software, and protects entire multi-chain portfolios.
+    \item \textbf{Complementary, not competitive}: Schiavinato Sharing addresses a specific use case (long-term, electronics-optional, multi-chain inheritance) and can coexist with other schemes serving different needs.
+\end{itemize}
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of Backup and Recovery Schemes for Multi-Chain Cryptocurrency Wallets}
+\label{tab:comparison}
+\small
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Feature} & \textbf{Schiavinato} & \textbf{SLIP39} & \textbf{SSKR} & \textbf{Multisig} & \textbf{Single} \\ \midrule
+Manual recovery & \textbf{Yes} & No & No & No & N/A \\
+Electronics required & Optional & Required & Required & Required & Optional \\
+Threshold scheme & Yes & Yes & Yes & Yes & No \\
+Field arithmetic & $GF(2053)$ & $GF(2^{10})$ & $GF(2^8)$ & N/A & N/A \\
+Input format & BIP39 & Custom & Custom & BIP32 & BIP39 \\
+Output format & BIP39 & Custom & Custom & N/A & BIP39 \\
+BIP39 compatible & \textbf{Yes} & No & Partial & No & Yes \\
+Multi-chain support & \textbf{Universal}\textsuperscript{†} & Limited & Limited & Per-chain & Universal \\
+Wallet support & All BIP39 & Limited & Limited & Widespread & All BIP39 \\
+Best for & Long-term & Hardware & Blockchain & On-chain & Simple \\
+ & inheritance & wallets & Commons & control & backups \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.5em}
+\textsuperscript{†}\textit{Universal: Recovered mnemonics are indistinguishable from standard BIP39 phrases. A single recovered mnemonic secures Bitcoin, Ethereum, Cosmos, Polkadot, Solana, and all BIP39-compatible chains via standard derivation paths. Works with any BIP39 wallet (past, present, or future) without requiring software updates or special support.}
+\end{table*}
+
+\subsection{A Non-Computational Approach}
+Schiavinato Sharing is designed to remove this dependency on trusted electronics at the point of recovery, following principles of human-computable cryptography [3] and social recovery [5]. The central design goals are:
+\begin{enumerate}[noitemsep]
+    \item \textbf{Human executability}: All required operations for sharding and recovery can be performed with pencil, paper, and basic arithmetic skills.
+    \item \textbf{Cryptographic soundness}: Security should reduce to that of standard Shamir secret sharing in a well-understood field.
+    \item \textbf{BIP39 compatibility}: The scheme should accept and output standard BIP39 mnemonics, without requiring modified wordlists or custom checksum rules.
+    \item \textbf{Auditability and simplicity}: The construction should be simple enough to be understood, audited, and reimplemented by third parties, and the reference implementations must be fully offline and open source.
+\end{enumerate}
+
+To achieve these goals, Schiavinato Sharing transposes Shamir's Secret Sharing from extension fields $GF(2^n)$ to a small prime field $GF(2053)$ and operates directly on BIP39 word indices. It further introduces a two-layer arithmetic checksum mechanism to detect human calculation errors during manual recovery.
+
+\subsection{Status and Responsible Use}
+This document presents Schiavinato Sharing as a \textbf{proposed construction} and reference design. While its security reduces to well-understood components (Shamir's Secret Sharing in a prime field and standard BIP39 assumptions), the scheme itself, its human workflows, and any concrete implementations \textbf{require independent review, testing, and peer scrutiny}.
+
+At the time of writing, Schiavinato Sharing and any GRIFORTIS reference tools that implement it should be regarded as \textbf{experimental and unaudited}. They are appropriate for education, testing, and community review, but \textbf{are not yet recommended for securing significant real-world holdings} without additional independent analysis or professional review.
+
+In particular:
+\begin{itemize}[noitemsep]
+    \item The mathematics is conventional, but subtle implementation bugs, user-interface flaws, or misunderstandings of the procedures can still cause \textbf{permanent loss of funds}.
+    \item No whitepaper or reference implementation, including this one, should be treated as a substitute for careful threat modeling, operational planning, and, where appropriate, professional advice.
+\end{itemize}
+
+Early adopters are encouraged to:
+\begin{itemize}[noitemsep]
+    \item Start with \textbf{modest amounts} and well-documented drills before entrusting a large fraction of long-term savings to any new scheme.
+    \item Treat the GRIFORTIS tools as \textbf{reference implementations}, not as the only or final word on how the scheme should be realized in software.
+    \item Report issues, ambiguities, or suspected vulnerabilities through the project's responsible disclosure channels so that the design and documentation can be improved over time.
+\end{itemize}
+
+Nothing in this paper constitutes financial, legal, or tax advice. Users remain responsible for their own operational and regulatory choices.
+
+\section{Background: The Mathematical Foundations}
+Schiavinato Sharing is a concrete application of established cryptographic principles. It does not introduce a new primitive; instead, it adapts Shamir's Secret Sharing [1] to a setting where every operation can, in principle, be performed by hand.
+
+This section sketches the relevant mathematical background. Readers who require additional detail can consult the appendices and the referenced literature.
+
+\begin{itemize}
+    \item \textbf{Shamir's Secret Sharing (SSS)} [1]: A threshold secret-sharing scheme in which a secret value is interpreted as the constant term of a polynomial over a finite field. Shares are evaluations of this polynomial at non-zero points; any $k$ shares determine the polynomial uniquely, while fewer than $k$ yield no information about the secret (see \textbf{Appendix A}).
+    \item \textbf{Modular arithmetic}: Arithmetic performed ``modulo'' a fixed number $p$, where values are always taken in the range $\{0, 1, \dots, p-1\}$. Addition and multiplication are defined as usual, followed by reduction modulo $p$. When $p$ is prime, every non-zero value has a multiplicative inverse, which enables division (see \textbf{Appendix B}).
+    \item \textbf{Lagrange interpolation}: A method to reconstruct a polynomial of degree at most $k-1$ from $k$ distinct points. For Shamir's scheme, we are primarily interested in the constant term (the secret). By pre-computing the relevant Lagrange coefficients for a given set of share indices, reconstruction reduces to a weighted sum of the share values (see \textbf{Appendix C}).
+\end{itemize}
+
+By working over a prime field $GF(p)$ with a carefully chosen prime $p$, Schiavinato Sharing ensures that all of the above can be instantiated with straightforward integer arithmetic.
+
+\section{Schiavinato Sharing: An Arithmetic Approach}
+
+\emph{Note: While the examples in this paper assume a 24-word BIP39 mnemonic, the same construction applies, mutatis mutandis, to 12, 15, 18, and 21-word phrases.}
+
+\subsection{The Challenge of Non-Computational Recovery}
+Standard implementations of Shamir's Secret Sharing for wallet backups, such as SLIP39 and SSKR, operate on the binary entropy underlying the mnemonic. They typically work in extension fields of the form $GF(2^n)$, such as $GF(2^8)$. Arithmetic in these fields is expressed in terms of polynomials over $GF(2)$ reduced modulo an irreducible polynomial. While efficient for microprocessors, this representation makes multiplication and inversion opaque and laborious for humans.
+
+Moreover, entropy-based schemes require explicit conversion between the binary entropy and the mnemonic words, including verification of the BIP39 checksum bits. Reversing this process by hand---mapping words to indices, expanding to a bitstring, separating entropy from checksum, and possibly re-encoding is beyond what can reasonably be expected in a manual recovery scenario.
+
+In contrast, Schiavinato Sharing operates directly on BIP39 word indices in a small prime field. Recovery never requires manipulating bits or recomputing the BIP39 checksum by hand. All visible operations are integer additions and multiplications modulo a fixed prime.
+
+\subsection{Methodology: Independent Polynomials in a Prime Field}
+The core innovation of Schiavinato Sharing is to instantiate Shamir's Secret Sharing [1] over the prime field $GF(p)$ with
+\[ p = 2053, \]
+the smallest prime greater than the BIP39 [9] wordlist size of 2048.
+
+The rationale for this choice is threefold:
+\begin{enumerate}[noitemsep]
+    \item \textbf{Coverage of all word indices}: Every BIP39 word index (0--2047) is representable as an element of $GF(2053)$ without any encoding overhead.
+    \item \textbf{Simplicity of operations}: Working in a prime field eliminates the need for polynomial representations and enables straightforward integer arithmetic with reduction modulo $p$.
+    \item \textbf{Security properties}: $GF(2053)$ is a standard finite field with no evident structure that would weaken Shamir's guarantees. Each sharing instance has a search space of size $p$, slightly larger than the 2048-word mnemonic space.
+\end{enumerate}
+
+A 24-word BIP39 mnemonic is treated as a vector of 24 integers $(w_1, \dots, w_{24})$, each in $\{0, \dots, 2047\}$. While these indices are not 24 fully independent 11-bit variables---because of the BIP39 checksum and the way entropy is mapped to words---they collectively encode a 256-bit entropy value plus checksum bits. For the purposes of the security analysis, it is sufficient to note that the effective keyspace remains on the order of $2^{256}$.
+
+For a $k$-of-$n$ scheme, Schiavinato Sharing defines, for each secret, an independent polynomial of degree at most $k-1$:
+\[ f(x) = a_0 + a_1 x + \dots + a_{k-1} x^{k-1} \pmod{2053} \]
+where:
+\begin{itemize}[noitemsep]
+    \item $a_0$ is the secret value (a word index or a checksum value),
+    \item $(a_1, \dots, a_{k-2})$ are independently sampled, cryptographically secure random coefficients in $\{0, \dots, 2052\}$, and
+    \item $a_{k-1}$ is an independently sampled, cryptographically secure random coefficient from the non-zero values $\{1, \dots, 2052\}$ to ensure the polynomial has degree exactly $k-1$. For the case $k=1$, there are no random coefficients.
+\end{itemize}
+
+This process is repeated independently for every secret used by the scheme:
+\begin{itemize}[noitemsep]
+    \item the 24 word indices $(w_1, \dots, w_{24})$,
+    \item 8 additional row-checksum secrets, one per row of three words (see Section \ref{sec:checksum}), and
+    \item 1 \textbf{master verification number} (a global checksum over all 24 words), defined as
+    \[ M = \sum_{i=1}^{24} w_i \pmod{2053} \]
+\end{itemize}
+
+In total, a 24-word mnemonic uses 33 independent Shamir instances, each with its own polynomial and randomness. The master verification number $M$ is treated exactly like the other secrets: it is shared by an independent polynomial over $GF(2053)$, and only its per-share evaluations appear on individual worksheets. The underlying value $M$ is recovered via Lagrange interpolation during the final verification step of recovery.
+
+\subsection{Manual Share Generation}
+Shares can be generated by software or entirely by hand. The reference GRIFORTIS tools automate this process, but the construction remains fully transparent.
+
+For each secret $s \in \{0, \dots, 2052\}$:
+\begin{enumerate}
+    \item \textbf{Define the secret}: Set $a_0 = s$ in $GF(2053)$.
+    \item \textbf{Sample random coefficients}: For a $k$-of-$n$ scheme, sample $(a_1, \dots, a_{k-2})$ as cryptographically secure random integers from $\{0, \dots, 2052\}$ and sample $a_{k-1}$ from $\{1, \dots, 2052\}$ to ensure the polynomial has degree exactly $k-1$.
+    \item \textbf{Evaluate the polynomial}: For each share index $x \in \{1, 2, \dots, n\}$, compute
+    \[ y = f(x) = a_0 + a_1 x + \dots + a_{k-1} x^{k-1} \pmod{2053} \]
+    The resulting pair $(x, y)$ is the share for that secret at index $x$.
+\end{enumerate}
+
+In the 24-word case, the collection of secrets $s$ to which this procedure is applied consists of the 24 word indices, the 8 row-checksum values, and the master verification number $M$, for a total of 33 independent polynomials.
+
+This procedure is applied to each of the 33 secrets. For any fixed share index $x$ (for example, $x = 3$), the 33 resulting values (24 word shares, 8 row-checksum shares, and 1 master verification share) together constitute \textbf{one} cryptographic share of the wallet.
+
+\subsection{The Manual Recovery Process}
+Recovery in Schiavinato Sharing relies on Lagrange interpolation in $GF(2053)$. Given any $k$ distinct shares $(x_j, y_j)$ for a single secret, the constant term $a_0$ of the underlying polynomial can be expressed as
+\[ a_0 = f(0) = \sum_{j=1}^{k} \gamma_j y_j \pmod{2053} \]
+where the Lagrange coefficients $\gamma_j$ depend only on the share indices $x_1, \dots, x_k$:
+\[ \gamma_j = \prod_{\substack{i=1 \\ i \neq j}}^{k} \frac{x_i}{x_i - x_j} \pmod{2053} \]
+
+In principle, a user could compute these coefficients by hand using modular inverses. In practice, Schiavinato Sharing treats them as \textbf{non-secret metadata}:
+\begin{itemize}
+    \item For common $k$-of-$n$ schemes (e.g., 2-of-3, 2-of-4, 3-of-5), the reference documentation includes pre-computed Lagrange coefficients for all subsets of indices (Section \ref{sec:precomputed}).
+    \item For other schemes, the coefficients can be computed on demand using a simple script or calculator. Since they contain no secret information, this can be done on any convenient device.
+\end{itemize}
+
+The manual recovery workflow for a single secret is therefore:
+\begin{enumerate}
+    \item Determine which $k$ share indices $x_1, \dots, x_k$ you possess.
+    \item Look up or compute the corresponding Lagrange coefficients $\gamma_1, \dots, \gamma_k$ for $GF(2053)$.
+    \item For each share $j$, multiply the share value $y_j$ by $\gamma_j$ modulo 2053.
+    \item Sum the products and reduce modulo 2053 to obtain the recovered secret $a_0$.
+\end{enumerate}
+
+\subsection{Integrity and Error Detection: The Two-Layer Checksum} \label{sec:checksum}
+Performing dozens of modular multiplications and additions by hand creates ample opportunity for arithmetic mistakes. Because independent word-level sharing destroys the original BIP39 checksum relationship between words, an additional integrity mechanism is required.
+
+Schiavinato Sharing uses a purely arithmetic, two-layer checksum system:
+
+\paragraph{1. Row-level checksums (Shamir-shared):} The 24 words are arranged into 8 rows of 3 words each. For row $r$ with word indices $(w_{r,1}, w_{r,2}, w_{r,3})$, define a checksum secret
+\[ c_r = (w_{r,1} + w_{r,2} + w_{r,3}) \pmod{2053} \]
+Each $c_r$ is then treated as an additional secret and shared with its own independent Shamir polynomial over $GF(2053)$, exactly as for the word indices. Thus, for each share index $x$, the printed worksheet row contains four values: three word shares and one checksum share.
+
+During recovery, for each row the user:
+\begin{itemize}
+    \item uses Lagrange interpolation to recover $(w_{r,1}, w_{r,2}, w_{r,3})$, and $c_r$ from their $k$ shares;
+    \item computes $\tilde{c}_r = (w_{r,1} + w_{r,2} + w_{r,3}) \pmod{2053}$ by hand; and
+    \item verifies that $\tilde{c}_r = c_r$.
+\end{itemize}
+
+If this equality fails, there is an arithmetic error affecting at least one of the four recovered values in that row.
+
+\paragraph{2. Master verification number (Shamir-shared):} In addition to the row-level checks, the scheme defines a master verification number
+\[ M = \sum_{i=1}^{24} w_i \pmod{2053} \]
+computed once from the original 24 words before sharding. This value is treated as a separate secret and shared by its own independent Shamir polynomial over $GF(2053)$, producing one master verification share value on each worksheet.
+
+After all 24 word indices have been recovered, the user performs two calculations:
+\begin{itemize}
+    \item uses Lagrange interpolation on the master verification shares from their $k$ worksheets to recover $M$, and
+    \item separately computes the recomputed master verification number $\tilde{M} = \sum_{i=1}^{24} w_i \pmod{2053}$ from the recovered words.
+\end{itemize}
+
+If $\tilde{M} \neq M$, then at least one row contains undetected errors and must be rechecked.
+
+Under a simple model in which an incorrect set of recovered values behaves like a random element of $GF(2053)$, the chance that a wrong triple together with a wrong $c_r$ still satisfies the row equation is at most $1/2053$. With an additional independence assumption across rows, the overall error-escape probability is on the order of $(1/2053)^9$. Even without relying on that assumption, the per-row-plus-master failure probability of at most $1/2053^2$ is negligible for any practical purpose.
+
+\subsection{The Share Format and Recovery Worksheet}
+Each individual share document (corresponding to a fixed index $x \in \{1, \dots, n\}$) contains:
+\begin{itemize}
+    \item \textbf{Header metadata}: Wallet Identifier, Creation Date, Scheme ($k$-of-$n$), Share Number $x$, and the Master verification share value.
+    \item \textbf{Body table}: Typically formatted as 8 rows and 4 columns. Columns 1--3 contain word shares (displayed as number + word if $<2048$). Column 4 contains the Checksum share value.
+\end{itemize}
+
+Values in the range 2048--2052 (which do not correspond to BIP39 words) are printed as numeric-only values. This consistent layout allows the user to treat each row as a self-contained unit during recovery: recover three words and one checksum, verify them immediately, and then proceed to the next row.
+
+\subsection{Lagrange Coefficients and Manual Recovery} \label{sec:lagrange}
+
+\subsubsection{The Role of Lagrange Coefficients}
+A key enabler of manual recovery is the use of pre-computed Lagrange coefficients. In standard polynomial interpolation, determining the polynomial $f(x)$ typically involves solving a system of linear equations or computing the full Lagrange basis. However, for recovering the secret $a_0 = f(0)$, we only need the evaluated value at the origin.
+
+For a fixed set of share indices $S = \{x_1, \dots, x_k\}$, the secret can be expressed as a linear combination of the share values $y_j$:
+\[ a_0 = \sum_{j=1}^{k} y_j \gamma_j \pmod{2053} \]
+where the Lagrange coefficient $\gamma_j$ for share $x_j$ is defined as:
+\[ \gamma_j = \prod_{\substack{i \in S \\ i \neq j}} \frac{x_i}{x_i - x_j} \pmod{2053} \]
+
+These coefficients depend \textit{only} on the subset of share indices used for recovery, not on the secret itself. This separation allows $\gamma_j$ values to be pre-calculated or looked up, transforming the complex task of polynomial interpolation into a straightforward sequence of scalar multiplications and additions.
+
+\subsubsection{Impossibility of Universal Static Coefficients}
+A natural usability question arises: is it possible to select a specific set of share indices such that the Lagrange coefficient $\gamma_j$ for a given share remains constant, regardless of which other $k-1$ shares are used for recovery? If such a set existed, a single static multiplier could be printed directly on each share worksheet, drastically simplifying the workflow.
+
+However, this is mathematically impossible for any threshold $k < n$.\footnote{This impossibility holds regardless of field size or characteristic. Exhaustive computational verification confirms that no configuration exists in $GF(2053)$, larger prime fields up to seven digits, or extension fields $GF(2^n)$. The constraint is purely algebraic and admits no exceptions.}
+
+\begin{proof}
+Consider the simplest case: a 2-of-3 scheme with distinct indices $x_1, x_2, x_3$.
+
+If we reconstruct using the subset $\{x_1, x_2\}$, the coefficient for share 1 is:
+\[ \gamma_{1,\{1,2\}} = \frac{x_2}{x_2 - x_1} \]
+
+If we reconstruct using the subset $\{x_1, x_3\}$, the coefficient for share 1 is:
+\[ \gamma_{1,\{1,3\}} = \frac{x_3}{x_3 - x_1} \]
+
+For these coefficients to be identical (universal), we require:
+\[ \frac{x_2}{x_2 - x_1} = \frac{x_3}{x_3 - x_1} \]
+
+Cross-multiplying yields:
+\[ x_2(x_3 - x_1) = x_3(x_2 - x_1) \]
+\[ x_2 x_3 - x_2 x_1 = x_3 x_2 - x_3 x_1 \]
+
+By commutativity of multiplication, $x_2 x_3 = x_3 x_2$, so:
+\[ x_2 x_3 - x_2 x_1 = x_2 x_3 - x_3 x_1 \]
+
+Subtracting $x_2 x_3$ from both sides:
+\[ -x_2 x_1 = -x_3 x_1 \]
+
+Since $x_1 \neq 0$ (as the secret lies at 0), we divide by $-x_1$ to obtain $x_2 = x_3$. This contradicts the fundamental requirement of Shamir's Secret Sharing that all share indices must be distinct. Therefore, $\gamma_1$ must change depending on the peer shares present.
+\end{proof}
+
+Consequently, the user must determine the correct coefficients based on the specific set of shares available at recovery time. To facilitate this, we propose two distinct workflows.
+
+\subsubsection{Workflow A: Recovery with a Basic Calculator}
+If a standard basic calculator is available, this workflow is generally faster and familiar to most users. The user looks up the integer values for the coefficients $\gamma_j$ (see Section \ref{sec:precomputed}) and performs the operation $S = y_j \times \gamma_j \pmod{2053}$.
+
+Since standard solar calculators typically lack a modulo operator, the recommended keystroke sequence for computing $A \times B \pmod{2053}$ is:
+\begin{enumerate}
+    \item \textbf{Multiply}: Calculate the product $P = A \times B$.
+    \item \textbf{Divide}: Compute $Q = P \div 2053$.
+    \item \textbf{Truncate}: Identify the integer part of the quotient, $\lfloor Q \rfloor$ (e.g., if the display reads $717.04\dots$, use $717$).
+    \item \textbf{Subtract}: The modular result is $P - (\lfloor Q \rfloor \times 2053)$.
+\end{enumerate}
+This sequence yields the exact modular product using only basic arithmetic operations.
+
+\subsubsection{Workflow B: The Modular Lookup Strip}
+For scenarios requiring strictly air-gapped recovery without electronic calculators, or to reduce the risk of manual long division errors, the scheme supports ``Modular Lookup Strips'' (analogous to Napier's Bones).
+
+Based on the distributive property of modular arithmetic, any share value $Y$ ($0 \le Y \le 2052$) can be decomposed by place value:
+\[ Y \cdot \gamma \equiv (d_3 1000 \gamma) + (d_2 100 \gamma) + (d_1 10 \gamma) + (d_0 \gamma) \pmod{2053} \]
+
+For a specific coefficient $\gamma$, a pre-computed strip provides the modular product for all digits $0\dots9$ at each decimal position (Ones, Tens, Hundreds, Thousands).
+
+To perform the multiplication $y_j \times \gamma_j$:
+\begin{enumerate}
+    \item The user locates the strip corresponding to $\gamma_j$.
+    \item They look up the four values corresponding to the digits of $y_j$ (Thousands, Hundreds, Tens, Ones).
+    \item They sum these four values.
+    \item If the sum exceeds 2053, they subtract 2053 once (or rarely, twice) to find the result.
+\end{enumerate}
+
+This method transforms the complexity of long multiplication and division into four $O(1)$ table lookups and a single integer addition, significantly reducing the cognitive load and error rate for manual execution.
+
+\subsection{Pre-Computed Coefficients for Common Schemes} \label{sec:precomputed}
+For completeness, the following table lists pre-computed Lagrange coefficients $\gamma$ for selected small schemes in $GF(2053)$. Share indices are assumed to be consecutive integers starting from 1.
+
+\begin{center}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}llp{3.5cm}@{}}
+\toprule
+\textbf{Scheme} & \textbf{Shares Used} & \textbf{Coefficients ($\gamma$)} \\ \midrule
+\textbf{2-of-3} & \{1, 2\} & (2, 2052) \\
+                & \{1, 3\} & (1028, 1026) \\
+                & \{2, 3\} & (3, 2051) \\ \midrule
+\textbf{2-of-4} & \{1, 2\} & (2, 2052) \\
+                & \{1, 3\} & (1028, 1026) \\
+                & \{1, 4\} & (1370, 684) \\
+                & \{2, 3\} & (3, 2051) \\
+                & \{2, 4\} & (2, 2052) \\
+                & \{3, 4\} & (4, 2050) \\ \midrule
+\textbf{3-of-5} & \{1, 2, 3\} & (3, 2050, 1) \\
+                & \{1, 2, 4\} & (687, 2051, 1369) \\
+                & \{1, 2, 5\} & (1029, 1367, 1711) \\
+                & \{1, 3, 4\} & (2, 2051, 1) \\
+                & \{1, 3, 5\} & (1285, 512, 257) \\
+                & \{1, 4, 5\} & (686, 1367, 1) \\
+                & \{2, 3, 4\} & (6, 2045, 3) \\
+                & \{2, 3, 5\} & (5, 2048, 1) \\
+                & \{2, 4, 5\} & (1372, 2048, 687) \\
+                & \{3, 4, 5\} & (10, 2038, 6) \\ \bottomrule
+\end{tabular}%
+}
+\end{center}
+
+\subsection{BIP39 Compatibility and Universal Multi-Chain Support}
+
+\subsubsection{Indistinguishability and Future-Proof Compatibility}
+A critical design property of Schiavinato Sharing is that \textbf{recovered mnemonics are indistinguishable from any other BIP39 mnemonic}. The output of the recovery process is a standard 12- or 24-word BIP39 phrase that:
+\begin{itemize}[noitemsep]
+    \item Contains no metadata, markers, or version identifiers
+    \item Passes standard BIP39 checksum validation
+    \item Cannot be detected as ``Schiavinato-generated'' by any wallet or software
+    \item Is cryptographically and semantically identical to a mnemonic generated directly by any BIP39-compliant tool
+\end{itemize}
+
+This indistinguishability provides several crucial guarantees:
+
+\paragraph{Backward Compatibility:} Any BIP39 wallet ever created—from the earliest 2013 implementations to modern hardware wallets—accepts Schiavinato-recovered mnemonics without modification. There is no dependency on wallet vendors adopting or supporting a new format.
+
+\paragraph{Forward Compatibility:} As long as the BIP39 standard [9] remains in use (and given its entrenchment in the cryptocurrency ecosystem, this is likely indefinite), Schiavinato Sharing will continue to work with all future wallets. Unlike schemes that require custom wallet implementations (SLIP39, SSKR), Schiavinato cannot be rendered obsolete by changes in wallet software or hardware ecosystems.
+
+\paragraph{No Vendor Lock-In:} Users are not dependent on GRIFORTIS, any specific software, or any ongoing maintenance. The scheme is fully specified, the mathematics are public domain, and the recovered mnemonics work universally. If GRIFORTIS disappears, the construction remains valid and usable.
+
+\paragraph{Inter-Generational Resilience:} Heirs recovering shares decades in the future will obtain a mnemonic that works with whatever BIP39-compatible wallet software exists at that time, without requiring archaeological knowledge of 2025-era tools or formats.
+
+\subsubsection{Technical Implementation}
+Schiavinato Sharing operates on standard BIP39 [9] word indices and does not alter the wordlist. The only deviation arises when a share value lies in the range 2048--2052, which cannot be mapped to a BIP39 word. In this rare case, the recovery instructions direct the user to write down the numeric value itself. The reference tools treat such values as non-mnemonic placeholders in intermediate calculations and only construct final mnemonics from values in 0--2047.
+
+As a result, any recovered mnemonic that consists solely of indices in 0--2047 is a standard BIP39 phrase and is accepted by existing wallets without modification. The underlying entropy and checksum semantics of BIP39 are preserved.
+
+\paragraph{Broad Ecosystem Compatibility:} Because BIP39 is the de facto standard across the cryptocurrency ecosystem, Schiavinato Sharing automatically provides secure backup for assets across multiple blockchains without any additional configuration:
+\begin{itemize}[noitemsep]
+    \item \textbf{Bitcoin} (and derivatives: Litecoin, Dogecoin, etc.)
+    \item \textbf{Ethereum} (and all EVM-compatible chains: Polygon, Binance Smart Chain, Avalanche, Arbitrum, Optimism, etc.)
+    \item \textbf{Cosmos ecosystem} (ATOM, Osmosis, and IBC-connected chains)
+    \item \textbf{Polkadot}, \textbf{Cardano}, \textbf{Solana}, and most modern smart contract platforms
+\end{itemize}
+
+The same recovered 24-word phrase can be imported into any BIP39-compatible wallet, with different blockchains accessed via distinct derivation paths (e.g., \texttt{m/84'/0'/0'} for Bitcoin, \texttt{m/44'/60'/0'/0} for Ethereum). This universal compatibility means that a single Schiavinato Sharing deployment can protect a user's entire multi-chain portfolio without requiring separate sharing schemes per blockchain.
+
+\subsubsection{On BIP39 Passphrases}
+The BIP39 specification also defines an \textbf{optional passphrase} (sometimes informally called the ``25th word'') that is combined with the mnemonic in a key-stretching step to derive the wallet seed. This passphrase is \textit{not} part of the mnemonic phrase itself: two users with the same 12/24-word phrase but different passphrases derive unrelated seeds. Schiavinato Sharing deliberately treats the passphrase as an independent layer and does not attempt to shard or encode it.
+
+From the perspective of this scheme:
+\begin{itemize}[noitemsep]
+    \item \textbf{Scope separation}: Because the passphrase is external to the mnemonic word sequence, including it in the arithmetic sharing of word indices would blur a clean boundary in the BIP39 model and complicate interoperability with existing wallets.
+    \item \textbf{Passphrase strength and independence}: A BIP39 passphrase is most effective when it behaves as a separate, high-entropy secret. Folding it into the 24-word structure---so that ``one set of shares reconstructs both phrase and passphrase''---would weaken this separation and diminish the security value of a strong passphrase.
+    \item \textbf{Plausible deniability}: Many users rely on a passphrase to implement plausible deniability (for example, a decoy wallet with no passphrase and a hidden wallet with a strong passphrase). Hard-wiring the passphrase into the same shared structure as the mnemonic would make such policies harder to reason about and less flexible.
+\end{itemize}
+
+Consequently, Schiavinato Sharing leaves passphrase policy to wallet software and to the user's operational model. For long-term backup and inheritance planning, practitioners should carefully assess whether a BIP39 passphrase is necessary, and, if so, how its secret value will be communicated or escrowed to heirs (if at all). A rigorous treatment of passphrase design, plausible deniability, and inheritance workflows is beyond the scope of this paper and is best handled as a dedicated topic building on, but distinct from, the arithmetic scheme described here.
+
+\section{Security Analysis}
+
+\subsection{Threat Model and Scope}
+Schiavinato Sharing is intended to protect the secrecy and recoverability of a BIP39 mnemonic under the following assumptions:
+\begin{itemize}[noitemsep]
+    \item An adversary may obtain, copy, or inspect \textbf{fewer than $k$} distinct shares for a given wallet, but not $k$ or more shares.
+    \item Legitimate participants can coordinate to obtain \textbf{at least $k$} valid shares when recovery is required.
+    \item Share documents, once created, are not silently modified in a way that systematically alters multiple values while preserving all arithmetic checksums.
+\end{itemize}
+
+Within this model, the goals of the scheme are:
+\begin{itemize}[noitemsep]
+    \item \textbf{Confidentiality}: Any set of fewer than $k$ shares should reveal no information about the underlying BIP39 mnemonic beyond what is already implied by its domain (approximately $2^{256}$ possibilities).
+    \item \textbf{Integrity of recovery}: Given at least $k$ honest shares, the combination of row-level checks and the master verification number should detect accidental arithmetic or transcription errors with overwhelmingly high probability.
+\end{itemize}
+
+The following aspects are \textbf{explicitly out of scope} for this paper:
+\begin{itemize}[noitemsep]
+    \item Side-channel attacks on software implementations (timing, cache behavior, hardware faults, etc.).
+    \item Attacks in which an adversary compromises \textbf{$k$ or more} distinct shares or tampers with the physical custody of shares (for example, coercion of heirs, theft of multiple safe-deposit boxes, or long-term insider threats).
+    \item Social-engineering attacks against users, executors, or advisors, including attempts to trick them into revealing mnemonics, passphrases, or multiple shares.
+    \item Attacks on the underlying BIP39 ecosystem, including weaknesses in wallet RNGs, key-derivation functions, or downstream cryptographic protocols.
+\end{itemize}
+
+Under these assumptions, the analysis below focuses on the cryptographic properties inherited from Shamir's scheme and on the additional human-factor defenses introduced by Schiavinato Sharing.
+
+\subsection{Security Properties and Information-Theoretic Guarantees}
+At its core, Schiavinato Sharing is a collection of independent Shamir secret-sharing instances [1] over $GF(2053)$. Each word index, each row checksum, and the master verification number are shared by their own polynomials of degree at most $k-1$ with independently sampled random coefficients.
+
+The security claims therefore reduce to the standard properties of Shamir's scheme [1]:
+\begin{itemize}
+    \item \textbf{Threshold property}: Any set of at least $k$ consistent shares for a given secret uniquely determines that secret. Any set of fewer than $k$ shares yields no information about the secret beyond what is already implied by its domain.
+    \item \textbf{Information-theoretic secrecy}: For any two candidate secret values $s_0, s_1 \in GF(2053)$, the distribution of any $t < k$ shares generated from $s_0$ is identical to the distribution of $t$ shares generated from $s_1$, assuming coefficients are sampled uniformly and independently (with $a_{k-1}$ uniform over non-zero elements); in this sense the scheme provides perfect, information-theoretic (unconditional) secrecy [1] for each shared value.
+\end{itemize}
+
+Because each of the 33 secrets is shared independently, knowledge of shares or even full recovery of one secret does not aid in recovering any other secret without the requisite number of shares for that secret. In particular, the checksum secrets do not leak information about individual word indices beyond the arithmetic relationships deliberately encoded (e.g., sums modulo 2053): with fewer than $k$ shares, even conditioning on equations such as $c_r = \sum w_{r,i} \pmod{2053}$ or $M = \sum w_i \pmod{2053}$ does not reveal additional information about any single $w_{r,i}$ beyond its domain.
+
+The effective keyspace of a 24-word BIP39 mnemonic is approximately $2^{256}$. Representing the mnemonic as 24 indices in $GF(2053)$ does not compress this space; it merely maps it into a larger ambient field. Consequently, while each shared secret enjoys information-theoretic secrecy up to the threshold, the overall brute-force complexity for guessing a valid mnemonic remains the conventional $2^{256}$ associated with BIP39.
+
+\subsection{Human-Factor Vulnerabilities and Mitigations}
+The primary new risk introduced by a human-executable scheme is not a weakness in the underlying cryptography but the possibility of \textbf{manual arithmetic errors} during recovery. These can occur during modular multiplication, addition, or transcription of intermediate results.
+
+The two-layer checksum mechanism described in Section \ref{sec:checksum} is designed to mitigate this risk:
+\begin{itemize}[noitemsep]
+    \item Row-level checksums localize errors to specific rows, enabling users to detect and correct mistakes before propagating them.
+    \item The master verification number adds a global consistency check over all 24 recovered words, ensuring that no residual errors remain undetected.
+\end{itemize}
+
+Under the same random-error model discussed in Section \ref{sec:checksum}, the probability that an incorrect row passes its checksum test is at most $1/2053$, and the probability that such errors also preserve the (recomputed) master verification number is at most another factor of $1/2053$. With an additional independence assumption across rows this yields an overall error-escape probability on the order of $(1/2053)^9$; even without that assumption, the per-row-plus-master bound of $1/2053^2$ is already so small as to be negligible in practice.
+
+From a usability perspective, the design offers a favorable trade-off: users perform only familiar operations (addition, multiplication, reduction) and receive immediate feedback at the row level, significantly reducing the cognitive load and the risk of silent failure.
+
+A distinct human-factor concern is the temptation to treat a single share as if it were a complete BIP39 mnemonic. Because individual worksheets may display only indices in 0--2047, a naive user could, in principle, enter the word column of a single share into a wallet. Cryptographically, this does not weaken the scheme: any one share remains information-theoretically useless for recovering the true wallet, and if accepted at all, such input would at best open an unrelated empty wallet. However, this behavior could mislead heirs or operators about the existence of additional shares. Schiavinato Sharing addresses this by (i) emphasizing, in documentation and on the worksheets themselves, that no single share is a valid wallet backup, and (ii) using layout and numeric-only markers to make each share look deliberately unlike a canonical mnemonic. In adversarial settings, this behavior can even support plausible deniability: an attacker holding only one share learns no more than that they possess a random-looking set of BIP39-compatible words and numbers, not a deterministically loaded wallet.
+
+\subsection{Physical Security Assumptions}
+As with any secret-sharing scheme, the overall security of Schiavinato Sharing depends on the physical handling of shares. The analysis assumes that:
+\begin{itemize}[noitemsep]
+    \item No adversary can reliably obtain $k$ or more distinct shares for the same wallet.
+    \item Legitimate participants can access at least $k$ valid shares when recovery is required.
+    \item Shares are protected against tampering, loss, and unauthorized duplication according to the user's threat model.
+\end{itemize}
+
+The scheme does not prescribe a particular strategy for distributing or storing shares (for example, geographically or socially), as such strategies are context-dependent. It simply provides a mathematically sound mechanism for ensuring that fewer than $k$ shares reveal nothing about the BIP39 secret.
+
+\section{The GRIFORTIS Reference Implementation}
+
+\subsection{Implementation Status and Availability}
+As of this writing, GRIFORTIS has developed three interconnected reference implementations, all available as open-source software under the MIT License:
+
+\subsubsection{JavaScript/TypeScript Library}
+\begin{itemize}[noitemsep]
+    \item \textbf{Package}: \texttt{@grifortis/schiavinato-sharing}
+    \item \textbf{Version}: 0.1.0 (initial release)
+    \item \textbf{Repository}: \url{https://github.com/GRIFORTIS/schiavinato-sharing-js}
+    \item \textbf{Status}: \textbf{Functional and tested}
+    \item \textbf{Features}:
+    \begin{itemize}[noitemsep]
+        \item Core field arithmetic in $GF(2053)$
+        \item Polynomial evaluation and Lagrange interpolation
+        \item BIP39 integration with full checksum validation
+        \item Split and recovery functions with row and master checksums
+        \item TypeScript type definitions
+        \item Comprehensive test suite (unit and integration tests)
+        \item Browser and Node.js compatible builds
+    \end{itemize}
+    \item \textbf{Test Coverage}: Includes tests for field operations, checksums, integration scenarios, security edge cases, and seed generation.
+\end{itemize}
+
+\subsubsection{Offline HTML Tool}
+\begin{itemize}[noitemsep]
+    \item \textbf{File}: \texttt{schiavinato\_sharing.html}
+    \item \textbf{Repository}: \url{https://github.com/GRIFORTIS/schiavinato-sharing-spec}
+    \item \textbf{Status}: \textbf{Functional with comprehensive automated testing}
+    \item \textbf{Features}:
+    \begin{itemize}[noitemsep]
+        \item Self-contained single-file implementation
+        \item Offline-first design (no network requests)
+        \item Automated share generation workflow
+        \item Automated recovery with checksum verification
+        \item Lagrange coefficient calculator
+        \item Manual recovery helper tools
+        \item Tested with Playwright (happy path, edge cases, validation scenarios)
+    \end{itemize}
+    \item \textbf{Verification}: Users should verify the SHA-256 checksum before use on air-gapped systems.
+\end{itemize}
+
+\subsubsection{Python Library}
+\begin{itemize}[noitemsep]
+    \item \textbf{Package}: \texttt{schiavinato-sharing}
+    \item \textbf{Repository}: \url{https://github.com/GRIFORTIS/schiavinato-sharing-py}
+    \item \textbf{Status}: \textbf{Early development}
+    \item \textbf{Planned Features}: Mirror of JavaScript library functionality with Python-idiomatic API
+\end{itemize}
+
+\subsubsection{Test Vectors}
+\begin{itemize}[noitemsep]
+    \item \textbf{File}: \texttt{TEST\_VECTORS.md}
+    \item \textbf{Repository}: \url{https://github.com/GRIFORTIS/schiavinato-sharing-spec}
+    \item \textbf{Status}: \textbf{Complete and documented}
+    \item \textbf{Contents}: Reproducible test cases for 2-of-3 and 3-of-5 schemes (12 and 24 words) with complete polynomial coefficients, share values, and expected checksums. Essential for independent implementation verification.
+\end{itemize}
+
+\subsection{The \texorpdfstring{\texttt{schiavinato-sharing.html}}{schiavinato-sharing.html} Tool}
+The primary reference implementation is a single self-contained HTML/JavaScript file, intended to be executed on an air-gapped computer. Its design adheres to the following constraints:
+\begin{itemize}
+    \item \textbf{Offline by construction}: The file embeds all required assets and makes no network requests.
+    \item \textbf{Verifiable distribution}: Each released version is accompanied by a published SHA-256 checksum.
+    \item \textbf{Explicit threat model}: Users verify the checksum and transfer the file to an air-gapped machine.
+\end{itemize}
+
+Within these constraints, the tool offers Automated Sharding, Automated Recovery, Manual Sharding Helper, and a Manual Recovery Helper (Lagrange Calculator).
+
+\subsection{The \texorpdfstring{\texttt{schiavinato\_sharing}}{schiavinato\_sharing} Libraries}
+For developers and auditors, GRIFORTIS provides reference libraries in Python and JavaScript (with TypeScript declarations). These expose the core cryptographic operations.
+
+At a high level, the API is organized around the following concepts:
+\begin{itemize}[noitemsep]
+    \item \textbf{Share representation}: A \texttt{MnemonicShare} object encapsulates:
+    \begin{itemize}[noitemsep]
+        \item Global metadata: wallet identifier, creation date, threshold parameters $k$ and $n$, share index $x$
+        \item 8×4 table of integer values in $\{0, \dots, 2052\}$: 24 word shares + 8 row-checksum shares
+        \item Master verification share: a separate integer value for the global checksum
+        \item Optional BIP39 words: mnemonic words for values in 0--2047
+    \end{itemize}
+    \item \textbf{High-level functions}:
+    \begin{itemize}[noitemsep]
+        \item \texttt{split\_bip39(mnemonic, k, n, rng=None) -> List[MnemonicShare]}: validates the input mnemonic as BIP39, converts it to word indices, constructs the 33 secrets, samples random polynomials and evaluates them at indices $\{1, \dots, n\}$, and returns a list of \texttt{MnemonicShare} objects suitable for display or printing.
+        \item \texttt{recover\_bip39(shares: Sequence[MnemonicShare]) -> str}: verifies that the provided shares are consistent (same wallet metadata and threshold), performs Lagrange interpolation in $GF(2053)$ for each of the 33 secrets, applies row-level checksum verification and the master verification number, and reconstructs and returns the BIP39 mnemonic if all checks succeed, or raises an error otherwise.
+    \end{itemize}
+    \item \textbf{Lower-level helpers}: functions for modular arithmetic in $GF(2053)$, a function to compute Lagrange coefficients for given indices and modulus, and routines to map between integer indices and BIP39 words.
+\end{itemize}
+
+The JavaScript library mirrors this structure with idiomatic naming (\texttt{splitBip39}, \texttt{recoverBip39}, etc.) and includes TypeScript declaration files for static type checking.
+
+All reference implementations are released under the \textbf{MIT License}, allowing integration into third-party systems and enabling independent reimplementations in additional languages.
+
+\subsection{Scope Clarification}
+The GRIFORTIS tools are deliberately narrow in scope:
+\begin{itemize}[noitemsep]
+    \item They \textbf{do not generate new BIP39 master seeds}. Users are expected to generate mnemonics through their preferred wallets or hardware devices.
+    \item They focus exclusively on \textbf{splitting and recovering existing BIP39 mnemonics} using Schiavinato Sharing.
+    \item They do not perform any signing operations, key derivation, or transaction management.
+\end{itemize}
+
+This separation of concerns simplifies auditing and reduces the attack surface: the tools handle only the arithmetic and bookkeeping associated with secret sharing and recovery.
+
+\section{Future Work and Applications}
+Several directions for future work and further applications are natural extensions of Schiavinato Sharing and its reference implementation:
+\begin{itemize}
+    \item \textbf{Integration with existing wallets}: Tools and plug-ins that integrate Schiavinato Sharing with popular wallets (Bitcoin Core, Electrum, MetaMask, Ledger Live, Trezor Suite, etc.) could streamline recovery workflows while keeping core signing and derivation logic unchanged. For example, an offline device could recover a mnemonic from shares and then hand it directly to a multi-chain wallet application without exposing it to networked systems. Because Schiavinato produces standard BIP39 output, a single integration point serves all blockchain assets the wallet supports.
+    \item \textbf{QR Code Integration for Dual-Path Recovery}: The GRIFORTIS reference implementation plans to include QR codes on each share worksheet, encoding the complete share data. This dual-format approach serves two distinct scenarios:
+    \begin{itemize}[noitemsep]
+        \item \textbf{``Zero computers'' scenario}: The QR code acts as a machine-readable backup of the printed data, enabling future scanning and verification if worksheets degrade or become difficult to read over decades, while the printed numbers and words remain the primary recovery path.
+        \item \textbf{``Everything is fine'' scenario}: When trusted hardware is available, users can quickly scan QR codes for instant electronic recovery, bypassing manual arithmetic entirely. The pencil-and-paper path remains available as a fallback if electronics fail or are untrusted.
+    \end{itemize}
+    This dual approach maintains the scheme's core design principle: \textit{electronics-optional at every stage}, while opportunistically leveraging technology when safe and convenient.
+    
+    \item \textbf{Standardized share encoding formats}: A formal, implementation-independent specification for encoding \texttt{MnemonicShare} objects (e.g., in JSON or CBOR) would facilitate interoperability across different implementations. This encoding standard would be used for both QR code content and potential future formats such as UR-style strings or NFC tags.
+    \item \textbf{Formal specification and verification}: A precise, machine-readable specification of the arithmetic routines (including polynomial evaluation and Lagrange interpolation in $GF(2053)$) would enable formal verification efforts. Techniques such as property-based testing, model checking, or proof assistants could be applied to ensure that implementations conform exactly to the mathematical model.
+    \item \textbf{Extended coefficient tables and tooling}: For more complex threshold schemes, automated generation and publication of Lagrange coefficient tables, together with user-friendly calculators, would further reduce friction for advanced users.
+    \item \textbf{Hybrid Schiavinato + SLIP39 + SSKR Implementation}: GRIFORTIS is exploring a future hybrid system that would allow users to encode Schiavinato shares using SLIP39 or SSKR formats for maximum interoperability. In this model, the human-executable arithmetic properties of Schiavinato Sharing would be preserved in the printed worksheets, while the share data could \textit{also} be encoded in SLIP39/SSKR-compatible formats for users who wish to leverage existing hardware wallet support or standardized backup tools. This hybrid approach would position Schiavinato Sharing as a complementary layer to existing standards rather than a replacement, offering the best of both worlds: manual recoverability when needed, and seamless integration with the broader ecosystem when electronics are available.
+    
+    \item \textbf{Usability Studies}: Conducting controlled user studies to compare the error rates and completion times of ``Workflow A'' (Calculator) versus ``Workflow B'' (Lookup Strip) for non-technical participants.
+\end{itemize}
+
+Community contributions---such as ports of the reference library to additional languages (e.g., Rust, Go, or C) or independently developed tooling built on the specification---are explicitly encouraged.
+
+\section{How to Adopt Schiavinato Sharing}
+This section provides practical guidance for different audiences considering adoption of Schiavinato Sharing.
+
+\subsection{For Individual Users with Existing BIP39 Mnemonics}
+\textit{Note: If your BIP39 mnemonic currently protects assets across multiple blockchains (e.g., Bitcoin on Ledger + Ethereum on MetaMask), Schiavinato Sharing protects them all with a single set of shares. You do not need separate sharing schemes per chain.}
+
+\begin{enumerate}
+    \item \textbf{Assess your threat model}: Determine if electronics-optional recovery aligns with your inheritance planning needs. Schiavinato Sharing is particularly suited for long-term (multi-decade) storage of multi-chain portfolios where electronic ecosystem stability is uncertain.
+    
+    \item \textbf{Choose a threshold scheme}: Select appropriate $k$ and $n$ values:
+    \begin{itemize}[noitemsep]
+        \item 2-of-3: Simple, suitable for personal use with moderate geographic distribution
+        \item 3-of-5: Recommended for inheritance planning with heirs and executors
+        \item Higher thresholds: Only if you have a specific operational requirement
+    \end{itemize}
+    
+    \item \textbf{Test with modest amounts first}: Before entrusting significant holdings, practice the full cycle:
+    \begin{itemize}[noitemsep]
+        \item Generate shares from a test mnemonic
+        \item Perform manual recovery following the worksheets
+        \item Verify the recovered mnemonic matches the original
+        \item Test the recovered mnemonic in a standard BIP39 wallet
+    \end{itemize}
+    
+    \item \textbf{Generate production shares}:
+    \begin{itemize}[noitemsep]
+        \item Download the HTML tool and verify its SHA-256 checksum
+        \item Transfer to an air-gapped computer
+        \item Input your existing BIP39 mnemonic
+        \item Generate shares and print/transcribe worksheets
+        \item Verify at least one share can recover the original (test immediately)
+    \end{itemize}
+    
+    \item \textbf{Distribute shares according to your plan}: Follow deployment patterns from Appendix F, ensuring no single location contains $k$ or more shares.
+    
+    \item \textbf{Document your scheme}: Leave clear instructions for heirs including:
+    \begin{itemize}[noitemsep]
+        \item The $k$-of-$n$ parameters
+        \item Share locations (in estate documents)
+        \item Link to this whitepaper and reference tools
+        \item Emergency contact information
+    \end{itemize}
+\end{enumerate}
+
+\subsection{For Wallet Developers and Hardware Manufacturers}
+\textit{Note: Whether you support Bitcoin-only, Ethereum-only, or multi-chain wallets, Schiavinato Sharing integrates identically—it operates purely at the BIP39 mnemonic layer, independent of blockchain-specific logic.}
+
+\begin{enumerate}
+    \item \textbf{Recognize BIP39 compatibility}: Schiavinato Sharing produces standard BIP39 mnemonics that work across all blockchains your wallet supports. No special wallet support is required for recovered secrets.
+    
+    \item \textbf{Optional: Integrate share generation}: Add Schiavinato Sharing as an export option for existing BIP39 backups. Users could generate shares directly from hardware wallets.
+    
+    \item \textbf{Optional: Support QR-based recovery}: Future versions will include QR codes on worksheets. Scanning multiple share QR codes could provide instant electronic recovery as an alternative to manual arithmetic.
+    
+    \item \textbf{Reference the open-source libraries}: Use \texttt{@grifortis/schiavinato-sharing} (JavaScript/TypeScript) or implement based on TEST\_VECTORS.md for verification.
+\end{enumerate}
+
+\subsection{For Security Researchers and Auditors}
+\begin{enumerate}
+    \item \textbf{Review the mathematical specification}: This whitepaper provides complete details of the field arithmetic, polynomial construction, and checksum mechanisms.
+    
+    \item \textbf{Verify against test vectors}: \texttt{TEST\_VECTORS.md} provides reproducible examples. Independent implementations should produce identical results.
+    
+    \item \textbf{Audit the reference implementations}:
+    \begin{itemize}[noitemsep]
+        \item JavaScript library: \url{https://github.com/GRIFORTIS/schiavinato-sharing-js}
+        \item HTML tool: \url{https://github.com/GRIFORTIS/schiavinato-sharing-spec}
+    \end{itemize}
+    
+    \item \textbf{Report vulnerabilities responsibly}: Contact GRIFORTIS through the GitHub security advisory system or via email (see repositories for current contact information).
+\end{enumerate}
+
+\subsection{For Academic Researchers}
+\begin{enumerate}
+    \item \textbf{This is a proposed construction}: While based on well-understood components (Shamir's scheme [1], prime field arithmetic), the complete system requires peer review.
+    
+    \item \textbf{Open research questions}: See Section \ref{sec:open-questions} for areas requiring further investigation.
+    
+    \item \textbf{Formal verification welcome}: The scheme's simplicity makes it amenable to formal methods. Machine-readable specifications would facilitate verification efforts.
+    
+    \item \textbf{Usability studies needed}: Comparative studies of manual recovery success rates, error modes, and completion times would strengthen the practical case.
+\end{enumerate}
+
+\subsection{Migration from Existing Backups}
+Users with existing single-mnemonic backups can adopt Schiavinato Sharing non-destructively:
+\begin{itemize}[noitemsep]
+    \item \textbf{Keep existing backup}: Original single-mnemonic backup remains valid
+    \item \textbf{Generate shares}: Use \texttt{split\_bip39()} to create Schiavinato shares
+    \item \textbf{Test recovery}: Verify shares work before discarding original backup
+    \item \textbf{Transition gradually}: Some users may prefer to maintain both systems during a transition period
+\end{itemize}
+
+For users with SLIP39 shares, direct migration is not currently supported. A new BIP39 wallet would need to be created, and funds transferred before applying Schiavinato Sharing.
+
+\section{Open Questions and Future Research} \label{sec:open-questions}
+While Schiavinato Sharing builds on well-established cryptographic primitives, several practical and theoretical questions remain open for community research:
+
+\subsection{Long-Term Physical Durability}
+\begin{itemize}[noitemsep]
+    \item \textbf{Paper longevity}: What paper types, inks, and storage conditions best preserve worksheets over 50+ year timescales?
+    \item \textbf{Environmental factors}: How do humidity, temperature fluctuations, and light exposure affect worksheet legibility?
+    \item \textbf{Backup media comparison}: Comparative studies of paper vs. metal engraving vs. other archival media for share storage.
+\end{itemize}
+
+\subsection{Optimal Threshold Parameters}
+\begin{itemize}[noitemsep]
+    \item \textbf{Risk modeling}: What $k$ and $n$ values best balance security, availability, and operational complexity for different threat models?
+    \item \textbf{Geographic distribution}: Optimal share placement strategies considering natural disasters, geopolitical risks, and access constraints.
+    \item \textbf{Social dynamics}: How do family structures, trust relationships, and executor availability influence ideal threshold choices?
+\end{itemize}
+
+\subsection{Human Factors and Usability}
+\begin{itemize}[noitemsep]
+    \item \textbf{Error rates}: Controlled studies measuring arithmetic error frequency during manual recovery for different user populations.
+    \item \textbf{Completion time}: Average time required for manual vs. electronic recovery under realistic conditions.
+    \item \textbf{Cognitive load}: Comparison of modular arithmetic difficulty across age groups, educational backgrounds, and stress conditions.
+    \item \textbf{Workflow comparison}: Empirical evaluation of calculator-based (Workflow A) vs. lookup-strip-based (Workflow B) recovery methods.
+\end{itemize}
+
+\subsection{Security Analysis}
+\begin{itemize}[noitemsep]
+    \item \textbf{Side-channel resistance}: Physical security of manual arithmetic operations (visual observation, infrared, acoustic analysis).
+    \item \textbf{Checksum effectiveness}: Empirical validation that the two-layer checksum system achieves stated error detection probabilities under realistic error models.
+    \item \textbf{Adversarial tampering}: Detection probability when an adversary modifies share values in ways that preserve some (but not all) checksums.
+\end{itemize}
+
+\subsection{Ecosystem Integration}
+\begin{itemize}[noitemsep]
+    \item \textbf{Hardware wallet support}: Feasibility and security implications of generating Schiavinato shares directly on hardware devices (Ledger, Trezor, Coldcard, etc.) for both Bitcoin and Ethereum applications.
+    \item \textbf{Hybrid schemes}: Optimal designs for Schiavinato + SLIP39/SSKR interoperability (see Future Work, Section 6).
+    \item \textbf{Multi-chain wallet integration}: Best practices for wallet applications that manage multiple chains (Bitcoin, Ethereum, Cosmos, Polkadot, Solana) from a single BIP39 mnemonic.
+    \item \textbf{Non-BIP39 systems}: Adaptation to cryptocurrencies that do not use BIP39 (e.g., Monero, older Electrum formats).
+\end{itemize}
+
+\subsection{Formal Verification}
+\begin{itemize}[noitemsep]
+    \item \textbf{Proof assistants}: Formal verification of the $GF(2053)$ arithmetic routines in Coq, Isabelle, or Lean.
+    \item \textbf{Cryptographic proofs}: Machine-checked proofs of information-theoretic security properties.
+    \item \textbf{Implementation correctness}: Verified compilation from high-level specification to executable code.
+\end{itemize}
+
+\subsection{Community Feedback Welcome}
+The GRIFORTIS team welcomes research contributions, empirical studies, and independent analyses addressing these questions. Results can be shared through:
+\begin{itemize}[noitemsep]
+    \item GitHub discussions in the specification repository
+    \item Academic publications (with notification to GRIFORTIS)
+    \item Direct communication via the project's published contact channels
+\end{itemize}
+
+\section{Request for Comments: Open Challenges}
+
+This whitepaper is published as an \textbf{RFC (Request for Comments)} to solicit rigorous scrutiny from the cryptographic and Bitcoin development communities. The GRIFORTIS team has developed functional reference implementations (JavaScript/TypeScript v0.1.0, offline HTML tool, complete test vectors), but recognizes that broader expertise is essential before the scheme can be considered production-ready.
+
+\subsection{Why This Matters}
+
+Schiavinato Sharing makes a bold claim: \textit{it is possible to combine threshold secret sharing, information-theoretic security, BIP39 compatibility, and manual human recoverability in a single scheme}. Each existing solution sacrifices at least one of these properties. If this construction is sound, it addresses a genuine gap in long-term cryptocurrency custody across \textit{all} BIP39-compatible assets—including Bitcoin, Ethereum, and the broader multi-chain ecosystem. If flawed, the community deserves to know before real assets are entrusted to it.
+
+\paragraph{The Indistinguishability Advantage:} Unlike SLIP39 or SSKR (which create custom mnemonic formats requiring ongoing wallet support), Schiavinato's recovered output is \textbf{indistinguishable from any standard BIP39 mnemonic}. This is not merely a compatibility feature—it is a \textbf{fundamental guarantee of long-term viability}. The scheme cannot become obsolete through vendor discontinuation, software ecosystem changes, or hardware evolution. As long as BIP39 remains the standard (and given its 12-year entrenchment and universal adoption, this is effectively permanent), Schiavinato Sharing will work. This makes it uniquely suitable for multi-generational inheritance timescales (50+ years) where format obsoletion is a primary concern.
+
+\subsection{Specific Technical Challenges}
+
+We invite the community to analyze the following aspects, where expert review is most valuable:
+
+\subsubsection{Challenge 1: Checksum Security Bounds}
+
+\textbf{The Claim}: Our two-layer checksum (row-level + master verification) detects arithmetic errors with probability $\geq 1 - (1/2053)^2$ per row under a random-error model.
+
+\textbf{Open Question}: Can an adversary construct a targeted corruption pattern that preserves checksums with non-negligible probability? What is the exact security reduction to $GF(2053)$ field properties?
+
+\textbf{Why It Matters}: If checksum effectiveness is lower than claimed, manual recovery becomes unreliable.
+
+\subsubsection{Challenge 2: Side-Channel Resistance of Manual Arithmetic}
+
+\textbf{The Claim}: Manual recovery using pencil and paper resists electronic side-channel attacks (timing, power analysis, EM radiation) by design.
+
+\textbf{Open Question}: What are the practical side channels during manual arithmetic? Can an adversary with physical access (cameras, infrared, acoustic monitoring) extract share values during recovery? What operational security practices are sufficient?
+
+\textbf{Why It Matters}: If manual recovery is observable, the ``electronics-optional'' advantage is compromised.
+
+\subsubsection{Challenge 3: Optimal Polynomial Coefficient Selection}
+
+\textbf{The Claim}: Random polynomial coefficients sampled uniformly from $GF(2053)$ provide information-theoretic security equivalent to Shamir's original scheme.
+
+\textbf{Open Question}: Does the constraint that $a_{k-1} \in \{1, \dots, 2052\}$ (to ensure degree exactly $k-1$) introduce any measurable bias or weakness? Can coefficient selection be optimized to reduce share value variance while preserving security?
+
+\textbf{Why It Matters}: Non-uniform coefficient distributions could leak information or fail statistical tests.
+
+\subsubsection{Challenge 4: BIP39 Checksum Interaction}
+
+\textbf{The Claim}: Operating on BIP39 word indices (which embed an entropy checksum) does not interact adversely with our arithmetic checksums.
+
+\textbf{Open Question}: Does the BIP39 checksum structure introduce any constraints or correlations in $GF(2053)$ that could aid an adversary with $k-1$ shares? Can conditioning on BIP39 validity narrow the search space beyond the obvious $2^{256}$ entropy?
+
+\textbf{Why It Matters}: Hidden correlations could weaken information-theoretic security claims.
+
+\subsubsection{Challenge 5: Long-Term Field Choice Validation}
+
+\textbf{The Claim}: $GF(2053)$ (the smallest prime $> 2048$) is optimal for this application.
+
+\textbf{Open Question}: Would a larger prime (e.g., $GF(4099)$ or $GF(8191)$) provide meaningful security benefits beyond the $\approx 2^{11}$ search space per share? What is the trade-off curve between field size and manual arithmetic difficulty?
+
+\textbf{Why It Matters}: If a slightly larger field significantly improves security with marginal usability cost, the design should be revised.
+
+\subsubsection{Challenge 6: Indistinguishability as a Security Property}
+
+\textbf{The Claim}: Schiavinato-recovered mnemonics are computationally indistinguishable from natively-generated BIP39 mnemonics. There exists no polynomial-time algorithm that can distinguish a Schiavinato-recovered phrase from one generated by any other BIP39-compliant source.
+
+\textbf{Open Question}: Does the constraint that share values can lie in $\{0, \dots, 2052\}$ during intermediate calculations leave any statistical fingerprint in the final 24-word distribution? Can an adversary with access to a large corpus of ``known Schiavinato'' mnemonics extract any distinguishing features?
+
+\textbf{Why It Matters}: If recovered mnemonics are distinguishable, it could enable targeted attacks or reduce plausible deniability. Indistinguishability is a key long-term viability guarantee—if BIP39 remains standard for 50+ years (highly likely given ecosystem inertia), Schiavinato Sharing remains viable. Any detectable deviation from standard BIP39 could theoretically enable future discrimination against ``Schiavinato mnemonics'' by hostile wallet software or regulatory systems.
+
+\subsection{Intellectual Bounty Program}
+
+To encourage rigorous analysis, GRIFORTIS announces the following recognition program, valid through \textbf{January 31, 2026}:
+
+\begin{itemize}
+    \item \textbf{Critical vulnerability discovery}: First to identify a fundamental flaw that breaks information-theoretic security or enables secret recovery with $< k$ shares $\rightarrow$ \textbf{Named acknowledgment in v1.0 specification + \$5,000 USD bounty + co-authorship on security advisory}
+    
+    \textit{Qualifying criteria: Must demonstrate an actual mathematical flaw in the scheme specification itself (Sections 3-4), not implementation bugs in software. Examples: proof that checksums fail with $> 1\%$ probability under adversarial corruption; demonstration that $k-1$ shares + checksums leak $> 1$ bit of entropy; proof that field choice enables attack faster than $O(2^{11})$ per share. GRIFORTIS retains sole discretion in determining whether a submission qualifies as "fundamental." Borderline cases may receive acknowledgment without financial reward.}
+    
+    \item \textbf{Formal verification}: First complete formal proof of core properties (polynomial evaluation, Lagrange interpolation, or checksum bounds) in Coq, Isabelle, or Lean $\rightarrow$ \textbf{Named acknowledgment + \$2,000 USD bounty (paid in stages: \$500 on proof outline acceptance, \$1,500 on machine-checked completion)}
+    
+    \textit{Qualifying criteria: Machine-checkable proof with publicly available source code and clear documentation. Must cover at least one complete core operation. Submitter must demonstrate understanding and be able to defend the proof in technical discussion. AI assistance must be disclosed (though AI-assisted work is acceptable). GRIFORTIS may request revisions or clarifications before final payment.}
+    
+    \item \textbf{Significant security improvement}: First to propose a backwards-compatible enhancement that measurably strengthens security $\rightarrow$ \textbf{Named acknowledgment + potential integration in v1.1 + discretionary honorarium (\$250-1,000 depending on impact)}
+    
+    \item \textbf{Implementation in additional language}: First production-quality implementation in Rust, Go, or C with full test coverage matching TEST\_VECTORS.md $\rightarrow$ \textbf{Named acknowledgment + prominent repository linking + discretionary stipend (negotiable based on quality and completeness)}
+\end{itemize}
+
+\paragraph{Program Terms:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Total bounty pool cap}: \$10,000 USD maximum across all categories
+    \item \textbf{First submission only}: Each bounty category awards only the first qualifying submission; subsequent valid submissions receive acknowledgment without financial reward
+    \item \textbf{Valid through}: January 31, 2026 (GRIFORTIS reserves the right to extend, modify, or terminate with 30 days notice)
+    \item \textbf{Payment terms}: Upon qualification determination, payment via Bitcoin, Ethereum, bank transfer, or other mutually agreed method within 30 days
+    \item \textbf{Discretion}: GRIFORTIS decisions on qualification are final and not subject to appeal
+    \item \textbf{AI disclosure}: All submissions must disclose any AI assistance used in analysis or proof construction
+    \item \textbf{Public disclosure}: Non-security-sensitive findings will be discussed publicly; critical vulnerabilities may be held under embargo until patched
+\end{itemize}
+
+All findings, whether qualifying for bounty or not, will be acknowledged in release notes and public communications. The goal is community-driven validation, not bounty hunting.
+
+\subsection{How to Engage}
+
+\paragraph{For Cryptographers and Security Researchers:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Bitcoin-dev mailing list}: Post analysis to bitcoin-dev@lists.linuxfoundation.org with subject prefix ``[Schiavinato RFC]''
+    \item \textbf{GitHub Security Advisories}: Report vulnerabilities privately at \url{https://github.com/GRIFORTIS/schiavinato-sharing-spec/security}
+    \item \textbf{GitHub Discussions}: Public technical discussion at \url{https://github.com/GRIFORTIS/schiavinato-sharing-spec/discussions}
+\end{itemize}
+
+\paragraph{For Bitcoin Core Developers:}
+\begin{itemize}[noitemsep]
+    \item Does this approach merit a BIP proposal? What modifications would be required?
+    \item Are there Bitcoin Core descriptor wallet integration opportunities?
+    \item Could this complement existing multisig or time-lock strategies?
+\end{itemize}
+
+\paragraph{For Hardware Wallet Manufacturers:}
+\begin{itemize}[noitemsep]
+    \item What are the UX implications of generating shares on hardware?
+    \item Would QR-based share scanning be valuable in your product roadmap?
+    \item What audit depth would you require before considering integration?
+\end{itemize}
+
+\paragraph{For Academic Researchers:}
+\begin{itemize}[noitemsep]
+    \item Is this suitable for submission to Financial Cryptography, IEEE S\&P, PETS, or similar venues?
+    \item What additional formal analysis would strengthen the theoretical foundations?
+    \item Are there related problems in human-computable cryptography this informs?
+\end{itemize}
+
+\subsection{RFC Timeline and Commitment}
+
+\begin{itemize}[noitemsep]
+    \item \textbf{RFC Period}: Through January 31, 2026
+    \item \textbf{Response Guarantee}: All substantive technical comments will receive a response within 7 days
+    \item \textbf{Transparency}: All feedback (except private security disclosures) will be publicly visible
+    \item \textbf{Iteration}: Meaningful suggestions will be incorporated in draft revisions posted to the repository
+    \item \textbf{v1.0 Target}: February 2026, incorporating community feedback
+\end{itemize}
+
+\subsection{What Would Change Our Mind}
+
+In the spirit of falsifiability, the following findings would necessitate significant revision or abandonment:
+
+\begin{enumerate}
+    \item Demonstration that the checksum mechanism fails to detect errors with $> 1\%$ probability under realistic error models
+    \item Discovery of a correlation between BIP39 indices and $GF(2053)$ arithmetic that leaks $> 1$ bit of entropy per share
+    \item Proof that manual recovery is impractical for $> 90\%$ of users under controlled testing
+    \item Identification of a fundamental incompatibility with existing BIP39 wallets
+    \item Evidence that $GF(2053)$ field size enables brute-force attacks faster than $O(2^{11})$ per share
+\end{enumerate}
+
+If none of these conditions obtain, and no other fundamental flaw is identified during the RFC period, the specification will proceed to v1.0 with the caveat that independent security audit remains pending.
+
+\subsection{Acknowledgment of Limitations}
+
+We explicitly acknowledge:
+\begin{itemize}[noitemsep]
+    \item This construction is \textbf{not formally verified}
+    \item This construction is \textbf{not independently audited}
+    \item This construction is \textbf{not yet peer-reviewed for academic publication}
+    \item Real-world usability data is \textbf{limited to internal testing}
+    \item Long-term physical durability of worksheets is \textbf{unproven at 50+ year timescales}
+\end{itemize}
+
+These are not flaws in the mathematics, but gaps in validation that justify community scrutiny before production deployment.
+
+\section{Conclusion}
+Schiavinato Sharing presents a human-centric adaptation of Shamir's Secret Sharing for BIP39 mnemonics, providing universal multi-chain custody solutions for the entire cryptocurrency ecosystem. By operating directly on word indices in a small prime field and layering in robust arithmetic checksums, it enables manual recovery with only pencil and paper while preserving the information-theoretic security of the underlying scheme.
+
+Critically, Schiavinato produces \textbf{indistinguishable standard BIP39 output}, ensuring backward compatibility with all wallets since 2013, forward compatibility with all future implementations, and inter-generational resilience at 50+ year timescales. Unlike custom formats (SLIP39, SSKR) that depend on ongoing vendor support, Schiavinato's alignment with the BIP39 standard provides a fundamental guarantee: as long as BIP39 exists, the scheme remains viable.
+
+The GRIFORTIS reference implementations—including a functional JavaScript/TypeScript library (v0.1.0), a comprehensive offline HTML tool, and complete test vectors—demonstrate that the scheme is practical, auditable, and ready for integration. All implementations are released as open-source software under the MIT License, enabling independent verification, community scrutiny, and adoption across Bitcoin, Ethereum, and the broader multi-chain cryptocurrency ecosystem.
+
+\section{References}
+
+\begin{enumerate}[label={[\arabic*]}]
+
+    % --- Foundational ---
+    \item A. Shamir, ``How to share a secret,'' \textit{Communications of the ACM}, vol. 22, no. 11, pp. 612--613, Nov. 1979.
+    
+    \item G. R. Blakley, ``Safeguarding cryptographic keys,'' in \textit{Proceedings of the National Computer Conference}, 1979, vol. 48, pp. 313--317.
+
+    % --- Human Computation & Usability ---
+    \item J. Blocki, M. Blum, A. Datta, and S. Vempala, ``Towards Human Computable Passwords,'' in \textit{Innovations in Theoretical Computer Science (ITCS)}, 2014.
+    
+    \item S. Eskandari, D. Barrera, E. Stobert, and J. Clark, ``A First Look at the Usability of Bitcoin Key Management,'' in \textit{Workshop on Usable Security (USEC)}, 2015.
+    
+    \item V. Buterin, ``Why we need wide adoption of social recovery wallets,'' \textit{Vitalik.ca}, Jan. 2021. [Online]. Available: \url{https://vitalik.ca/general/2021/01/11/recovery.html}.
+
+    % --- Verifiability & Robustness ---
+    \item P. Feldman, ``A practical scheme for non-interactive verifiable secret sharing,'' in \textit{Proceedings of the 28th Annual Symposium on Foundations of Computer Science}, 1987, pp. 427--437.
+
+    \item T. Rabin and M. Ben-Or, ``Verifiable secret sharing and multiparty protocols with honest majority,'' in \textit{Proceedings of the 21st Annual ACM Symposium on Theory of Computing (STOC)}, 1989, pp. 73--85.
+
+    % --- Standards ---
+    \item P. Wuille, et al., ``BIP-0032: Hierarchical Deterministic Wallets,'' \textit{Bitcoin Improvement Proposals}, 2012.
+    
+    \item M. Palatinus, et al., ``BIP-0039: Mnemonic code for generating deterministic keys,'' \textit{Bitcoin Improvement Proposals}, 2013.
+    
+    \item SatoshiLabs, ``SLIP-0039: Shamir's Secret-Sharing for Mnemonic Codes,'' \textit{SatoshiLabs Improvement Proposals}, 2019.
+
+\end{enumerate}
+
+\appendix
+
+\section{A Primer on Shamir's Secret Sharing}
+Shamir's Secret Sharing [1] is a threshold scheme that allows a secret value to be split into $n$ shares such that any $k$ shares suffice to reconstruct the secret, while any $t < k$ shares provide no information about it.
+
+At a high level:
+\begin{enumerate}
+    \item \textbf{Finite field}: Choose a finite field $GF(q)$. In this paper, $q = 2053$.
+    \item \textbf{Polynomial encoding}: To share a secret $s \in GF(q)$, select a random polynomial
+    \[ f(x) = a_0 + a_1 x + \dots + a_{k-1} x^{k-1} \]
+    with $a_0 = s$ and $(a_1, \dots, a_{k-1})$ chosen uniformly at random from $GF(q)$.
+    \item \textbf{Share generation}: For each participant index $x \in \{1, \dots, n\}$, compute the share $y = f(x)$.
+    \item \textbf{Reconstruction}: Any group of $k$ participants can reconstruct the secret by interpolating the unique degree-$(k-1)$ polynomial that passes through their $k$ points.
+\end{enumerate}
+
+\section{A Gentle Introduction to Modular Arithmetic}
+Modular arithmetic is the system of arithmetic that makes Schiavinato Sharing executable by hand. It behaves like ``clock arithmetic'': values wrap around after reaching a fixed modulus.
+
+\subsection{The Modulus and Basic Operations}
+In standard arithmetic, integers extend indefinitely in both directions. In modular arithmetic with modulus $p$, we identify integers that differ by a multiple of $p$. Every value is represented by one of the residues
+\[ 0, 1, 2, \dots, p-1 \]
+
+For example, with modulus 12 (a clock with 12 hours):
+\begin{itemize}[noitemsep]
+    \item $8 + 5 = 13$, but $13 \bmod 12 = 1$.
+    \item $20 \bmod 12 = 8$.
+    \item $-1 \bmod 12 = 11$.
+\end{itemize}
+
+Addition and multiplication follow the usual rules, followed by reduction modulo $p$. In Schiavinato Sharing, the modulus is the prime
+\[ p = 2053 \]
+so all intermediate and final results are reduced to the range 0--2052.
+
+\subsection{Examples in $GF(2053)$}
+Consider the following examples:
+\begin{itemize}[noitemsep]
+    \item $2000 + 100 = 2100$. Reducing modulo 2053 gives $2100 - 2053 = 47$, so $2100 \bmod 2053 = 47$.
+    \item $1000 \times 3 = 3000$. Reducing modulo 2053 gives $3000 - 2053 = 947$, so $3000 \bmod 2053 = 947$.
+\end{itemize}
+
+Subtraction is handled similarly:
+\begin{itemize}[noitemsep]
+    \item $50 - 100 = -50$. To reduce $-50$ modulo 2053, we can add 2053: $-50 + 2053 = 2003$. Thus, $-50 \bmod 2053 = 2003$.
+\end{itemize}
+
+These operations are sufficient for evaluating polynomials and performing the weighted sums required for Lagrange interpolation.
+
+\subsection{Prime Fields and Division}
+When the modulus $p$ is prime, the set $\{0, 1, \dots, p-1\}$ with addition and multiplication modulo $p$ forms a \textbf{finite field} $GF(p)$. In a field, every non-zero element has a multiplicative inverse:
+\[ a \cdot a^{-1} \equiv 1 \pmod{p} \]
+
+Division by a non-zero element $a$ is defined as multiplication by its inverse $a^{-1}$. Finding inverses in practice can be done using the extended Euclidean algorithm, but this process is more involved than simple addition or multiplication.
+
+One of the reasons Schiavinato Sharing pre-computes Lagrange coefficients is precisely to avoid asking users to compute modular inverses by hand. All required division is encapsulated in those coefficients. Users performing recovery only need to multiply and add integers modulo 2053.
+
+\section{Demystifying Lagrange Interpolation}
+Lagrange interpolation provides a formula for reconstructing a polynomial from its values at a finite set of points. In the context of Shamir's Secret Sharing, it is the tool that allows us to recover the secret from a threshold of shares.
+
+\subsection{Intuitive Picture}
+Consider first the simple case of lines in the plane. A straight line can be determined uniquely by two distinct points. Given two points $(x_1, y_1)$ and $(x_2, y_2)$, there is exactly one line that passes through both. If we know the equation of that line, we can evaluate it at any other $x$ to obtain the corresponding $y$.
+
+Polynomials of higher degree behave similarly:
+\begin{itemize}[noitemsep]
+    \item A polynomial of degree at most 1 (a line) is determined by 2 points.
+    \item A polynomial of degree at most 2 (a parabola) is determined by 3 points.
+    \item In general, a polynomial of degree at most $k-1$ is determined by $k$ points with distinct $x$-coordinates.
+\end{itemize}
+
+Lagrange interpolation provides explicit formulas for constructing that polynomial from the points. In Shamir's scheme, we are interested in the value at $x = 0$, which encodes the secret.
+
+\subsection{The Lagrange Basis Polynomials}
+Let $(x_1, \dots, x_k)$ be distinct elements of $GF(2053)$, and let $y_j = f(x_j)$ be the corresponding share values for some unknown polynomial $f(x)$ of degree at most $k-1$.
+
+The Lagrange basis polynomials are defined as:
+\[ \ell_j(x) = \prod_{\substack{i=1 \\ i \neq j}}^{k} \frac{x - x_i}{x_j - x_i} \pmod{2053} \]
+
+Each $\ell_j(x)$ has the property that:
+\begin{itemize}[noitemsep]
+    \item $\ell_j(x_j) = 1$,
+    \item $\ell_j(x_i) = 0$ for all $i \neq j$.
+\end{itemize}
+
+The interpolating polynomial is then
+\[ f(x) = \sum_{j=1}^{k} y_j \ell_j(x) \]
+
+It is straightforward to verify that $f(x_i) = y_i$ for each $i$, since all other basis terms vanish at $x = x_i$.
+
+\subsection{Recovering the Secret at $x = 0$}
+In Shamir's scheme, the secret is $a_0 = f(0)$. Evaluating the expression above at $x = 0$ yields:
+\[ f(0) = \sum_{j=1}^{k} y_j \ell_j(0) \]
+
+Define the Lagrange coefficients
+\[ \gamma_j = \ell_j(0) = \prod_{\substack{i=1 \\ i \neq j}}^{k} \frac{0 - x_i}{x_j - x_i} = \prod_{\substack{i=1 \\ i \neq j}}^{k} \frac{-x_i}{x_j - x_i} \pmod{2053} \]
+
+Then
+\[ a_0 = f(0) = \sum_{j=1}^{k} \gamma_j y_j \pmod{2053} \]
+
+This is precisely the formula used by Schiavinato Sharing. Once the $\gamma_j$ corresponding to a particular subset of share indices have been computed, recovery of the secret reduces to a weighted sum.
+
+\subsection{Practical Considerations}
+Computing the $\gamma_j$ from the defining formula requires modular inverses of the denominators $x_j - x_i$. While this is straightforward for software, it is undesirable for manual computation. Instead, Schiavinato Sharing:
+\begin{itemize}[noitemsep]
+    \item treats $\gamma_j$ as non-secret and safe to compute on any device, and
+    \item provides pre-computed $\gamma_j$ tables for common schemes, so manual users only ever perform multiplications and additions.
+\end{itemize}
+
+This separation keeps manual recovery within the reach of users comfortable with basic arithmetic, while leaving the more intricate field operations to tools that can be audited once and used many times.
+
+\section{Worked Example of Manual Sharing and Recovery}
+To illustrate the mechanics of Schiavinato Sharing in a compact setting, this appendix presents a toy example using a small prime modulus. The real scheme uses $p = 2053$; here we use $p = 13$ for simplicity. The structure of the calculations is the same, but the numbers are smaller.
+
+\subsection{Setup}
+Suppose we have a toy wordlist of 8 words, indexed 0--7. We select a 3-word ``mnemonic'':
+\begin{itemize}[noitemsep]
+    \item Word A: index 3
+    \item Word B: index 5
+    \item Word C: index 7
+\end{itemize}
+
+We arrange these as a single row of three words and define a checksum secret
+\[ c = (3 + 5 + 7) \bmod 13 = 15 \bmod 13 = 2 \]
+
+We choose a 2-of-3 scheme: any 2 of 3 shares suffice for recovery. For each of the four secrets (A, B, C, and $c$), we define an independent polynomial of degree at most 1:
+\begin{align*}
+f_A(x) &= 3 + a_1 x \\
+f_B(x) &= 5 + b_1 x \\
+f_C(x) &= 7 + c_1 x \\
+f_c(x) &= 2 + d_1 x
+\end{align*}
+
+with coefficients chosen uniformly at random from $\{0, \dots, 12\}$. For illustration, suppose we draw:
+\[ a_1 = 4, \quad b_1 = 6, \quad c_1 = 1, \quad d_1 = 9 \]
+
+\subsection{Generating Shares}
+We evaluate each polynomial at $x = 1, 2, 3$:
+
+\paragraph{For $x = 1$:}
+\begin{itemize}[noitemsep]
+    \item $A_1 = f_A(1) = 3 + 4 \cdot 1 = 7 \bmod 13$,
+    \item $B_1 = f_B(1) = 5 + 6 \cdot 1 = 11 \bmod 13$,
+    \item $C_1 = f_C(1) = 7 + 1 \cdot 1 = 8 \bmod 13$,
+    \item $c_1 = f_c(1) = 2 + 9 \cdot 1 = 11 \bmod 13$.
+\end{itemize}
+
+\paragraph{For $x = 2$:}
+\begin{itemize}[noitemsep]
+    \item $A_2 = f_A(2) = 3 + 4 \cdot 2 = 11 \bmod 13$,
+    \item $B_2 = f_B(2) = 5 + 6 \cdot 2 = 17 \bmod 13 = 4$,
+    \item $C_2 = f_C(2) = 7 + 1 \cdot 2 = 9 \bmod 13$,
+    \item $c_2 = f_c(2) = 2 + 9 \cdot 2 = 20 \bmod 13 = 7$.
+\end{itemize}
+
+\paragraph{For $x = 3$:}
+\begin{itemize}[noitemsep]
+    \item $A_3 = f_A(3) = 3 + 4 \cdot 3 = 15 \bmod 13 = 2$,
+    \item $B_3 = f_B(3) = 5 + 6 \cdot 3 = 23 \bmod 13 = 10$,
+    \item $C_3 = f_C(3) = 7 + 1 \cdot 3 = 10 \bmod 13$,
+    \item $c_3 = f_c(3) = 2 + 9 \cdot 3 = 29 \bmod 13 = 3$.
+\end{itemize}
+
+Each share $x \in \{1,2,3\}$ receives the row $(A_x, B_x, C_x, c_x)$.
+
+\subsection{Pre-Computed Lagrange Coefficients for 2-of-3}
+For a 2-of-3 scheme with share indices 1, 2, and 3, the Lagrange coefficients in $GF(13)$ for reconstructing $f(0)$ from two shares are:
+\begin{itemize}[noitemsep]
+    \item Using shares $\{1, 2\}$: $(\gamma_1, \gamma_2) = (2, 12)$,
+    \item Using shares $\{1, 3\}$: $(\gamma_1, \gamma_3) = (8, 6)$,
+    \item Using shares $\{2, 3\}$: $(\gamma_2, \gamma_3) = (3, 11)$.
+\end{itemize}
+
+These values can be verified by applying the general formula for $\gamma_j$ with modulus 13.
+
+\subsection{Recovering from Two Shares}
+Suppose we hold shares 1 and 3. To recover the four secrets, we apply the coefficients $(\gamma_1, \gamma_3) = (8, 6)$ in $GF(13)$.
+
+\paragraph{Secret A:}
+\begin{itemize}[noitemsep]
+    \item $A_1 = 7$, $A_3 = 2$,
+    \item $a_0 = 8 \cdot A_1 + 6 \cdot A_3 = 8 \cdot 7 + 6 \cdot 2 = 56 + 12 = 68 \bmod 13$.
+    \item Since $13 \cdot 5 = 65$, $68 \bmod 13 = 3$, which matches the original index of Word A.
+\end{itemize}
+
+\paragraph{Secret B:}
+\begin{itemize}[noitemsep]
+    \item $B_1 = 11$, $B_3 = 10$,
+    \item $b_0 = 8 \cdot B_1 + 6 \cdot B_3 = 8 \cdot 11 + 6 \cdot 10 = 88 + 60 = 148 \bmod 13$.
+    \item Since $13 \cdot 11 = 143$, $148 \bmod 13 = 5$, which matches the original index of Word B.
+\end{itemize}
+
+\paragraph{Secret C:}
+\begin{itemize}[noitemsep]
+    \item $C_1 = 8$, $C_3 = 10$,
+    \item $c_0 = 8 \cdot C_1 + 6 \cdot C_3 = 8 \cdot 8 + 6 \cdot 10 = 64 + 60 = 124 \bmod 13$.
+    \item Since $13 \cdot 9 = 117$, $124 \bmod 13 = 7$, which matches the original index of Word C.
+\end{itemize}
+
+\paragraph{Checksum secret:}
+\begin{itemize}[noitemsep]
+    \item $c_1 = 11$, $c_3 = 3$,
+    \item $c^\star = 8 \cdot c_1 + 6 \cdot c_3 = 8 \cdot 11 + 6 \cdot 3 = 88 + 18 = 106 \bmod 13$.
+    \item Since $13 \cdot 8 = 104$, $106 \bmod 13 = 2$, which matches the original checksum value $c = 2$.
+\end{itemize}
+
+Finally, we verify the row checksum directly:
+\[ (a_0 + b_0 + c_0) \bmod 13 = (3 + 5 + 7) \bmod 13 = 15 \bmod 13 = 2 = c^\star \]
+
+This confirms that the recovered secrets and the checksum are internally consistent.
+
+In the actual Schiavinato Sharing scheme, all arithmetic is performed in $GF(2053)$ and Lagrange coefficients are derived once from a precise specification, but the pattern of computation is exactly the same as in this toy example. Users performing manual recovery follow this pattern row by row, using pre-computed coefficients appropriate to their chosen threshold scheme.
+
+\section{Heir Instructions and Practical Recovery Guide}
+This appendix is written for heirs and non-specialist executors who may encounter Schiavinato Sharing documents during an inheritance or disaster recovery process. It summarizes the essential facts in plain language.
+
+\subsection{What These Papers Are}
+\begin{itemize}[noitemsep]
+    \item The documents labeled as \textbf{Schiavinato Sharing} are \textbf{shares} of a cryptocurrency wallet backup (Bitcoin, Ethereum, or any other BIP39-compatible blockchain).
+    \item Each sheet is \textbf{only one part} of the backup. By design, a single sheet \textbf{cannot} reveal or spend the funds.
+    \item The original wallet was protected by a \textbf{BIP39 recovery phrase} (a list of 12 or 24 words). Schiavinato Sharing breaks that phrase into multiple shares so that only a group of them together can reconstruct it.
+\end{itemize}
+
+If you have been given these documents as part of an estate, you should assume that the owner intended at least some of them to be combined to restore access to funds.
+
+\subsection{What You Need to Recover the Wallet}
+\begin{itemize}[noitemsep]
+    \item The owner chose numbers \textbf{k} and \textbf{n}:
+    \begin{itemize}[noitemsep]
+        \item \textbf{n} = total number of shares that exist.
+        \item \textbf{k} = minimum number of different shares required to recover the wallet.
+    \end{itemize}
+    \item This is usually written as a \textbf{``k-of-n'' scheme} (for example, ``3-of-5'').
+\end{itemize}
+
+To have a realistic chance of recovery, you must:
+\begin{itemize}[noitemsep]
+    \item Collect at least \textbf{k different shares} for the same wallet (same wallet name, creation date, and k-of-n scheme).
+    \item Ensure the shares are genuine and have not obviously been tampered with.
+\end{itemize}
+
+If you only have \textbf{one share}, you do \textbf{not} have enough information to reconstruct the wallet, no matter how you manipulate that one sheet.
+
+\subsection{What Not to Do}
+\begin{itemize}[noitemsep]
+    \item \textbf{Do not} type the words from a single share into a wallet app as if they were a complete recovery phrase.
+    \begin{itemize}[noitemsep]
+        \item At best, you will see an unrelated empty wallet.
+        \item At worst, you may be misled into thinking there were never any funds protected by these shares.
+    \end{itemize}
+    \item \textbf{Do not} assume that a sheet that ``looks like'' a 24-word list is safe to use directly; in Schiavinato Sharing, each sheet is an \textbf{incomplete fragment} of a larger secret.
+    \item \textbf{Do not} discard other shares after testing a single one and seeing no balance. Recovery requires \textbf{combining} multiple shares.
+\end{itemize}
+
+If you are unsure, stop and consult a qualified professional before interacting with any wallet software or moving funds.
+
+\subsection{How Recovery Typically Works}
+The exact steps depend on the tools available, but the general pattern is:
+\begin{enumerate}
+    \item \textbf{Gather the necessary shares}: Collect at least \textbf{k} distinct share documents with matching wallet name, creation date (if present), and k-of-n scheme.
+    \item \textbf{Choose a recovery method}:
+    \begin{itemize}[noitemsep]
+        \item If a trusted \textbf{offline recovery tool} (such as the GRIFORTIS reference HTML tool) is available, follow its on-screen instructions.
+        \item If you are working with a security professional, they should \textbf{guide you} through the reconstruction process while you retain physical control of all shares and perform any typing or arithmetic yourself.
+    \end{itemize}
+    \item \textbf{Reconstruct the mnemonic}: The tool or expert will combine the numbers on the worksheets using a defined set of arithmetic rules, use built-in checksums to verify that no mistakes occurred, and produce a standard \textbf{BIP39 recovery phrase} (for example, 24 English words).
+    \item \textbf{Use the recovered mnemonic carefully}: The recovered phrase is extremely sensitive. Anyone who sees it can, in principle, move the funds. It should only be entered into a wallet in a controlled, preferably offline or hardware-secured, environment.
+\end{enumerate}
+
+You should keep all original share documents safe until you are certain that the estate's intentions have been fully carried out.
+
+\subsection{About Passphrases (``25th Word'')}
+The original wallet may or may not have used an extra \textbf{BIP39 passphrase}, sometimes called the ``25th word.'' This passphrase:
+\begin{itemize}[noitemsep]
+    \item Is \textbf{not written on the Schiavinato Sharing worksheets}.
+    \item Is a separate secret that changes the wallet derived from the same 12/24-word phrase.
+\end{itemize}
+
+If a strong passphrase was used and is not known or documented anywhere, it may be impossible to recover the exact wallet, even with all the shares. Estate planning around passphrases is outside the scope of this appendix; executors should treat any mention of an additional passphrase in other documents with great care.
+
+\subsection{When to Seek Help}
+If any of the following are true, professional assistance is strongly recommended:
+\begin{itemize}[noitemsep]
+    \item You do not clearly understand the difference between \textbf{shares} and a complete \textbf{recovery phrase}.
+    \item You have \textbf{fewer than k shares} and are unsure whether more exist.
+    \item You suspect that shares may have been lost, destroyed, or tampered with.
+    \item The value protected by the wallet is significant relative to your risk tolerance.
+\end{itemize}
+
+In such cases, consult a professional who is familiar with BIP39, threshold secret sharing, and inheritance procedures. Their role should be advisory: they explain the process, help you avoid mistakes, and may verify your arithmetic, but \textbf{you} keep custody of the shares and perform all sensitive actions (such as entering recovery phrases into devices or printing new shares). As a rule of thumb, aim for a process where the specialist could walk away after the session knowing \textbf{how} you recovered the wallet but not possessing any secrets that would allow them to do it themselves later.
+
+\section{Deployment Patterns and Real-World Scenarios}
+This appendix sketches example ways to deploy Schiavinato Sharing in practice. These patterns are not prescriptions; they are starting points for discussion with clients and advisors.
+
+\subsection{Single User with Geographic Redundancy (2-of-3)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Profile}: technically comfortable individual, moderate holdings, no complex heirs.
+    \item \textbf{Scheme}: 2-of-3.
+    \item \textbf{Distribution}:
+    \begin{itemize}[noitemsep]
+        \item Share \#1 in a home safe.
+        \item Share \#2 in a bank safe-deposit box (or equivalent secure facility).
+        \item Share \#3 with a trusted relative or stored in a second location.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Rationale:}
+\begin{itemize}[noitemsep]
+    \item Any single location loss (fire, theft, flood, bank issue) does not destroy the wallet.
+    \item An attacker must compromise at least \textbf{two} independent locations.
+    \item The owner alone can recover using any two shares without involving third parties.
+\end{itemize}
+
+\paragraph{Operational notes:}
+\begin{itemize}[noitemsep]
+    \item Avoid keeping two shares side by side in the same container.
+    \item Document locations and access instructions clearly in non-secret estate paperwork.
+\end{itemize}
+
+\subsection{Couple Without Heirs, 2-of-4 with Personal Redundancy}
+\begin{itemize}[noitemsep]
+    \item \textbf{Profile}: couple with no planned heirs (or heirs not expected to manage this wallet), focused on resilience during their lifetimes and optional joint recovery in severe events.
+    \item \textbf{Scheme}: 2-of-4.
+    \item \textbf{Distribution (one example)}:
+    \begin{itemize}[noitemsep]
+        \item Share \#1 with Partner A, stored in a \textbf{home safe}.
+        \item Share \#2 with Partner A, stored in a \textbf{work or office safe} (separate building).
+        \item Share \#3 with Partner B, stored in a \textbf{home safe} (which may or may not be the same as Partner A's).
+        \item Share \#4 with Partner B, stored in a \textbf{work or office safe} (separate building).
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Rationale:}
+\begin{itemize}[noitemsep]
+    \item Each partner alone can typically recover in a crisis by accessing \textbf{two locations} they control (for example, home + office).
+    \item A single physical disaster (house fire, office burglary) is unlikely to destroy all four shares at once.
+    \item No third party (lawyer, bank, consultant) ever needs to see a share; the entire scheme is contained within the couple's own environments.
+\end{itemize}
+
+\paragraph{Operational notes:}
+\begin{itemize}[noitemsep]
+    \item Treat home and office as genuinely separate security domains (different keys, alarms, access policies).
+    \item Avoid casually copying shares into digital form (photos, cloud scans); the strength of this pattern depends on keeping the paper trail small, well controlled, and clearly labelled.
+    \item If the couple later decides to involve heirs or charities, they can retire this 2-of-4 arrangement and establish a new scheme (for example, a 3-of-5 pattern as in the next subsection) by \textbf{reconstructing the mnemonic and re-sharing it}. The mathematical construction remains the same, but the physical shares, locations, and participants are deliberately redesigned.
+\end{itemize}
+
+\subsection{Couple with Heirs and Executor (3-of-5)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Profile}: couple planning for multi-decade inheritance, moderate-to-high holdings.
+    \item \textbf{Scheme}: 3-of-5.
+    \item \textbf{Distribution (one example)}:
+    \begin{itemize}[noitemsep]
+        \item Share \#1 with Partner A (home safe).
+        \item Share \#2 with Partner B (home safe or separate safe).
+        \item Share \#3 with a trusted executor or attorney.
+        \item Share \#4 in a bank safe-deposit box.
+        \item Share \#5 in a geographically distant secure location or with a second trusted family member.
+    \end{itemize}
+\end{itemize}
+
+\paragraph{Rationale:}
+\begin{itemize}[noitemsep]
+    \item During life, either partner can typically assemble 3 shares without granting any outsider independent control.
+    \item After death or incapacity, heirs and executor can collaborate to bring together 3 of 5 without any single person holding unilateral power.
+    \item Loss of one or even two shares is tolerable without immediate emergency.
+\end{itemize}
+
+\paragraph{Operational notes:}
+\begin{itemize}[noitemsep]
+    \item Carefully document who is expected to participate in recovery (partners, executor, specific heirs).
+    \item Make expectations clear that no single professional (e.g., funeral home, lawyer, consultant) should ever hold 3 shares at once.
+\end{itemize}
+
+\subsection{Social Recovery with Friends or Colleagues ($k$-of-$n \geq$ 2-of-3)}
+\begin{itemize}[noitemsep]
+    \item \textbf{Profile}: privacy-conscious individual with trusted social circle but no desire to rely on institutions.
+    \item \textbf{Scheme}: 2-of-3, 3-of-5, or similar.
+    \item \textbf{Distribution}: One or two shares kept by the owner; remaining shares held by carefully chosen friends or colleagues.
+\end{itemize}
+
+\paragraph{Rationale:}
+\begin{itemize}[noitemsep]
+    \item Reduces dependency on formal institutions.
+    \item Encourages explicit, documented trust relationships and recovery plans.
+\end{itemize}
+
+\paragraph{Risks and mitigations:}
+\begin{itemize}[noitemsep]
+    \item Social relationships can change; review share assignments over time.
+    \item For contentious families or business partners, consider involving a neutral professional who participates \textbf{advisory-only} (no custody of shares).
+\end{itemize}
+
+\subsection{When Not to Use Very Large $n$}
+Large $n$ (for example, 2-of-10 or 3-of-12) can seem attractive, but in practice:
+\begin{itemize}[noitemsep]
+    \item Tracking many physical documents increases the chance of loss, theft, or confusion.
+    \item Heirs may struggle to locate enough valid shares decades later.
+\end{itemize}
+
+As a rule of thumb:
+\begin{itemize}[noitemsep]
+    \item Keep $n$ small enough that all share locations can be \textbf{named and documented} clearly.
+    \item Use additional layers (for example, a separate BIP39 passphrase, or independent wallets) rather than extremely large $n$ to express complex policies.
+\end{itemize}
+
+\subsection{Alignment with the ``We Instruct, You Execute'' Model}
+Across all patterns above, a central operational principle is:
+\begin{itemize}[noitemsep]
+    \item \textbf{Advisors design; clients execute.}
+\end{itemize}
+
+In practice, this means:
+\begin{itemize}[noitemsep]
+    \item Advisors help choose $k$, $n$, locations, and processes.
+    \item Clients (or trusted family members) \textbf{enter the mnemonic}, run the tools, and print or transcribe shares.
+    \item Professionals are present for planning and verification, but do not walk away with enough information to reconstruct the wallet on their own.
+\end{itemize}
+
+This division of roles aligns Schiavinato Sharing with an ethos of user empowerment and minimized custodial trust.
+
+\section{Dice-Based Randomness Procedure for $GF(2053)$}
+This appendix specifies one concrete way to generate uniformly random integers in $\{0, \dots, 2052\}$ using only fair six-sided dice. Other entropy sources are acceptable as long as they provide at least as much unpredictability.
+
+\subsection{Overview}
+\begin{itemize}[noitemsep]
+    \item We use \textbf{five} fair six-sided dice per attempt.
+    \item Each attempt produces an integer $N \in \{0, \dots, 7775\}$ by interpreting the dice as a base-6 number.
+    \item If $N$ is in an accepted range, we reduce it modulo 2053 (for coefficients $a_1, \dots, a_{k-2}$) or modulo 2052 and add 1 (for the leading coefficient $a_{k-1}$) to obtain a valid coefficient; otherwise we discard the attempt and roll again.
+\end{itemize}
+
+Because $3 \cdot 2053 = 6159 \le 7776 < 4 \cdot 2053$, the first 6159 base-6 outcomes can be partitioned into three equal-sized blocks, each of size 2053. Restricting to this accepted region and then taking $N \bmod 2053$ yields a uniform distribution on $\{0, \dots, 2052\}$. A similar process is used for the non-zero leading coefficient.
+
+\subsection{Step-by-Step Procedure}
+For each random coefficient you need:
+
+\begin{enumerate}
+    \item \textbf{Determine the required range}:
+    \begin{itemize}[noitemsep]
+        \item For coefficients $a_1, \dots, a_{k-2}$, the target range is $\{0, \dots, 2052\}$.
+        \item For the leading coefficient $a_{k-1}$, the target range is $\{1, \dots, 2052\}$.
+    \end{itemize}
+    
+    \item \textbf{Roll 5 dice}: Label the dice in reading order (for example, left to right) as $d_1, d_2, d_3, d_4, d_5$. Each $d_i$ is in $\{1,2,3,4,5,6\}$.
+    
+    \item \textbf{Convert to a base-6 integer $N$}: First convert each die to a digit $r_i = d_i - 1 \in \{0, \dots, 5\}$. Compute
+    \[ N = ((((r_1 \cdot 6 + r_2) \cdot 6 + r_3) \cdot 6 + r_4) \cdot 6 + r_5), \]
+    which yields $N \in \{0, \dots, 7775\}$. This calculation only requires repeated multiplication by 6 and addition.
+    
+    \item \textbf{Apply an acceptance test and reduce}:
+    \begin{itemize}[noitemsep]
+        \item \textbf{For coefficients $a_1, \dots, a_{k-2}$ (range 0-2052):}
+        \begin{itemize}[noitemsep]
+            \item If $N \ge 6159$, \textbf{reject} this attempt and go back to step 2.
+            \item If $N \le 6158$, \textbf{accept} and compute $s = N \bmod 2053$.
+        \end{itemize}
+        \item \textbf{For the leading coefficient $a_{k-1}$ (range 1-2052):}
+        \begin{itemize}[noitemsep]
+            \item We need a uniform value in a range of size 2052. The largest multiple of 2052 less than 7776 is $3 \cdot 2052 = 6156$.
+            \item If $N \ge 6156$, \textbf{reject} this attempt and go back to step 2.
+            \item If $N \le 6155$, \textbf{accept} and compute $s = (N \bmod 2052) + 1$.
+        \end{itemize}
+    \end{itemize}
+    
+    \item \textbf{Use $s$ as the coefficient}: The final value $s$ is your random coefficient. Record it as an integer in the appropriate range.
+\end{enumerate}
+
+Because the acceptance probability is high in both cases (approx. 79\%), this procedure is practical for manual use. All arithmetic operations are limited to addition, subtraction, and multiplication by 6 and by small integers, keeping the procedure within the reach of careful pencil-and-paper workflows.
+
+\end{document}
+

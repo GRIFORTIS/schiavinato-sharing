@@ -7,10 +7,14 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:ui": "playwright test --ui",
-    "test:debug": "playwright test --debug"
+    "test:debug": "playwright test --debug",
+    "test:ci": "playwright test --reporter=html",
+    "lint": "eslint tests/ --ext .js",
+    "lint:fix": "eslint tests/ --ext .js --fix"
   },
   "devDependencies": {
-    "@playwright/test": "^1.48.0"
+    "@playwright/test": "^1.48.0",
+    "eslint": "^8.56.0"
   }
 }
 

@@ -10,6 +10,16 @@ Thank you for your interest in contributing to the Schiavinato Sharing project. 
 
 Because this work touches real financial security, we ask contributors to adhere to the following guidelines.
 
+### Zero-Knowledge Protocol
+
+GRIFORTIS operates under a strict zero-knowledge protocol for any consultancy or professional services. While this primarily applies to business operations, contributors should be aware that:
+
+- **We never request or handle user secrets**: The scheme is designed for users to maintain exclusive control
+- **Tools are advisory**: All implementations guide users through processes they execute themselves
+- **No custody**: GRIFORTIS and certified professionals provide guidance, not custodial services
+
+This principle ensures users maintain sovereignty over their cryptographic materials.
+
 ---
 
 ## Ways to Contribute
