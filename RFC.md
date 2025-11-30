@@ -20,8 +20,8 @@ Existing schemes (SLIP-39, SSKR) utilize $GF(2^n)$, requiring binary field arith
 ### 2. The "Human-Factor" Checksum
 Manual arithmetic is error-prone. We introduce a novel **Two-Layer Arithmetic Checksum** to detect calculation errors before they propagate:
 * **Row-Level:** Every 3 words are summed modulo 2053. This sum is shared as a distinct secret.
-* **Master-Level:** All 24 words are summed modulo 2053.
-* **Detection Rate:** The probability of a random arithmetic error satisfying the row check and master check simultaneously is $< 1/2053^2$.
+* **Global-Level:** All 24 words are summed modulo 2053.
+* **Detection Rate:** The probability of a random arithmetic error satisfying the row check and global check simultaneously is $< 1/2053^2$.
 
 ### 3. Auditable "Zero-Dependency" Artifact
 We provide a single-file (~1,500 LOC) HTML reference implementation designed for air-gapped execution.

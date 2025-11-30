@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-11-30
+
 ### Added
 - Comprehensive test suite for reference implementation (Playwright)
 - CI/CD workflows for automated testing
@@ -82,6 +84,7 @@ See [HOW_TO_RELEASE.md](HOW_TO_RELEASE.md) for detailed release procedures.
 
 ---
 
-[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing-spec/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing-spec/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/GRIFORTIS/schiavinato-sharing-spec/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/tag/v0.1.0
 

@@ -42,7 +42,7 @@ This test mnemonic was chosen because it:
 The automated test validates:
 - ✅ Share generation from 24-word mnemonic
 - ✅ Proper formatting of share data (words and checksums)
-- ✅ Master verification code generation
+- ✅ Global Checksum verification code generation
 - ✅ Share metadata (share numbers, threshold)
 - ✅ Recovery form input handling
 - ✅ Lagrange interpolation reconstruction

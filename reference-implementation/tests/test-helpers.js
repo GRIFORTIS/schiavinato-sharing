@@ -120,10 +120,10 @@ export async function extractShareData(page, shareIndex) {
   const shareNumberLine = metadataTexts.find(text => text.includes('Share Number (X):'));
   const shareNumber = shareNumberLine.match(/:\s*(\d+)/)[1];
   
-  // Extract master verification code
-  const masterText = await shareCard.$eval('.share-metadata code', el => el.textContent);
+  // Extract global checksum verification code
+  const globalChecksumText = await shareCard.$eval('.share-metadata code', el => el.textContent);
   // Parse "word - ####" → "####"
-  const master = masterText.split(' - ')[1];
+  const globalChecksum = globalChecksumText.split(' - ')[1];
   
   // Extract words and checksums
   const wordItems = await shareCard.$$('.share-word-item');
@@ -148,7 +148,7 @@ export async function extractShareData(page, shareIndex) {
   
   return {
     shareNumber,
-    master,
+    globalChecksum,
     words,
     checksums
   };
@@ -202,8 +202,8 @@ export async function fillRecoveryShare(page, shareIndex, shareData) {
   // Fill share number (1-indexed)
   await page.fill(`#recover-x-${shareIndex}`, shareData.shareNumber);
   
-  // Fill master verification code
-  await page.fill(`#recover-master-${shareIndex}`, shareData.master);
+  // Fill global checksum verification code
+  await page.fill(`#recover-global-checksum-${shareIndex}`, shareData.globalChecksum);
   
   // Determine number of rows based on word count
   // 12 words = 4 rows, 24 words = 8 rows (3 words per row)
@@ -265,15 +265,15 @@ export function modifyShareValue(value) {
  * Used for testing edge cases with extreme field values
  * 
  * @param {number} shareNumber - Share number (1, 2, 3, etc.)
- * @param {number} master - Master verification code (0-2052)
+ * @param {number} globalChecksum - Global Checksum verification code (0-2052)
  * @param {number[]} wordValues - Array of word values (0-2052)
  * @param {number[]} checksumValues - Array of checksum values (0-2052)
  * @returns {Object} Share object compatible with fillRecoveryShare
  */
-export function createSyntheticShare(shareNumber, master, wordValues, checksumValues) {
+export function createSyntheticShare(shareNumber, globalChecksum, wordValues, checksumValues) {
   return {
     shareNumber: String(shareNumber),
-    master: String(master).padStart(4, '0'),
+    globalChecksum: String(globalChecksum).padStart(4, '0'),
     words: wordValues.map(v => String(v).padStart(4, '0')),
     checksums: checksumValues.map(v => String(v).padStart(4, '0'))
   };

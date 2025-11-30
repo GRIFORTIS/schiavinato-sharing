@@ -74,13 +74,13 @@ test('recovery with modified data shows BIP39 warning', async ({ page }) => {
   const share1 = await extractShareData(page, 0);
   const share2 = await extractShareData(page, 1);
   
-  // MODIFY: Add 1 mod(2053) to Master, Word1, and Checksum1
-  share1.master = modifyShareValue(share1.master);
+  // MODIFY: Add 1 mod(2053) to GlobalChecksum, Word1, and Checksum1
+  share1.globalChecksum = modifyShareValue(share1.globalChecksum);
   share1.words[0] = modifyShareValue(share1.words[0]);
   share1.checksums[0] = modifyShareValue(share1.checksums[0]);
   
   console.log('Modified share 1:', {
-    master: share1.master,
+    globalChecksum: share1.globalChecksum,
     word1: share1.words[0],
     checksum1: share1.checksums[0]
   });

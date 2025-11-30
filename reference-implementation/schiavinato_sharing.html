@@ -54,7 +54,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
 
     <style>
         /* ==========================================================================
-        GRIFORTIS - DESIGN SYSTEM (v0.1.0)
+        GRIFORTIS - DESIGN SYSTEM (v0.2.0)
         ==========================================================================
         */
 
@@ -878,7 +878,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                             <p><strong>Share Number (X):</strong> 1</p>
                             <p><strong>Scheme Threshold (K):</strong> 2</p>
                             <p><strong>Original Seed Phrase Length:</strong> 24</p>
-                            <p><strong>Master Verification:</strong> <code class="mono">abandon - 0001</code></p>
+                            <p><strong>Global Checksum:</strong> <code class="mono">abandon - 0001</code></p>
                         </div>
                         <h4 style="margin-top: 25px; margin-bottom: 10px; color: var(--text-muted); font-weight: 600;">Encrypted Seed Phrase (Y) - Not a real BIP39 seed phrase</h4>
                         <div class="share-word-container">
@@ -915,9 +915,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     <ol style="padding-left: 20px; margin-top: 1rem;">
                         <li style="margin-bottom: 0.75em;">Record the share numbers (the <span class="mono">X</span> printed on each share) for the <strong>K</strong> shares you possess.</li>
                         <li style="margin-bottom: 0.75em;">Use the multipliers to compute <code>Recovered = Σ(Y × λ) mod 2053</code> for each word and checksum row.</li>
-                        <li style="margin-bottom: 0.75em;">Repeat for every row and finally verify the master checksum to confirm the recovery.</li>
+                        <li style="margin-bottom: 0.75em;">Repeat for every row and finally verify the global checksum to confirm the recovery.</li>
                     </ol>
-                    <p style="margin-top: 1rem; font-size: 0.95rem; color: var(--text-muted);">After every row, add the three recovered word numbers together and confirm they match the recovered checksum for that row. When you finish all rows, sum every recovered word and verify that it equals the recovered master verification value before rebuilding the mnemonic.</p>
+                    <p style="margin-top: 1rem; font-size: 0.95rem; color: var(--text-muted);">After every row, add the three recovered word numbers together and confirm they match the recovered checksum for that row. When you finish all rows, sum every recovered word and verify that it equals the recovered global checksum verification value before rebuilding the mnemonic.</p>
                 </div>
 
                 <div class="component-card">
@@ -1090,7 +1090,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             ========================================================================== -->
             <footer class="disclaimer">
                 <p style="text-align: center; font-weight: 600; margin: 0;">
-                    © 2025 GRIFORTIS. Released under the MIT License. v0.1.0
+                    © 2025 GRIFORTIS. Released under the MIT License. v0.2.0
                 </p>
             </footer>
         </main>
@@ -1479,9 +1479,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 container.dataset.shareIndex = String(shareIndex);
 
                 const shareNumberInput = container.querySelector(`#recover-x-${shareIndex}`);
-                const masterShareInput = container.querySelector(`#recover-master-${shareIndex}`);
+                const globalChecksumShareInput = container.querySelector(`#recover-global-checksum-${shareIndex}`);
 
-                if (!shareNumberInput || !masterShareInput) {
+                if (!shareNumberInput || !globalChecksumShareInput) {
                     uiErrors.add('A share input block is missing required fields.');
                     parsingError = true;
                     continue;
@@ -1489,8 +1489,8 @@ TERMS OF USE & LIABILITY DISCLAIMER:
 
                 shareNumberInput.dataset.fieldLabel = `Share ${shareIndex} number`;
                 shareNumberInput.dataset.allowNumeric = 'true';
-                masterShareInput.dataset.fieldLabel = `Share ${shareIndex} master verification`;
-                masterShareInput.dataset.allowNumeric = 'true';
+                globalChecksumShareInput.dataset.fieldLabel = `Share ${shareIndex} global checksum verification`;
+                globalChecksumShareInput.dataset.allowNumeric = 'true';
 
                 const shareNumberRaw = shareNumberInput.value.trim();
                 const shareNumber = Number(shareNumberRaw);
@@ -1515,10 +1515,10 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 }
                 seenShareNumbers.set(shareNumber, shareIndex);
 
-                const masterParse = parseShareValue(masterShareInput.value, { allowNumeric: true });
-                if (!masterParse.ok) {
-                    markInputInvalid(masterShareInput, formatParseError(masterShareInput.dataset.fieldLabel, masterParse));
-                    uiErrors.add('Fix the highlighted master verification fields.');
+                const globalChecksumParse = parseShareValue(globalChecksumShareInput.value, { allowNumeric: true });
+                if (!globalChecksumParse.ok) {
+                    markInputInvalid(globalChecksumShareInput, formatParseError(globalChecksumShareInput.dataset.fieldLabel, globalChecksumParse));
+                    uiErrors.add('Fix the highlighted global checksum verification fields.');
                     parsingError = true;
                     continue;
                 }
@@ -1530,7 +1530,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     shareIndex,
                     wordShares: [],
                     checksumShares: [],
-                    masterVerificationShare: masterParse.value
+                    globalChecksumVerificationShare: globalChecksumParse.value
                 };
 
                 let rowHadError = false;
@@ -1648,19 +1648,19 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 return;
             }
 
-            // CASE 3: Master error but all rows passed (nightmare scenario)
-            if (errors.masterError && errors.masterError.failed) {
-                if (errors.masterError.isNightmare) {
-                    // Highlight all master verification fields
-                    highlightMasterError();
+            // CASE 3: Global Checksum error but all rows passed (nightmare scenario)
+            if (errors.globalChecksumError && errors.globalChecksumError.failed) {
+                if (errors.globalChecksumError.isNightmare) {
+                    // Highlight all global checksum verification fields
+                    highlightGlobalChecksumError();
                     
-                    let errorMessage = 'Master verification failed.\n\n';
-                    errorMessage += 'Step 1: Check the highlighted master fields.\n';
-                    errorMessage += 'Step 2: If master fields are correct, carefully check all other fields.';
+                    let errorMessage = 'Global Checksum verification failed.\n\n';
+                    errorMessage += 'Step 1: Check the highlighted global checksum fields.\n';
+                    errorMessage += 'Step 2: If global checksum fields are correct, carefully check all other fields.';
                     
                     await showErrorModal('Recovery Failed', errorMessage);
                 } else {
-                    await showErrorModal('Recovery Failed', 'Master checksum failed unexpectedly.');
+                    await showErrorModal('Recovery Failed', 'Global Checksum failed unexpectedly.');
                 }
                 return;
             }
@@ -1730,9 +1730,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     const shareIndex = i + 1;
 
                     const shareNumberInput = container.querySelector(`#recover-x-${shareIndex}`);
-                    const masterShareInput = container.querySelector(`#recover-master-${shareIndex}`);
+                    const globalChecksumShareInput = container.querySelector(`#recover-global-checksum-${shareIndex}`);
 
-                    if (!shareNumberInput || !masterShareInput) {
+                    if (!shareNumberInput || !globalChecksumShareInput) {
                         hasParseError = true;
                         continue;
                     }
@@ -1749,8 +1749,8 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     }
                     seenShareNumbers.set(shareNumber, shareIndex);
 
-                    const masterParse = parseShareValue(masterShareInput.value, { allowNumeric: true });
-                    if (!masterParse.ok) {
+                    const globalChecksumParse = parseShareValue(globalChecksumShareInput.value, { allowNumeric: true });
+                    if (!globalChecksumParse.ok) {
                         hasParseError = true;
                         continue;
                     }
@@ -1762,7 +1762,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         shareIndex,
                         wordShares: [],
                         checksumShares: [],
-                        masterVerificationShare: masterParse.value
+                        globalChecksumVerificationShare: globalChecksumParse.value
                     };
 
                     for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -1804,7 +1804,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 // If all checks passed, we're done - no highlighting needed
                 if (report.recoveredMnemonic && 
                     report.errors.failedRows.length === 0 && 
-                    !report.errors.masterError.failed) {
+                    !report.errors.globalChecksumError.failed) {
                     return;
                 }
 
@@ -1815,9 +1815,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         const rowIndex = rowError.rowNumber - 1;  // Convert to 0-based index
                         highlightErrorRow(rowIndex);
                     });
-                } else if (report.errors.masterError && report.errors.masterError.failed) {
-                    // Only highlight master if NO row errors exist (nightmare scenario)
-                    highlightMasterError();
+                } else if (report.errors.globalChecksumError && report.errors.globalChecksumError.failed) {
+                    // Only highlight global checksum if NO row errors exist (nightmare scenario)
+                    highlightGlobalChecksumError();
                 }
 
             } catch (error) {
@@ -2212,24 +2212,24 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             shareNumberGroup.appendChild(inputX);
             twoColGrid.appendChild(shareNumberGroup);
 
-            const masterShareGroup = document.createElement('div');
-            masterShareGroup.className = 'form-group';
-            const labelMaster = document.createElement('label');
-            labelMaster.htmlFor = `recover-master-${shareIndex}`;
-            labelMaster.textContent = `Master Verification Share`;
-            const inputMaster = document.createElement('input');
-            inputMaster.type = 'text';
-            inputMaster.id = `recover-master-${shareIndex}`;
-            inputMaster.className = 'mono';
-            inputMaster.placeholder = 'E.g., abandon - 0001';
-            inputMaster.value = shareCache.masterVerificationShare || '';
-            inputMaster.dataset.allowNumeric = 'true';
-            inputMaster.dataset.fieldLabel = `Share ${shareIndex} master verification`;
-            initializeRecoveryInputTracking(inputMaster);
-            attachAutocompleteListeners(inputMaster);
-            masterShareGroup.appendChild(labelMaster);
-            masterShareGroup.appendChild(inputMaster);
-            twoColGrid.appendChild(masterShareGroup);
+            const globalChecksumShareGroup = document.createElement('div');
+            globalChecksumShareGroup.className = 'form-group';
+            const labelGlobalChecksum = document.createElement('label');
+            labelGlobalChecksum.htmlFor = `recover-global-checksum-${shareIndex}`;
+            labelGlobalChecksum.textContent = `Global Checksum Verification Share`;
+            const inputGlobalChecksum = document.createElement('input');
+            inputGlobalChecksum.type = 'text';
+            inputGlobalChecksum.id = `recover-global-checksum-${shareIndex}`;
+            inputGlobalChecksum.className = 'mono';
+            inputGlobalChecksum.placeholder = 'E.g., abandon - 0001';
+            inputGlobalChecksum.value = shareCache.globalChecksumVerificationShare || '';
+            inputGlobalChecksum.dataset.allowNumeric = 'true';
+            inputGlobalChecksum.dataset.fieldLabel = `Share ${shareIndex} global checksum verification`;
+            initializeRecoveryInputTracking(inputGlobalChecksum);
+            attachAutocompleteListeners(inputGlobalChecksum);
+            globalChecksumShareGroup.appendChild(labelGlobalChecksum);
+            globalChecksumShareGroup.appendChild(inputGlobalChecksum);
+            twoColGrid.appendChild(globalChecksumShareGroup);
             
             container.appendChild(twoColGrid);
 
@@ -2304,7 +2304,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             const existingContainers = recoverSharesContainer.querySelectorAll('.share-input-container');
             existingContainers.forEach((container) => {
                 const shareNumberInput = container.querySelector('[id^="recover-x-"]');
-                const masterShareInput = container.querySelector('[id^="recover-master-"]');
+                const globalChecksumShareInput = container.querySelector('[id^="recover-global-checksum-"]');
                 if (!shareNumberInput) return;
                 
                 const shareIndex = parseInt(shareNumberInput.id.split('-').pop(), 10) - 1;
@@ -2312,7 +2312,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 
                 if (cacheEntry) {
                     cacheEntry.shareNumber = shareNumberInput.value;
-                    cacheEntry.masterVerificationShare = masterShareInput.value;
+                    cacheEntry.globalChecksumVerificationShare = globalChecksumShareInput.value;
                     const wordInputs = container.querySelectorAll('.seed-word-row input');
                     wordInputs.forEach((input, wordIndex) => {
                         if (wordIndex < cacheEntry.words.length) {
@@ -2638,15 +2638,15 @@ TERMS OF USE & LIABILITY DISCLAIMER:
         }
         
         /**
-         * Marks all "Master Verification" input fields as invalid.
+         * Marks all "Global Checksum Verification" input fields as invalid.
          * Note: We cannot determine which specific share has an error, so we highlight all.
          */
-        function highlightMasterError() {
-            const masterInputs = document.querySelectorAll('[id^="recover-master-"]');
+        function highlightGlobalChecksumError() {
+            const globalChecksumInputs = document.querySelectorAll('[id^="recover-global-checksum-"]');
             
-            masterInputs.forEach(input => {
-                const label = input.dataset.fieldLabel || 'Master verification';
-                markInputInvalid(input, `${label} failed. Check all master fields.`, { rowHighlight: true });
+            globalChecksumInputs.forEach(input => {
+                const label = input.dataset.fieldLabel || 'Global Checksum verification';
+                markInputInvalid(input, `${label} failed. Check all global checksum fields.`, { rowHighlight: true });
             });
         }
 
@@ -2731,7 +2731,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                             <strong>Recover and Verify Each Row:</strong> Repeat step 2 for all three word values and the checksum value in a single row. Then, verify your math: add your three recovered word numbers together (modulo 2053). The result MUST equal your recovered checksum number for that row. If it doesn't, you have made a calculation error in that row.
                         </li>
                         <li style="margin-bottom: 0.5em;">
-                            <strong>Final Master Verification:</strong> After all rows are recovered and verified, use the same method from step 2 to recover the "Master Verification Number" from the share headers. Then, add all 24 of your recovered word numbers together (modulo 2053). The result MUST equal the recovered Master Verification Number. If it doesn't, an error exists in one or more rows.
+                            <strong>Final Global Checksum Verification:</strong> After all rows are recovered and verified, use the same method from step 2 to recover the "Global Checksum Verification Number" from the share headers. Then, add all 24 of your recovered word numbers together (modulo 2053). The result MUST equal the recovered Global Checksum Verification Number. If it doesn't, an error exists in one or more rows.
                         </li>
                         <li style="margin-bottom: 0.5em;">
                             <strong>Convert to Words:</strong> Once all checks pass, use the standard BIP39 wordlist to look up the word for each of your 12-24 recovered numbers. The resulting sequence of 12-24 words is your wallet's original recovery phrase.
@@ -2744,9 +2744,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             let allSharesPrintHtml = '';
 
             shares.forEach(share => {
-                const masterValue = share.masterVerificationShare;
-                const masterWord = masterValue < 2048 ? BIP39_WORDLIST[masterValue] : String(masterValue);
-                const masterShareDisplay = `${masterWord} - ${String(masterValue).padStart(4, '0')}`;
+                const globalChecksumValue = share.globalChecksumVerificationShare;
+                const globalChecksumWord = globalChecksumValue < 2048 ? BIP39_WORDLIST[globalChecksumValue] : String(globalChecksumValue);
+                const globalChecksumShareDisplay = `${globalChecksumWord} - ${String(globalChecksumValue).padStart(4, '0')}`;
 
                 let wordListHtml = '';
                 let wordCounter = 0;
@@ -2772,7 +2772,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         <p><strong>Creation Date:</strong> ${metadata.date}</p>
                         <p><strong>Scheme:</strong> ${metadata.scheme}</p>
                         <p><strong>Share Number (X):</strong> ${share.shareNumber}</p>
-                        <p><strong>Master Verification Share:</strong> <code class="mono">${masterShareDisplay}</code></p>
+                        <p><strong>Global Checksum Verification Share:</strong> <code class="mono">${globalChecksumShareDisplay}</code></p>
                     </div>
                     <h4 style="margin-top: 25px; margin-bottom: 10px; color: var(--text-muted); font-weight: 600;">Share Values (Y)</h4>
                     <div class="share-word-container">
@@ -2925,7 +2925,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 shareNumber: '',
                 words: Array(24).fill(''),
                 checksums: Array(8).fill(''),
-                master: ''
+                globalChecksum: ''
             }));
             
             // Clear autocomplete cache
@@ -3300,9 +3300,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             }
             
             /**
-             * Calculates the master checksum by summing all word indices mod 2053.
+             * Calculates the global checksum by summing all word indices mod 2053.
              */
-            function computeMasterCheck(wordIndices) {
+            function computeGlobalChecksum(wordIndices) {
                 return wordIndices.reduce((acc, value) => modAdd(acc, value), 0);
             }
             
@@ -3357,8 +3357,8 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     if (!Array.isArray(share.checksumShares) || share.checksumShares.length !== rowCount) {
                         throw new Error(`Share #${share.shareNumber} does not contain ${rowCount} checksum values.`);
                     }
-                    if (!Number.isInteger(share.masterVerificationShare)) {
-                        throw new Error(`Share #${share.shareNumber} is missing a master verification share.`);
+                    if (!Number.isInteger(share.globalChecksumVerificationShare)) {
+                        throw new Error(`Share #${share.shareNumber} is missing a global checksum verification share.`);
                     }
                 });
             }
@@ -3469,12 +3469,12 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     return index;
                 });
                 const checksumSecrets = computeRowChecks(wordIndices);
-                const masterSecret = wordIndices.reduce((acc, value) => modAdd(acc, value), 0);
+                const globalChecksumSecret = wordIndices.reduce((acc, value) => modAdd(acc, value), 0);
                 const degree = k - 1;
 
                 const wordPolynomials = wordIndices.map((secret) => randomPolynomial(secret, degree));
                 const checksumPolynomials = checksumSecrets.map((secret) => randomPolynomial(secret, degree));
-                const masterPolynomial = randomPolynomial(masterSecret, degree);
+                const globalChecksumPolynomial = randomPolynomial(globalChecksumSecret, degree);
                 
                 const shares = [];
                 try {
@@ -3483,7 +3483,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                             shareNumber: shareIndex,
                             wordShares: [],
                             checksumShares: [],
-                            masterVerificationShare: 0
+                            globalChecksumVerificationShare: 0
                         };
                         for (const polynomial of wordPolynomials) {
                             share.wordShares.push(evaluatePolynomial(polynomial, shareIndex));
@@ -3491,7 +3491,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         for (const polynomial of checksumPolynomials) {
                             share.checksumShares.push(evaluatePolynomial(polynomial, shareIndex));
                         }
-                        share.masterVerificationShare = evaluatePolynomial(masterPolynomial, shareIndex);
+                        share.globalChecksumVerificationShare = evaluatePolynomial(globalChecksumPolynomial, shareIndex);
                         shares.push(share);
                     }
                     return { shares };
@@ -3501,7 +3501,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     secureWipeArray(checksumSecrets);
                     wordPolynomials.forEach(poly => secureWipeArray(poly));
                     checksumPolynomials.forEach(poly => secureWipeArray(poly));
-                    secureWipeArray(masterPolynomial);
+                    secureWipeArray(globalChecksumPolynomial);
                 }
             }
 
@@ -3520,7 +3520,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     recoveredIndices: null,
                     errors: {
                         failedRows: [],  // Array of {rowNumber, wordPositions, checksumLabel}
-                        masterError: {
+                        globalChecksumError: {
                             failed: false,
                             isNightmare: false
                         },
@@ -3532,7 +3532,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 // Declare sensitive variables outside try block for cleanup in finally
                 let recoveredWords = [];
                 let recoveredChecks = [];
-                let recoveredMaster = 0;
+                let recoveredGlobalChecksum = 0;
 
                 try {
                     // 1. Pre-flight checks for input validity
@@ -3569,11 +3569,11 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         recoveredChecks.push(lagrangeInterpolateAtZero(points));
                     }
                     
-                    const masterPoints = shares.map((share) => ({
+                    const globalChecksumPoints = shares.map((share) => ({
                         x: mod(share.shareNumber),
-                        y: normalizeShareValue(share.masterVerificationShare, `Master verification (share ${share.shareNumber})`)
+                        y: normalizeShareValue(share.globalChecksumVerificationShare, `Global Checksum verification (share ${share.shareNumber})`)
                     }));
-                    recoveredMaster = lagrangeInterpolateAtZero(masterPoints);
+                    recoveredGlobalChecksum = lagrangeInterpolateAtZero(globalChecksumPoints);
                     
                     // 3. Perform internal Schiavinato validations (COLLECT ALL ERRORS - don't stop early)
                     const recomputedChecks = computeRowChecks(recoveredWords);
@@ -3595,12 +3595,12 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         }
                     }
 
-                    const recomputedMaster = computeMasterCheck(recoveredWords);
+                    const recomputedGlobalChecksum = computeGlobalChecksum(recoveredWords);
                     // Use constant-time comparison to prevent timing attacks
-                    if (!constantTimeEqual(recoveredMaster, recomputedMaster)) {
-                        report.errors.masterError.failed = true;
-                        // Nightmare scenario: all rows pass but master fails
-                        report.errors.masterError.isNightmare = (report.errors.failedRows.length === 0);
+                    if (!constantTimeEqual(recoveredGlobalChecksum, recomputedGlobalChecksum)) {
+                        report.errors.globalChecksumError.failed = true;
+                        // Nightmare scenario: all rows pass but global checksum fails
+                        report.errors.globalChecksumError.isNightmare = (report.errors.failedRows.length === 0);
                     }
 
                     // 4. ALWAYS build the mnemonic (even if checksums failed)
@@ -3621,7 +3621,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         report.recoveredIndices = [...recoveredWords];  // Store copy
 
                         // 5. Validate BIP39 ONLY if all Schiavinato checks passed
-                        if (report.errors.failedRows.length === 0 && !report.errors.masterError.failed) {
+                        if (report.errors.failedRows.length === 0 && !report.errors.globalChecksumError.failed) {
                             try {
                                 await validateBIP39Mnemonic(mnemonic, wordlist);
                             } catch (bip39Error) {
@@ -3638,7 +3638,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     // Security: Clean up sensitive data from memory
                     secureWipeArray(recoveredWords);
                     secureWipeArray(recoveredChecks);
-                    recoveredMaster = 0;
+                    recoveredGlobalChecksum = 0;
                 }
 
                 return report;
@@ -3650,7 +3650,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 recoverAndValidate,
                 validateBIP39Mnemonic,
                 computeRowChecks,
-                computeMasterCheck,
+                computeGlobalChecksum,
                 configureEnvironment,
                 getRandomFieldElement, // Expose for the manual helper tool
                 computeLagrangeMultipliers,

@@ -69,22 +69,22 @@ The list of numbers for all row checksums is:
 1312, 1656, 643, 596
 ```
 
-### 1.3 Master verification number
+### 1.3 Global Checksum
 
-The master verification number is:
+The global checksum is:
 ```text
-M = (w_1 + ... + w_{12}) mod 2053
+G = (w_1 + ... + w_{12}) mod 2053
 ```
 
 Summing the values above and reducing modulo 2053 gives:
 
-- $M = 101$
+- $G = 101$
 
 In total we have 17 secrets:
 
 - 12 word indices $w_1, \dots, w_{12}$  
 - 4 row checksums $c_1, \dots, c_4$  
-- 1 master verification number $M$
+- 1 global checksum $G$
 
 ---
 
@@ -122,7 +122,7 @@ The resulting coefficients $(a_0, a_1)$ are:
 - $c_2$: $a_0 = 1656$, $a_1 = 952$  
 - $c_3$: $a_0 = 643$, $a_1 = 108$  
 - $c_4$: $a_0 = 596$, $a_1 = 814$  
-- $M$: $a_0 = 101$, $a_1 = 1718$
+- $G$: $a_0 = 101$, $a_1 = 1718$
 
 List of all random coefficients:
 ```text
@@ -163,7 +163,7 @@ Order of secrets:
 14. $c_2$  
 15. $c_3$  
 16. $c_4$  
-17. $M$
+17. $G$
 
 ### 3.1 Shares for x = 1
 
@@ -191,7 +191,7 @@ Mapping to BIP39 English words (index → word), in the same order as the secret
 - $c_2 = 555$ → `earth`  
 - $c_3 = 751$ → `fuel`  
 - $c_4 = 1410$ → `raccoon`  
-- $M = 1819$ → `toddler`
+- $G = 1819$ → `toddler`
 
 ### 3.2 Shares for x = 2
 
@@ -219,7 +219,7 @@ Mapping to BIP39 English words (index → word), in the same order as the secret
 - $c_2 = 1507$ → `round`  
 - $c_3 = 859$ → `hidden`  
 - $c_4 = 171$ → `betray`  
-- $M = 1484$ → `ridge`
+- $G = 1484$ → `ridge`
 
 ### 3.3 Shares for x = 3
 
@@ -247,7 +247,7 @@ Mapping to BIP39 English words (index → word), in the same order as the secret
 - $c_2 = 406$ → `crazy`  
 - $c_3 = 967$ → `jump`  
 - $c_4 = 985$ → `kite`  
-- $M = 1149$ → `moral`
+- $G = 1149$ → `moral`
 
 ---
 
@@ -264,10 +264,10 @@ An independent implementation can use this test vector to validate both **sharin
 3. **Verify reconstruction (2-of-3)**  
    - For any pair of share indices (e.g., `{1,2}`, `{1,3}`, or `{2,3}`), compute the Lagrange coefficients for reconstruction at `x = 0` in `GF(2053)`.  
    - Apply them to the corresponding share values for each secret to recover `a_0`.  
-   - Confirm that the recovered `a_0` matches the original secrets `{w_i}, {c_r}, M`.
+   - Confirm that the recovered `a_0` matches the original secrets `{w_i}, {c_r}, G`.
 
-4. **Check row and master verification values**  
-   - Using the recovered word indices, recompute the row checksums and the master verification number in `GF(2053)` and verify that they equal `{c_r}` and `M` respectively.
+4. **Check row and global checksum values**  
+   - Using the recovered word indices, recompute the row checksums and the global checksum in `GF(2053)` and verify that they equal `{c_r}` and `G` respectively.
 
 ---
 
