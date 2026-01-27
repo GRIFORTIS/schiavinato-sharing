@@ -1,9 +1,9 @@
-## License for `WHITEPAPER.md`
+## License for the Whitepaper (`WHITEPAPER.tex` / `WHITEPAPER.pdf`)
 
 The whitepaper:
 
 > **“Schiavinato Sharing: Human-Executable Secret Sharing for BIP39 Mnemonics”**  
-> (`WHITEPAPER.md`)
+> (`WHITEPAPER.tex` and its compiled PDF `WHITEPAPER.pdf`)
 
 is licensed under the **Creative Commons Attribution 4.0 International License (CC BY 4.0)**.
 

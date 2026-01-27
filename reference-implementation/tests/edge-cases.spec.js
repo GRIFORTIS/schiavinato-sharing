@@ -137,16 +137,17 @@ test.describe('Edge Cases - Recovery with Extreme Field Values', () => {
     await setupRecovery(page, 12, 2);
     
     // Create synthetic shares with all zeros
+    // Note: With GIC binding, globalIntegrityCheck = (sum of words + share number) mod 2053
     const share1 = createSyntheticShare(
       1,                                    // share number
-      0,                                    // globalChecksum = 0
+      1,                                    // globalIntegrityCheck = (0 + 1) mod 2053 = 1
       new Array(12).fill(0),               // all words = 0
       new Array(4).fill(0)                 // all checksums = 0
     );
     
     const share2 = createSyntheticShare(
       2,                                    // share number
-      0,                                    // globalChecksum = 0
+      2,                                    // globalIntegrityCheck = (0 + 2) mod 2053 = 2
       new Array(12).fill(0),               // all words = 0
       new Array(4).fill(0)                 // all checksums = 0
     );
@@ -158,23 +159,22 @@ test.describe('Edge Cases - Recovery with Extreme Field Values', () => {
     // Click recover button
     await page.click('#btn-recover-wallet');
     
-    // Expect BIP39 checksum invalid modal
-    const modal = await page.locator('#custom-modal:has-text("BIP39 CHECKSUM INVALID")');
+    // Expect Recovery Failed modal (words outside BIP39 range)
+    const modal = await page.locator('#custom-modal:has-text("Recovery Failed")');
     await expect(modal).toBeVisible({ timeout: 5000 });
     
-    console.log('✅ BIP39 warning modal appeared as expected');
+    // Check for specific error message about out-of-range values
+    const modalText = await page.locator('#modal-text');
+    await expect(modalText).toContainText('outside the BIP39 range');
     
-    // Click CONFIRM to proceed
+    console.log('✅ Recovery correctly rejected: words outside BIP39 range (all zeros)');
+    
+    // Click OK to dismiss
     await page.click('#modal-confirm');
     
-    // Wait for result page
-    await page.waitForSelector('#pageRecover2', { state: 'visible' });
-    
-    // Verify warning is displayed on result page
-    const warningAlert = await page.locator('.alert.alert-error:has-text("WARNING: INVALID SEED")');
-    await expect(warningAlert).toBeVisible();
-    
-    console.log('✅ Recovery completed with BIP39 warning (all zeros)');
+    // Verify we stayed on the recovery input page (did not advance)
+    await expect(page.locator('#pageRecover1')).toBeVisible();
+    await expect(page.locator('#pageRecover2')).not.toBeVisible();
   });
   
   test('recover 24-word 2-of-3 with all zeros (shares 1,2)', async ({ page }) => {
@@ -189,16 +189,17 @@ test.describe('Edge Cases - Recovery with Extreme Field Values', () => {
     await setupRecovery(page, 24, 2);
     
     // Create synthetic shares with all zeros
+    // Note: With GIC binding, globalIntegrityCheck = (sum of words + share number) mod 2053
     const share1 = createSyntheticShare(
       1,
-      0,
+      1,                                    // globalIntegrityCheck = (0 + 1) mod 2053 = 1
       new Array(24).fill(0),
       new Array(8).fill(0)
     );
     
     const share2 = createSyntheticShare(
       2,
-      0,
+      2,                                    // globalIntegrityCheck = (0 + 2) mod 2053 = 2
       new Array(24).fill(0),
       new Array(8).fill(0)
     );
@@ -210,23 +211,22 @@ test.describe('Edge Cases - Recovery with Extreme Field Values', () => {
     // Click recover button
     await page.click('#btn-recover-wallet');
     
-    // Expect BIP39 checksum invalid modal
-    const modal = await page.locator('#custom-modal:has-text("BIP39 CHECKSUM INVALID")');
+    // Expect Recovery Failed modal (words outside BIP39 range)
+    const modal = await page.locator('#custom-modal:has-text("Recovery Failed")');
     await expect(modal).toBeVisible({ timeout: 5000 });
     
-    console.log('✅ BIP39 warning modal appeared as expected');
+    // Check for specific error message about out-of-range values
+    const modalText = await page.locator('#modal-text');
+    await expect(modalText).toContainText('outside the BIP39 range');
     
-    // Click CONFIRM to proceed
+    console.log('✅ Recovery correctly rejected: words outside BIP39 range (all zeros, 24-word)');
+    
+    // Click OK to dismiss
     await page.click('#modal-confirm');
     
-    // Wait for result page
-    await page.waitForSelector('#pageRecover2', { state: 'visible' });
-    
-    // Verify warning is displayed
-    const warningAlert = await page.locator('.alert.alert-error:has-text("WARNING: INVALID SEED")');
-    await expect(warningAlert).toBeVisible();
-    
-    console.log('✅ Recovery completed with BIP39 warning (all zeros, 24-word)');
+    // Verify we stayed on the recovery input page (did not advance)
+    await expect(page.locator('#pageRecover1')).toBeVisible();
+    await expect(page.locator('#pageRecover2')).not.toBeVisible();
   });
   
   test('recover 24-word 3-of-5 with high field values (shares 1,2,4)', async ({ page }) => {
@@ -240,27 +240,27 @@ test.describe('Edge Cases - Recovery with Extreme Field Values', () => {
     
     await setupRecovery(page, 24, 3);
     
-    // Create synthetic shares with high field values (within BIP39 range 0-2047)
-    // Share 1: Words=2045, Checksums=2033, GlobalChecksum=1907
+    // Create synthetic shares with high field values (within BIP39 range 1-2048)
+    // Share 1: Words=2045, Checksums=2033, GlobalIntegrityCheck=1907
     const share1 = createSyntheticShare(
       1,
-      1907,                                 // globalChecksum = 1907
+      1907,                                 // globalIntegrityCheck = 1907
       new Array(24).fill(2045),            // all words = 2045
       new Array(8).fill(2033)              // all checksums = 2033
     );
     
-    // Share 2: Words=2041, Checksums=2029, GlobalChecksum=1903
+    // Share 2: Words=2041, Checksums=2029, GlobalIntegrityCheck=1903
     const share2 = createSyntheticShare(
       2,
-      1903,                                 // globalChecksum = 1903
+      1903,                                 // globalIntegrityCheck = 1903
       new Array(24).fill(2041),            // all words = 2041
       new Array(8).fill(2029)              // all checksums = 2029
     );
     
-    // Share 4: Words=2027, Checksums=2015, GlobalChecksum=1889
+    // Share 4: Words=2027, Checksums=2015, GlobalIntegrityCheck=1889
     const share4 = createSyntheticShare(
       4,
-      1889,                                 // globalChecksum = 1889
+      1889,                                 // globalIntegrityCheck = 1889
       new Array(24).fill(2027),            // all words = 2027
       new Array(8).fill(2015)              // all checksums = 2015
     );
@@ -309,27 +309,27 @@ test.describe('Edge Cases - Recovery with Extreme Field Values', () => {
     
     await setupRecovery(page, 12, 3);
     
-    // Create synthetic shares with high field values (within BIP39 range 0-2047)
-    // Share 1: Words=2045, Checksums=2033, GlobalChecksum=1979
+    // Create synthetic shares with high field values (within BIP39 range 1-2048)
+    // Share 1: Words=2045, Checksums=2033, GlobalIntegrityCheck=1979
     const share1 = createSyntheticShare(
       1,
-      1979,                                 // globalChecksum = 1979
+      1979,                                 // globalIntegrityCheck = 1979
       new Array(12).fill(2045),            // all words = 2045
       new Array(4).fill(2033)              // all checksums = 2033
     );
     
-    // Share 2: Words=2041, Checksums=2029, GlobalChecksum=1975
+    // Share 2: Words=2041, Checksums=2029, GlobalIntegrityCheck=1975
     const share2 = createSyntheticShare(
       2,
-      1975,                                 // globalChecksum = 1975
+      1975,                                 // globalIntegrityCheck = 1975
       new Array(12).fill(2041),            // all words = 2041
       new Array(4).fill(2029)              // all checksums = 2029
     );
     
-    // Share 4: Words=2027, Checksums=2015, GlobalChecksum=1961
+    // Share 4: Words=2027, Checksums=2015, GlobalIntegrityCheck=1961
     const share4 = createSyntheticShare(
       4,
-      1961,                                 // globalChecksum = 1961
+      1961,                                 // globalIntegrityCheck = 1961
       new Array(12).fill(2027),            // all words = 2027
       new Array(4).fill(2015)              // all checksums = 2015
     );
@@ -382,26 +382,26 @@ test.describe('Edge Cases - Recovery with Extreme Field Values', () => {
     // Scheme 3-of-5 with shares {1,2,4} has coefficients (687, 2051, 1369)
     // This combination produces the largest coefficients for our supported schemes
     
-    // Share 1: Words=1000, Checksums=947, GlobalChecksum=1417
+    // Share 1: Words=1000, Checksums=947, GlobalIntegrityCheck=1417
     const share1 = createSyntheticShare(
       1,
-      1417,                                 // globalChecksum
+      1417,                                 // globalIntegrityCheck
       new Array(24).fill(1000),            // all words = 1000
       new Array(8).fill(947)               // all checksums = 947
     );
     
-    // Share 2: Words=2052 (FIELD MAXIMUM!), Checksums=2050, GlobalChecksum=2029
+    // Share 2: Words=2052 (FIELD MAXIMUM!), Checksums=2050, GlobalIntegrityCheck=2029
     const share2 = createSyntheticShare(
       2,
-      2029,                                 // globalChecksum
+      2029,                                 // globalIntegrityCheck
       new Array(24).fill(2052),            // all words = 2052 (p-1 in GF(2053))
       new Array(8).fill(2050)              // all checksums = 2050
     );
     
-    // Share 4: Words=1500, Checksums=394, GlobalChecksum=1099
+    // Share 4: Words=1500, Checksums=394, GlobalIntegrityCheck=1099
     const share4 = createSyntheticShare(
       4,
-      1099,                                 // globalChecksum
+      1099,                                 // globalIntegrityCheck
       new Array(24).fill(1500),            // all words = 1500
       new Array(8).fill(394)               // all checksums = 394
     );

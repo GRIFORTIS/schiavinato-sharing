@@ -15,11 +15,10 @@ A pencil-and-paper arithmetic scheme for inheritance and disaster recovery
 
 This repository contains the **complete specification** for the Schiavinato Sharing scheme, including:
 
-- **[Whitepaper](WHITEPAPER.md)** - Full technical description of the scheme
+- **Whitepaper**: [PDF](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf) ([LaTeX source](WHITEPAPER.tex)) - Full technical description of the scheme
 - **[RFC Document](RFC.md)** - Request for Comments summary
 - **[Test Vectors](TEST_VECTORS.md)** - Reproducible GF(2053) test vectors for validation
 - **[Reference Implementation](reference-implementation/)** - Self-contained HTML/JavaScript tool
-- **[Bounty Program](BOUNTY_PROGRAM.md)** - Active through January 31, 2026
 
 ---
 
@@ -45,10 +44,9 @@ Schiavinato Sharing is a secret-sharing scheme specifically designed for **BIP39
 ## Repository Contents
 
 ### Core Specification
-- **[WHITEPAPER.md](WHITEPAPER.md)** - Complete mathematical and conceptual description
+- **Whitepaper**: [PDF](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf) ([LaTeX source](WHITEPAPER.tex)) - Complete mathematical and conceptual description
 - **[RFC.md](RFC.md)** - Request for Comments summary
 - **[TEST_VECTORS.md](TEST_VECTORS.md)** - Reference test cases for validation
-- **[BOUNTY_PROGRAM.md](BOUNTY_PROGRAM.md)** - Active bounty program details
 - **[CONTRIBUTING.md](CONTRIBUTING.md)** - Guidelines for contributors
 - **[SECURITY.md](.github/SECURITY.md)** - Security policy and vulnerability reporting
 
@@ -60,7 +58,18 @@ Schiavinato Sharing is a secret-sharing scheme specifically designed for **BIP39
 
 ### Documentation
 - **[CHANGELOG.md](CHANGELOG.md)** - Version history
+- **[PRELIMINARY_VALIDATION_STUDY.md](PRELIMINARY_VALIDATION_STUDY.md)** - Usability validation results
 - **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)** - Community standards
+
+---
+
+## Supplementary Material
+
+Supplementary artifacts are provided for clarity and reproducibility. They are **not** controlled usability studies.
+
+- **Video: Full Manual Demonstration (12-word, 2-of-3)**  
+  Complete end-to-end demonstration including introduction to Schiavinato Sharing, manual share generation, and manual recovery using pre-computed Lagrange coefficients with row checksums and GIC validation. No software, no printed templates.  
+  Watch: [https://www.youtube.com/watch?v=VsEWstFWT2M](https://www.youtube.com/watch?v=VsEWstFWT2M)
 
 ### Licenses
 - **Code**: [MIT License](LICENSE)
@@ -121,7 +130,7 @@ See [reference-implementation/README.md](reference-implementation/README.md) for
 ## Getting Started
 
 ### For Users
-1. Read the [Whitepaper](WHITEPAPER.md) to understand the scheme
+1. Read the Whitepaper ([PDF](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf) or [LaTeX source](WHITEPAPER.tex)) to understand the scheme
 2. Try the [Reference Implementation](reference-implementation/) to experiment
 3. Use a [Production Library](#production-implementations) for real applications
 
@@ -131,10 +140,9 @@ See [reference-implementation/README.md](reference-implementation/README.md) for
 3. Report issues via GitHub Issues
 
 ### For Researchers
-1. Analyze the [Whitepaper](WHITEPAPER.md) for cryptographic properties
+1. Analyze the Whitepaper ([PDF](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf) or [LaTeX source](WHITEPAPER.tex)) for cryptographic properties
 2. Provide feedback via GitHub Issues (use the "Whitepaper Feedback" template)
-3. Review the [Bounty Program](BOUNTY_PROGRAM.md) for rewards
-4. Help improve clarity, correctness, and examples
+3. Help improve clarity, correctness, and examples
 
 ---
 
@@ -150,7 +158,7 @@ This specification is currently in RFC status, seeking community review and feed
 - Implementation feedback
 - Documentation improvements
 
-See [RFC.md](RFC.md) for details and [BOUNTY_PROGRAM.md](BOUNTY_PROGRAM.md) for rewards.
+See [RFC.md](RFC.md) for details.
 
 ---
 
@@ -184,15 +192,17 @@ We welcome contributions! Whether you're:
 
 Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
 
-### Bounty Program
+---
 
-Active bounty program with rewards up to $10,000 for:
-- Critical vulnerability discovery ($5,000)
-- Formal verification ($2,000)
-- Security improvements ($250-$1,000)
-- Additional language implementations
+## Security Validation Experiments
 
-See [BOUNTY_PROGRAM.md](BOUNTY_PROGRAM.md) for full details.
+This repository includes cryptographic security validation experiments in `security-validation/`:
+
+### Completed Experiments
+- **Experiment 1: Entropy Conservation** ✅ - Validates effective search space remains ≥ 2^256
+- **Experiment 2: Adversarial Constraint Solving** ✅ - Tests against sophisticated constraint-solving attacks
+
+See [security-validation/README.md](security-validation/README.md) for details on running experiments and interpreting results.
 
 ---
 
@@ -265,7 +275,6 @@ Special thanks to all contributors and reviewers who help make this specificatio
 - **Bug Reports**: [Open an issue](https://github.com/GRIFORTIS/schiavinato-sharing-spec/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/GRIFORTIS/schiavinato-sharing-spec/discussions)
 - **Security**: security@grifortis.com
-- **Bounty Program**: bounty@grifortis.com
 
 ---
 

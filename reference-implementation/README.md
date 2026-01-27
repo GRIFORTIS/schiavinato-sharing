@@ -165,6 +165,18 @@ This is a **feature**, not a bug. It ensures the tool remains usable even if:
 - Network connections are limited
 - Users are in air-gapped environments
 
+### Dual-Path Checksum Validation (v0.4.0)
+
+- Split now computes checksum polynomials (Path B) alongside direct sums (Path A) and requires both to agree for every share (rows and global).
+- Recovery reports explicit path mismatches (`rowPathMismatch`, `globalPathMismatch`) to flag potential hardware faults or tampering.
+- Share format is unchanged; new error fields are additive for consumers/tests.
+
+### Feature Parity & Error Fields
+
+- v0.4.0 feature set is aligned across HTML, JS, and PY implementations.
+- Core error fields: `row` (array of indices), `global` (bool), `rowPathMismatch` (array), `globalPathMismatch` (bool), `bip39`, `generic`.
+- Language-specific naming: JS/HTML use camelCase; PY exposes snake_case in dataclasses but mirrors the same semantics.
+
 ### Production Use Warning
 
 This is a **reference implementation** for:

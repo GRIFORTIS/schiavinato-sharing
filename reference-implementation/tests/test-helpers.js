@@ -120,10 +120,10 @@ export async function extractShareData(page, shareIndex) {
   const shareNumberLine = metadataTexts.find(text => text.includes('Share Number (X):'));
   const shareNumber = shareNumberLine.match(/:\s*(\d+)/)[1];
   
-  // Extract global checksum verification code
-  const globalChecksumText = await shareCard.$eval('.share-metadata code', el => el.textContent);
-  // Parse "word - ####" → "####"
-  const globalChecksum = globalChecksumText.split(' - ')[1];
+  // Extract Global Integrity Check (GIC) verification code
+  const globalIntegrityCheckText = await shareCard.$eval('.share-metadata code', el => el.textContent);
+  // Parse "word-####" → "####" (note: format changed from "word - ####" to "word-####")
+  const globalIntegrityCheck = globalIntegrityCheckText ? globalIntegrityCheckText.split('-')[1] : undefined;
   
   // Extract words and checksums
   const wordItems = await shareCard.$$('.share-word-item');
@@ -134,8 +134,8 @@ export async function extractShareData(page, shareIndex) {
     const label = await item.$eval('label', el => el.textContent);
     const codeText = await item.$eval('code', el => el.textContent);
     
-    // Parse "word - ####" → "####"
-    const code = codeText.split(' - ')[1];
+    // Parse "word-####" → "####" (note: format changed from "word - ####" to "word-####")
+    const code = codeText.split('-')[1];
     
     if (label.startsWith('C')) {
       // Checksum
@@ -148,7 +148,7 @@ export async function extractShareData(page, shareIndex) {
   
   return {
     shareNumber,
-    globalChecksum,
+    globalIntegrityCheck,
     words,
     checksums
   };
@@ -202,8 +202,8 @@ export async function fillRecoveryShare(page, shareIndex, shareData) {
   // Fill share number (1-indexed)
   await page.fill(`#recover-x-${shareIndex}`, shareData.shareNumber);
   
-  // Fill global checksum verification code
-  await page.fill(`#recover-global-checksum-${shareIndex}`, shareData.globalChecksum);
+  // Fill Global Integrity Check (GIC) verification code
+  await page.fill(`#recover-global-integrity-check-${shareIndex}`, shareData.globalIntegrityCheck);
   
   // Determine number of rows based on word count
   // 12 words = 4 rows, 24 words = 8 rows (3 words per row)
@@ -265,15 +265,15 @@ export function modifyShareValue(value) {
  * Used for testing edge cases with extreme field values
  * 
  * @param {number} shareNumber - Share number (1, 2, 3, etc.)
- * @param {number} globalChecksum - Global Checksum verification code (0-2052)
+ * @param {number} globalIntegrityCheck - Global Integrity Check (GIC) verification code (0-2052)
  * @param {number[]} wordValues - Array of word values (0-2052)
  * @param {number[]} checksumValues - Array of checksum values (0-2052)
  * @returns {Object} Share object compatible with fillRecoveryShare
  */
-export function createSyntheticShare(shareNumber, globalChecksum, wordValues, checksumValues) {
+export function createSyntheticShare(shareNumber, globalIntegrityCheck, wordValues, checksumValues) {
   return {
     shareNumber: String(shareNumber),
-    globalChecksum: String(globalChecksum).padStart(4, '0'),
+    globalIntegrityCheck: String(globalIntegrityCheck).padStart(4, '0'),
     words: wordValues.map(v => String(v).padStart(4, '0')),
     checksums: checksumValues.map(v => String(v).padStart(4, '0'))
   };

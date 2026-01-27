@@ -1,0 +1,22 @@
+# SageMath dependencies for Experiment 3 (Constraint Solver)
+# 
+# Installation options:
+#
+# Option 1: Use system SageMath (recommended)
+#   - Install from https://www.sagemath.org/
+#   - macOS: brew install --cask sage
+#   - Linux: apt-get install sagemath (Ubuntu/Debian)
+#
+# Option 2: Use sage pip package (if available)
+#   pip install sagemath-standard
+#
+# Option 3: Use Docker
+#   docker run -it sagemath/sagemath:latest
+
+# If using pip-installed sage:
+# sagemath-standard>=9.8
+
+# Additional dependencies for Experiment 3
+sympy>=1.12      # Symbolic mathematics (fallback if SageMath unavailable)
+z3-solver>=4.12  # SMT solver (alternative constraint solver)
+

@@ -17,7 +17,7 @@ import {
 
 test('complete happy path: create 2-of-3 shares (24 words) and recover', async ({ page }) => {
   // Test mnemonic (24 words)
-  const originalMnemonic = 'sand design enrich young absurd maximum fancy obvious system code spider grit toilet minimum also orchard birth scatter horn bargain beauty media rapid parade';
+  const originalMnemonic = 'abandon zoo enhance young join maximum fancy call minimum code spider olive alcohol system also share birth profit horn bargain beauty media rapid tattoo';
   
   // PHASE 1: Create Shares
   console.log('Phase 1: Creating shares...');
@@ -35,14 +35,14 @@ test('complete happy path: create 2-of-3 shares (24 words) and recover', async (
   
   console.log('Share 1:', {
     number: share1.shareNumber,
-    globalChecksum: share1.globalChecksum,
+    globalIntegrityCheck: share1.globalIntegrityCheck,
     wordCount: share1.words.length,
     checksumCount: share1.checksums.length
   });
   
   console.log('Share 2:', {
     number: share2.shareNumber,
-    globalChecksum: share2.globalChecksum,
+    globalIntegrityCheck: share2.globalIntegrityCheck,
     wordCount: share2.words.length,
     checksumCount: share2.checksums.length
   });
@@ -97,14 +97,14 @@ test('complete happy path: create 2-of-4 shares (12 words) and recover with shar
   
   console.log('Share 3:', {
     number: share3.shareNumber,
-    globalChecksum: share3.globalChecksum,
+    globalIntegrityCheck: share3.globalIntegrityCheck,
     wordCount: share3.words.length,
     checksumCount: share3.checksums.length
   });
   
   console.log('Share 4:', {
     number: share4.shareNumber,
-    globalChecksum: share4.globalChecksum,
+    globalIntegrityCheck: share4.globalIntegrityCheck,
     wordCount: share4.words.length,
     checksumCount: share4.checksums.length
   });
@@ -141,7 +141,7 @@ test('complete happy path: create 2-of-4 shares (12 words) and recover with shar
 
 test('complete happy path: create 3-of-5 shares (24 words) and recover with shares 1, 3, and 5', async ({ page }) => {
   // Test mnemonic (24 words)
-  const originalMnemonic = 'legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth useful legal winner thank year wave sausage worth title';
+  const originalMnemonic = 'abandon zoo enhance young join maximum fancy call minimum code spider olive alcohol system also share birth profit horn bargain beauty media rapid tattoo';
   
   // PHASE 1: Create Shares
   console.log('Phase 1: Creating shares...');
@@ -160,21 +160,21 @@ test('complete happy path: create 3-of-5 shares (24 words) and recover with shar
   
   console.log('Share 1:', {
     number: share1.shareNumber,
-    globalChecksum: share1.globalChecksum,
+    globalIntegrityCheck: share1.globalIntegrityCheck,
     wordCount: share1.words.length,
     checksumCount: share1.checksums.length
   });
   
   console.log('Share 3:', {
     number: share3.shareNumber,
-    globalChecksum: share3.globalChecksum,
+    globalIntegrityCheck: share3.globalIntegrityCheck,
     wordCount: share3.words.length,
     checksumCount: share3.checksums.length
   });
   
   console.log('Share 5:', {
     number: share5.shareNumber,
-    globalChecksum: share5.globalChecksum,
+    globalIntegrityCheck: share5.globalIntegrityCheck,
     wordCount: share5.words.length,
     checksumCount: share5.checksums.length
   });

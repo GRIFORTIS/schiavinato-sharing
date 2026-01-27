@@ -36,14 +36,14 @@ We provide a single-file (~1,500 LOC) HTML reference implementation designed for
 We are seeking critique on the following architectural decisions:
 
 1.  **The Checksum Oracle:** Does exposing the shared row-sum (checksum) introduce any practical reduction in entropy for a standard 2-of-3 or 3-of-5 setup, given the $2^{256}$ search space?
-2.  **Field Biasing:** Is the rejection sampling method described in [Appendix G of the Whitepaper](WHITEPAPER.md#appendix-g-dice-based-randomness-procedure-for-gf2053) sufficient to mitigate modulo bias in manual setup?
-3.  **Adversarial Worksheet:** Does the layout of the physical worksheet (displaying indices 0-2047) present a significant "evil maid" risk compared to standard mnemonic storage?
+2.  **Field Biasing:** Is the rejection sampling method described in Appendix B ("Manual Entropy Generation") of the Whitepaper ([PDF](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf), [LaTeX](WHITEPAPER.tex)) sufficient to mitigate modulo bias in manual setup?
+3.  **Adversarial Worksheet:** Does the layout of the physical worksheet (displaying indices 1-2048) present a significant "evil maid" risk compared to standard mnemonic storage?
 
 ---
 
 ## 📄 Resources
 
-* **[Full Whitepaper](WHITEPAPER.md)**: Deep dive into the math and security proofs.
+* **Whitepaper**: [PDF](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf) ([LaTeX source](WHITEPAPER.tex))
 * **[Reference Implementation (HTML)](reference-implementation/schiavinato_sharing.html)**: The auditable tool.
 * **[Test Vectors](TEST_VECTORS.md)**: Standardized vectors for independent reimplementation.
 

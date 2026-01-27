@@ -2,7 +2,7 @@ name: Release HTML with Checksums
 
 on:
   release:
-    types: [created]
+    types: [published]
 
 jobs:
   checksums:
@@ -14,53 +14,84 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
+
+    - name: Build WHITEPAPER.pdf
+      uses: xu-cheng/latex-action@v3
+      with:
+        root_file: WHITEPAPER.tex
+        args: -pdf -interaction=nonstopmode -halt-on-error
     
     - name: Generate SHA256 checksums for HTML
       run: |
-        cd reference-implementation
-        
-        # Generate checksums
-        echo "# SHA256 Checksums for Schiavinato Sharing HTML Implementation" > ../CHECKSUMS.txt
-        echo "" >> ../CHECKSUMS.txt
-        echo "Version: ${GITHUB_REF_NAME}" >> ../CHECKSUMS.txt
-        echo "Generated: $(date -u +"%Y-%m-%d %H:%M:%S UTC")" >> ../CHECKSUMS.txt
-        echo "" >> ../CHECKSUMS.txt
-        echo "## HTML Implementation" >> ../CHECKSUMS.txt
-        echo "" >> ../CHECKSUMS.txt
-        
-        sha256sum schiavinato_sharing.html >> ../CHECKSUMS.txt
-        
-        echo "" >> ../CHECKSUMS.txt
-        echo "## Verification" >> ../CHECKSUMS.txt
-        echo "" >> ../CHECKSUMS.txt
-        echo "To verify:" >> ../CHECKSUMS.txt
-        echo "  cd reference-implementation" >> ../CHECKSUMS.txt
-        echo "  sha256sum -c ../CHECKSUMS.txt" >> ../CHECKSUMS.txt
-        
-        cd ..
-        
-        # JSON format
-        echo "{" > CHECKSUMS.json
-        echo "  \"version\": \"${GITHUB_REF_NAME}\"," >> CHECKSUMS.json
-        echo "  \"generated\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"," >> CHECKSUMS.json
-        echo "  \"checksums\": {" >> CHECKSUMS.json
-        cd reference-implementation
-        echo "    \"schiavinato_sharing.html\": \"$(sha256sum schiavinato_sharing.html | awk '{print $1}')\"" >> ../CHECKSUMS.json
-        cd ..
-        echo "  }" >> CHECKSUMS.json
-        echo "}" >> CHECKSUMS.json
-        
-        # Display
-        echo "=== Generated Checksums ==="
-        cat CHECKSUMS.txt
+        set -euo pipefail
+        VERSION="${GITHUB_REF_NAME}"
+        GENERATED_UTC="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+
+        FILES=(
+          "reference-implementation/schiavinato_sharing.html"
+          "WHITEPAPER.pdf"
+          "WHITEPAPER.tex"
+          "RFC.md"
+          "TEST_VECTORS.md"
+          "LICENSE"
+          "LICENSE-WHITEPAPER.md"
+        )
+
+        echo "# SHA256 Checksums for Schiavinato Sharing" > CHECKSUMS.txt
+        echo "" >> CHECKSUMS.txt
+        echo "Version: ${VERSION}" >> CHECKSUMS.txt
+        echo "Generated: ${GENERATED_UTC}" >> CHECKSUMS.txt
+        echo "" >> CHECKSUMS.txt
+        sha256sum "${FILES[@]}" >> CHECKSUMS.txt
+        echo "" >> CHECKSUMS.txt
+        echo "## Verification" >> CHECKSUMS.txt
+        echo "" >> CHECKSUMS.txt
+        echo "sha256sum -c CHECKSUMS.txt" >> CHECKSUMS.txt
+
+        python - <<'PY'
+        import hashlib, json, os
+        from datetime import datetime, timezone
+
+        version = os.environ.get("GITHUB_REF_NAME", "")
+        generated = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+        files = [
+          "reference-implementation/schiavinato_sharing.html",
+          "WHITEPAPER.pdf",
+          "WHITEPAPER.tex",
+          "RFC.md",
+          "TEST_VECTORS.md",
+          "LICENSE",
+          "LICENSE-WHITEPAPER.md",
+        ]
+
+        def sha256(path: str) -> str:
+            h = hashlib.sha256()
+            with open(path, "rb") as f:
+                for chunk in iter(lambda: f.read(1024 * 1024), b""):
+                    h.update(chunk)
+            return h.hexdigest()
+
+        payload = {
+          "version": version,
+          "generated": generated,
+          "checksums": {p: sha256(p) for p in files},
+        }
+
+        with open("CHECKSUMS.json", "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, sort_keys=True)
+            f.write("\n")
+        PY
     
     - name: Create release tarball
       run: |
         tar -czf schiavinato-sharing-spec-${GITHUB_REF_NAME}.tar.gz \
           reference-implementation/schiavinato_sharing.html \
-          WHITEPAPER.md \
+          WHITEPAPER.pdf \
+          WHITEPAPER.tex \
+          RFC.md \
           TEST_VECTORS.md \
           LICENSE \
+          LICENSE-WHITEPAPER.md \
           CHECKSUMS.txt \
           CHECKSUMS.json
         
@@ -70,6 +101,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: |
+          WHITEPAPER.pdf
           CHECKSUMS.txt
           CHECKSUMS.json
           schiavinato-sharing-spec-*.tar.gz

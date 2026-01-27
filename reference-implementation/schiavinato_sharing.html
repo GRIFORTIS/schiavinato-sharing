@@ -54,7 +54,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
 
     <style>
         /* ==========================================================================
-        GRIFORTIS - DESIGN SYSTEM (v0.2.0)
+        GRIFORTIS - DESIGN SYSTEM (v0.4.0)
         ==========================================================================
         */
 
@@ -878,7 +878,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                             <p><strong>Share Number (X):</strong> 1</p>
                             <p><strong>Scheme Threshold (K):</strong> 2</p>
                             <p><strong>Original Seed Phrase Length:</strong> 24</p>
-                            <p><strong>Global Checksum:</strong> <code class="mono">abandon - 0001</code></p>
+                            <p><strong>Global Integrity Check (GIC):</strong> <code class="mono">abandon - 0001</code></p>
                         </div>
                         <h4 style="margin-top: 25px; margin-bottom: 10px; color: var(--text-muted); font-weight: 600;">Encrypted Seed Phrase (Y) - Not a real BIP39 seed phrase</h4>
                         <div class="share-word-container">
@@ -915,9 +915,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     <ol style="padding-left: 20px; margin-top: 1rem;">
                         <li style="margin-bottom: 0.75em;">Record the share numbers (the <span class="mono">X</span> printed on each share) for the <strong>K</strong> shares you possess.</li>
                         <li style="margin-bottom: 0.75em;">Use the multipliers to compute <code>Recovered = Σ(Y × λ) mod 2053</code> for each word and checksum row.</li>
-                        <li style="margin-bottom: 0.75em;">Repeat for every row and finally verify the global checksum to confirm the recovery.</li>
+                        <li style="margin-bottom: 0.75em;">Repeat for every row and finally verify the Global Integrity Check (GIC) to confirm the recovery.</li>
                     </ol>
-                    <p style="margin-top: 1rem; font-size: 0.95rem; color: var(--text-muted);">After every row, add the three recovered word numbers together and confirm they match the recovered checksum for that row. When you finish all rows, sum every recovered word and verify that it equals the recovered global checksum verification value before rebuilding the mnemonic.</p>
+                    <p style="margin-top: 1rem; font-size: 0.95rem; color: var(--text-muted);">After every row, add the three recovered word numbers together and confirm they match the recovered checksum for that row. When you finish all rows, sum every recovered word and verify that it equals the recovered Global Integrity Check (GIC) verification value before rebuilding the mnemonic.</p>
                 </div>
 
                 <div class="component-card">
@@ -969,7 +969,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
 
                 <div class="component-card">
                     <h2>2. Polynomial Equation</h2>
-                    <p>This is the equation used to generate your shares. Replace <code>&lt;BIP39 word indices&gt;</code> with your secret numbers (from 0 to 2047).</p>
+                    <p>This is the equation used to generate your shares. Replace <code>&lt;BIP39 word indices&gt;</code> with your secret numbers (from 1 to 2048).</p>
                     <div id="polynomial-display" style="background: var(--input-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); text-align: center; margin-top: 1rem;">
                         <p style="margin: 0; color: var(--text-muted);">Select a scheme to generate a fresh equation.</p>
                     </div>
@@ -1090,7 +1090,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             ========================================================================== -->
             <footer class="disclaimer">
                 <p style="text-align: center; font-weight: 600; margin: 0;">
-                    © 2025 GRIFORTIS. Released under the MIT License. v0.2.0
+                    © 2025 GRIFORTIS. Released under the MIT License. v0.4.0
                 </p>
             </footer>
         </main>
@@ -1201,10 +1201,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             if (rowHighlight) {
                 input.setAttribute('data-row-highlight', 'true');
             }
-            if (message) {
-                input.dataset.errorMessage = message;
-                input.title = message;
-            }
+            // No inline messages: clean layout, highlight only.
         }
 
         /**
@@ -1247,7 +1244,8 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             const normalizedWord = trimmed.toLowerCase();
             const wordIndex = BIP39_WORDLIST.indexOf(normalizedWord);
             if (wordIndex !== -1) {
-                return { ok: true, value: wordIndex, source: 'word' };
+                // Convert from 0-based array index to 1-based BIP39 index
+                return { ok: true, value: wordIndex + 1, source: 'word' };
             }
             return { ok: false, reason: 'unknown' };
         }
@@ -1479,9 +1477,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 container.dataset.shareIndex = String(shareIndex);
 
                 const shareNumberInput = container.querySelector(`#recover-x-${shareIndex}`);
-                const globalChecksumShareInput = container.querySelector(`#recover-global-checksum-${shareIndex}`);
+                const globalIntegrityCheckShareInput = container.querySelector(`#recover-global-integrity-check-${shareIndex}`);
 
-                if (!shareNumberInput || !globalChecksumShareInput) {
+                if (!shareNumberInput || !globalIntegrityCheckShareInput) {
                     uiErrors.add('A share input block is missing required fields.');
                     parsingError = true;
                     continue;
@@ -1489,8 +1487,8 @@ TERMS OF USE & LIABILITY DISCLAIMER:
 
                 shareNumberInput.dataset.fieldLabel = `Share ${shareIndex} number`;
                 shareNumberInput.dataset.allowNumeric = 'true';
-                globalChecksumShareInput.dataset.fieldLabel = `Share ${shareIndex} global checksum verification`;
-                globalChecksumShareInput.dataset.allowNumeric = 'true';
+                globalIntegrityCheckShareInput.dataset.fieldLabel = `Share ${shareIndex} Global Integrity Check (GIC) verification`;
+                globalIntegrityCheckShareInput.dataset.allowNumeric = 'true';
 
                 const shareNumberRaw = shareNumberInput.value.trim();
                 const shareNumber = Number(shareNumberRaw);
@@ -1515,10 +1513,10 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 }
                 seenShareNumbers.set(shareNumber, shareIndex);
 
-                const globalChecksumParse = parseShareValue(globalChecksumShareInput.value, { allowNumeric: true });
-                if (!globalChecksumParse.ok) {
-                    markInputInvalid(globalChecksumShareInput, formatParseError(globalChecksumShareInput.dataset.fieldLabel, globalChecksumParse));
-                    uiErrors.add('Fix the highlighted global checksum verification fields.');
+                const globalIntegrityCheckParse = parseShareValue(globalIntegrityCheckShareInput.value, { allowNumeric: true });
+                if (!globalIntegrityCheckParse.ok) {
+                    markInputInvalid(globalIntegrityCheckShareInput, formatParseError(globalIntegrityCheckShareInput.dataset.fieldLabel, globalIntegrityCheckParse));
+                    uiErrors.add('Fix the highlighted Global Integrity Check (GIC) verification fields.');
                     parsingError = true;
                     continue;
                 }
@@ -1530,7 +1528,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     shareIndex,
                     wordShares: [],
                     checksumShares: [],
-                    globalChecksumVerificationShare: globalChecksumParse.value
+                    globalIntegrityCheckShare: globalIntegrityCheckParse.value
                 };
 
                 let rowHadError = false;
@@ -1636,36 +1634,60 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 return;
             }
 
-            // CASE 2: Row errors exist
-            if (errors.failedRows && errors.failedRows.length > 0) {
-                errors.failedRows.forEach(rowError => {
-                    // Highlight ALL shares - we cannot identify which specific share has the error
-                    const rowIndex = rowError.rowNumber - 1;  // Convert to 0-based index
-                    highlightErrorRow(rowIndex);
-                });
+            const rowErrors = errors.row && errors.row.length > 0 ? errors.row : (errors.failedRows || []);
+            const hasRowErrors = Array.isArray(rowErrors) && rowErrors.length > 0;
+            const hasGlobalError = errors.global || (errors.globalIntegrityCheckError && errors.globalIntegrityCheckError.failed);
+
+            // CASE 2: Path mismatch detected (hardware/bit-flip suspicion)
+            if ((errors.rowPathMismatch && errors.rowPathMismatch.length > 0) || errors.globalPathMismatch) {
+                if (errors.rowPathMismatch) {
+                    errors.rowPathMismatch.forEach((rowIdx) => {
+                        highlightErrorRow(rowIdx);
+                    });
+                }
+                if (errors.globalPathMismatch) {
+                    highlightGlobalIntegrityCheckError();
+                }
+                await showErrorModal(
+                    'Recovery Failed - Path Mismatch',
+                    'Dual-path checksum validation failed (Path A vs Path B). This can indicate hardware faults, memory corruption, or tampered shares. Re-enter the shares carefully or regenerate from a trusted environment.'
+                );
+                return;
+            }
+
+            // CASE 3: Row errors exist
+            if (hasRowErrors) {
+                if (errors.row && errors.row.length > 0) {
+                    errors.row.forEach((rowIdx) => highlightErrorRow(rowIdx));
+                } else if (errors.failedRows && errors.failedRows.length > 0) {
+                    errors.failedRows.forEach(rowError => {
+                        const rowIndex = rowError.rowNumber - 1;  // Convert to 0-based index
+                        highlightErrorRow(rowIndex);
+                    });
+                }
                 
                 await showErrorModal('Recovery Failed', 'Recovery failed. Check the highlighted fields and try again.');
                 return;
             }
 
-            // CASE 3: Global Checksum error but all rows passed (nightmare scenario)
-            if (errors.globalChecksumError && errors.globalChecksumError.failed) {
-                if (errors.globalChecksumError.isNightmare) {
-                    // Highlight all global checksum verification fields
-                    highlightGlobalChecksumError();
+            // CASE 4: Global Integrity Check error but all rows passed (nightmare scenario)
+            if (hasGlobalError) {
+                if (errors.globalIntegrityCheckError && errors.globalIntegrityCheckError.isNightmare) {
+                    // Highlight all Global Integrity Check (GIC) verification fields
+                    highlightGlobalIntegrityCheckError();
                     
-                    let errorMessage = 'Global Checksum verification failed.\n\n';
-                    errorMessage += 'Step 1: Check the highlighted global checksum fields.\n';
-                    errorMessage += 'Step 2: If global checksum fields are correct, carefully check all other fields.';
+                    let errorMessage = 'Global Integrity Check (GIC) verification failed.\n\n';
+                    errorMessage += 'Step 1: Check the highlighted Global Integrity Check (GIC) fields.\n';
+                    errorMessage += 'Step 2: If Global Integrity Check (GIC) fields are correct, carefully check all other fields.';
                     
                     await showErrorModal('Recovery Failed', errorMessage);
                 } else {
-                    await showErrorModal('Recovery Failed', 'Global Checksum failed unexpectedly.');
+                    await showErrorModal('Recovery Failed', 'Global Integrity Check (GIC) failed unexpectedly.');
                 }
                 return;
             }
 
-            // CASE 4: BIP39 failed but Schiavinato checks passed (show seed anyway)
+            // CASE 5: BIP39 failed but Schiavinato checks passed (show seed anyway)
             if (errors.bip39) {
                 let errorMessage = 'BIP39 checksum invalid.\n\n';
                 errorMessage += 'The recovered words may have errors in the final word, or the shares were created from a manually-calculated seed.\n\n';
@@ -1683,7 +1705,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 return;
             }
 
-            // CASE 5: SUCCESS - All checks passed
+            // CASE 6: SUCCESS - All checks passed
             if (recoveredMnemonic) {
                 snapshotShareInputs();
                 displayRecoveredMnemonic(recoveredMnemonic, false);
@@ -1691,7 +1713,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 return;
             }
 
-            // CASE 6: Unexpected error
+            // CASE 7: Unexpected error
             await showErrorModal('Unknown Error', 'An unexpected error occurred during recovery.');
         }
 
@@ -1730,9 +1752,9 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     const shareIndex = i + 1;
 
                     const shareNumberInput = container.querySelector(`#recover-x-${shareIndex}`);
-                    const globalChecksumShareInput = container.querySelector(`#recover-global-checksum-${shareIndex}`);
+                    const globalIntegrityCheckShareInput = container.querySelector(`#recover-global-integrity-check-${shareIndex}`);
 
-                    if (!shareNumberInput || !globalChecksumShareInput) {
+                    if (!shareNumberInput || !globalIntegrityCheckShareInput) {
                         hasParseError = true;
                         continue;
                     }
@@ -1749,8 +1771,8 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     }
                     seenShareNumbers.set(shareNumber, shareIndex);
 
-                    const globalChecksumParse = parseShareValue(globalChecksumShareInput.value, { allowNumeric: true });
-                    if (!globalChecksumParse.ok) {
+                    const globalIntegrityCheckParse = parseShareValue(globalIntegrityCheckShareInput.value, { allowNumeric: true });
+                    if (!globalIntegrityCheckParse.ok) {
                         hasParseError = true;
                         continue;
                     }
@@ -1762,7 +1784,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         shareIndex,
                         wordShares: [],
                         checksumShares: [],
-                        globalChecksumVerificationShare: globalChecksumParse.value
+                        globalIntegrityCheckShare: globalIntegrityCheckParse.value
                     };
 
                     for (let rowIndex = 0; rowIndex < numRows; rowIndex++) {
@@ -1795,6 +1817,41 @@ TERMS OF USE & LIABILITY DISCLAIMER:
 
                 if (hasParseError || shares.length !== k) return;
 
+                // Clear previous inline highlights before fresh validation
+                clearAllRecoveryHighlights();
+
+                // Inline per-share row/global consistency check (pre-flight UX)
+                shares.forEach((share, idx) => {
+                    const shareIdx = idx + 1; // 1-based in DOM ids
+                    const rowCount = recoverWordCount / WORDS_PER_ROW;
+
+                    for (let row = 0; row < rowCount; row++) {
+                        const base = row * WORDS_PER_ROW;
+                        const hasWords =
+                            share.wordShares.length >= base + WORDS_PER_ROW &&
+                            share.wordShares[base] !== undefined &&
+                            share.wordShares[base + 1] !== undefined &&
+                            share.wordShares[base + 2] !== undefined;
+                        const hasChecksum = share.checksumShares.length > row && share.checksumShares[row] !== undefined;
+                        if (!hasWords || !hasChecksum) {
+                            continue;
+                        }
+                        const sum = (share.wordShares[base] + share.wordShares[base + 1] + share.wordShares[base + 2]) % FIELD_PRIME;
+                        if (sum !== share.checksumShares[row]) {
+                            highlightShareRow(shareIdx, row);
+                        }
+                    }
+
+                        // Global Integrity Check inline check
+                    if (share.globalIntegrityCheckShare !== undefined) {
+                        const globalSum = share.wordShares.reduce((acc, val) => (acc + val) % FIELD_PRIME, 0);
+                        // v0.4.0 Fix: Printed GIC is bound to share number (Sum + x)
+                        if ((globalSum + shareIdx) % FIELD_PRIME !== share.globalIntegrityCheckShare) {
+                            highlightShareGlobal(shareIdx);
+                        }
+                    }
+                });
+
                 // Run validation
                 const report = await SchiavinatoSharing.recoverAndValidate(shares, recoverWordCount, BIP39_WORDLIST);
 
@@ -1803,21 +1860,31 @@ TERMS OF USE & LIABILITY DISCLAIMER:
 
                 // If all checks passed, we're done - no highlighting needed
                 if (report.recoveredMnemonic && 
-                    report.errors.failedRows.length === 0 && 
-                    !report.errors.globalChecksumError.failed) {
+                    report.errors.row.length === 0 && 
+                    !report.errors.global &&
+                    report.errors.rowPathMismatch.length === 0 &&
+                    !report.errors.globalPathMismatch &&
+                    !report.errors.bip39 &&
+                    !report.errors.generic) {
                     return;
                 }
 
                 // Show errors silently (no modal)
-                if (report.errors.failedRows && report.errors.failedRows.length > 0) {
+                if (report.errors.rowPathMismatch && report.errors.rowPathMismatch.length > 0) {
+                    report.errors.rowPathMismatch.forEach((rowIdx) => {
+                        highlightErrorRow(rowIdx);
+                    });
+                } else if (report.errors.row && report.errors.row.length > 0) {
+                    report.errors.row.forEach((rowIdx) => highlightErrorRow(rowIdx));
+                } else if (report.errors.failedRows && report.errors.failedRows.length > 0) {
                     // Highlight row errors
                     report.errors.failedRows.forEach(rowError => {
                         const rowIndex = rowError.rowNumber - 1;  // Convert to 0-based index
                         highlightErrorRow(rowIndex);
                     });
-                } else if (report.errors.globalChecksumError && report.errors.globalChecksumError.failed) {
-                    // Only highlight global checksum if NO row errors exist (nightmare scenario)
-                    highlightGlobalChecksumError();
+                } else if (report.errors.globalPathMismatch || report.errors.global || (report.errors.globalIntegrityCheckError && report.errors.globalIntegrityCheckError.failed)) {
+                    // Only highlight Global Integrity Check (GIC) if NO row errors exist (nightmare scenario)
+                    highlightGlobalIntegrityCheckError();
                 }
 
             } catch (error) {
@@ -2203,33 +2270,46 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             inputX.dataset.allowNumeric = 'true';
             inputX.dataset.fieldLabel = `Share ${shareIndex} number`;
             initializeRecoveryInputTracking(inputX);
+            const triggerValidateShare = () => {
+                validateShareInline(shareIndex);
+            };
+
             inputX.addEventListener('blur', () => {
                 validateInputOnBlur(inputX);
-                attemptAutoValidation();
+                triggerValidateShare();
             });
-            inputX.addEventListener('input', () => clearInputErrorState(inputX));
+            inputX.addEventListener('input', () => {
+                clearInputErrorState(inputX);
+            });
             shareNumberGroup.appendChild(labelX);
             shareNumberGroup.appendChild(inputX);
             twoColGrid.appendChild(shareNumberGroup);
 
-            const globalChecksumShareGroup = document.createElement('div');
-            globalChecksumShareGroup.className = 'form-group';
-            const labelGlobalChecksum = document.createElement('label');
-            labelGlobalChecksum.htmlFor = `recover-global-checksum-${shareIndex}`;
-            labelGlobalChecksum.textContent = `Global Checksum`;
-            const inputGlobalChecksum = document.createElement('input');
-            inputGlobalChecksum.type = 'text';
-            inputGlobalChecksum.id = `recover-global-checksum-${shareIndex}`;
-            inputGlobalChecksum.className = 'mono';
-            inputGlobalChecksum.placeholder = 'E.g., abandon - 0001';
-            inputGlobalChecksum.value = shareCache.globalChecksumVerificationShare || '';
-            inputGlobalChecksum.dataset.allowNumeric = 'true';
-            inputGlobalChecksum.dataset.fieldLabel = `Share ${shareIndex} global checksum verification`;
-            initializeRecoveryInputTracking(inputGlobalChecksum);
-            attachAutocompleteListeners(inputGlobalChecksum);
-            globalChecksumShareGroup.appendChild(labelGlobalChecksum);
-            globalChecksumShareGroup.appendChild(inputGlobalChecksum);
-            twoColGrid.appendChild(globalChecksumShareGroup);
+            const globalIntegrityCheckShareGroup = document.createElement('div');
+            globalIntegrityCheckShareGroup.className = 'form-group';
+            const labelGlobalIntegrityCheck = document.createElement('label');
+            labelGlobalIntegrityCheck.htmlFor = `recover-global-integrity-check-${shareIndex}`;
+            labelGlobalIntegrityCheck.textContent = `Global Integrity Check (GIC)`;
+            const inputGlobalIntegrityCheck = document.createElement('input');
+            inputGlobalIntegrityCheck.type = 'text';
+            inputGlobalIntegrityCheck.id = `recover-global-integrity-check-${shareIndex}`;
+            inputGlobalIntegrityCheck.className = 'mono';
+            inputGlobalIntegrityCheck.placeholder = 'E.g., abandon - 0001';
+            inputGlobalIntegrityCheck.value = shareCache.globalIntegrityCheckShare || '';
+            inputGlobalIntegrityCheck.dataset.allowNumeric = 'true';
+            inputGlobalIntegrityCheck.dataset.fieldLabel = `Share ${shareIndex} Global Integrity Check (GIC) verification`;
+            initializeRecoveryInputTracking(inputGlobalIntegrityCheck);
+            attachAutocompleteListeners(inputGlobalIntegrityCheck);
+            inputGlobalIntegrityCheck.addEventListener('input', () => {
+                clearInputErrorState(inputGlobalIntegrityCheck);
+            });
+            inputGlobalIntegrityCheck.addEventListener('blur', () => {
+                validateInputOnBlur(inputGlobalIntegrityCheck);
+                validateShareInline(shareIndex);
+            });
+            globalIntegrityCheckShareGroup.appendChild(labelGlobalIntegrityCheck);
+            globalIntegrityCheckShareGroup.appendChild(inputGlobalIntegrityCheck);
+            twoColGrid.appendChild(globalIntegrityCheckShareGroup);
             
             container.appendChild(twoColGrid);
 
@@ -2263,6 +2343,13 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     input.value = shareCache.words[wordCounter] || '';
                     initializeRecoveryInputTracking(input);
                     attachAutocompleteListeners(input);
+                    input.addEventListener('input', () => {
+                        clearInputErrorState(input);
+                    });
+                    input.addEventListener('blur', () => {
+                        validateInputOnBlur(input);
+                        validateShareInline(shareIndex);
+                    });
                     row.appendChild(label);
                     row.appendChild(input);
                     seedGrid.appendChild(row);
@@ -2285,6 +2372,13 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 input.value = shareCache.words[wordCounter] || '';
                 initializeRecoveryInputTracking(input);
                 attachAutocompleteListeners(input);
+                input.addEventListener('input', () => {
+                    clearInputErrorState(input);
+                });
+                input.addEventListener('blur', () => {
+                    validateInputOnBlur(input);
+                    validateShareInline(shareIndex);
+                });
                 row.appendChild(label);
                 row.appendChild(input);
                 seedGrid.appendChild(row);
@@ -2304,7 +2398,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             const existingContainers = recoverSharesContainer.querySelectorAll('.share-input-container');
             existingContainers.forEach((container) => {
                 const shareNumberInput = container.querySelector('[id^="recover-x-"]');
-                const globalChecksumShareInput = container.querySelector('[id^="recover-global-checksum-"]');
+                const globalIntegrityCheckShareInput = container.querySelector('[id^="recover-global-integrity-check-"]');
                 if (!shareNumberInput) return;
                 
                 const shareIndex = parseInt(shareNumberInput.id.split('-').pop(), 10) - 1;
@@ -2312,7 +2406,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 
                 if (cacheEntry) {
                     cacheEntry.shareNumber = shareNumberInput.value;
-                    cacheEntry.globalChecksumVerificationShare = globalChecksumShareInput.value;
+                    cacheEntry.globalIntegrityCheckShare = globalIntegrityCheckShareInput.value;
                     const wordInputs = container.querySelectorAll('.seed-word-row input');
                     wordInputs.forEach((input, wordIndex) => {
                         if (wordIndex < cacheEntry.words.length) {
@@ -2383,18 +2477,14 @@ TERMS OF USE & LIABILITY DISCLAIMER:
         /**
          * Attaches only the blur validation listener to an input field.
          * This uses a stricter validation than the live input validation.
+         * NOTE: This function is NO LONGER USED - blur handlers are now attached
+         * directly in createShareInputBlock() to avoid duplicate event listeners.
+         * Kept for backwards compatibility but does nothing.
          * @param {HTMLInputElement} input - The input element.
          */
         function attachValidationListener(input) {
-             input.addEventListener('blur', () => {
-                setTimeout(() => {
-                    if (!autocompleteContainer.contains(document.activeElement)) {
-                        hideAutocomplete();
-                        validateInputOnBlur(input);
-                        attemptAutoValidation();
-                    }
-                }, 150);
-            });
+            // Deprecated - blur handlers now attached directly in field creation
+            // to avoid duplicate event listeners
         }
 
         /**
@@ -2433,11 +2523,12 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             const allowNumeric = input.dataset.allowNumeric === 'true';
             const parseResult = parseShareValue(input.value, { allowNumeric });
             if (parseResult.ok || (input.value || '').trim() === '') {
-                clearInputErrorState(input);
+                // Don't clear any errors here - let checksum validation handle clearing
+                // This prevents parse validation from clearing checksum errors
                 return parseResult.ok ? parseResult.value : null;
             }
             const label = input.dataset.fieldLabel || 'This field';
-            markInputInvalid(input, formatParseError(label, parseResult), { rowHighlight: input.hasAttribute('data-row-highlight') });
+            markInputInvalid(input, formatParseError(label, parseResult), { rowHighlight: false });
             return null;
         }
 
@@ -2621,6 +2712,141 @@ TERMS OF USE & LIABILITY DISCLAIMER:
         }
 
         /**
+         * Highlights the Global Integrity Check (GIC) field for a specific share container.
+         * Used for pre-flight validation where the faulty share is known.
+         * @param {number} shareIndex - The 1-based index of the share container.
+         */
+        function highlightShareGlobal(shareIndex) {
+            const input = document.getElementById(`recover-global-integrity-check-${shareIndex}`);
+            if (!input) return;
+            markInputInvalid(input, input.dataset.fieldLabel || 'Global Integrity Check (GIC) mismatch', { rowHighlight: true });
+        }
+
+        /**
+         * Clears row-level highlights for a specific share/row.
+         */
+        function clearShareRowHighlight(shareIndex, rowIndex) {
+            const container = document.getElementById(`share-container-${shareIndex}`);
+            if (!container) return;
+            const inputs = container.querySelectorAll(`input[data-row-index="${rowIndex}"]`);
+            inputs.forEach(input => {
+                if (input.getAttribute('data-row-highlight') === 'true') {
+                    clearInputErrorState(input);
+                }
+            });
+        }
+
+        /**
+         * Clears Global Integrity Check (GIC) highlight for a specific share.
+         */
+        function clearShareGlobalHighlight(shareIndex) {
+            const input = document.getElementById(`recover-global-integrity-check-${shareIndex}`);
+            if (input && input.getAttribute('data-row-highlight') === 'true') {
+                clearInputErrorState(input);
+            }
+        }
+
+        /**
+         * Clean validation for a single share on blur. Follows predictable logic:
+         * 1. Clear all highlights for this share
+         * 2. Parse validation: highlight individual fields with invalid values
+         * 3. Row validation: if all 4 row fields parse OK, check checksum, highlight full row if wrong
+         * 4. Global validation: if all parse OK and no row errors, check global, highlight global only if wrong
+         */
+        function validateShareInline(shareIndex) {
+            const container = document.getElementById(`share-container-${shareIndex}`);
+            if (!container) return;
+
+            // STEP 1: Clear ALL highlights for this share (fresh start)
+            const allInputs = container.querySelectorAll('input');
+            allInputs.forEach(input => clearInputErrorState(input));
+
+            // Derive row count from DOM
+            const checksumInputs = container.querySelectorAll('input[data-slot="checksum"]');
+            const rowCount = checksumInputs.length;
+            if (!rowCount) return;
+
+            // STEP 2: Parse Validation - highlight individual fields with invalid values
+            const parseErrors = new Set();
+            allInputs.forEach(input => {
+                const value = (input.value || '').trim();
+                // a) if empty, skip (no error for empty fields)
+                if (value === '') return;
+                
+                // b) if not valid (not 0-2052 AND not BIP39 word), highlight just that field
+                const parseResult = parseShareValue(value, { allowNumeric: true });
+                if (!parseResult.ok) {
+                    const label = input.dataset.fieldLabel || 'This field';
+                    markInputInvalid(input, `${label}: Invalid value`, { rowHighlight: false });
+                    parseErrors.add(input);
+                }
+            });
+
+            let anyRowFail = false;
+
+            // STEP 3: Row Checksum Validation
+            for (let row = 0; row < rowCount; row++) {
+                const wordInputs = [];
+                for (let slot = 0; slot < WORDS_PER_ROW; slot++) {
+                    const input = container.querySelector(`input[data-row-index="${row}"][data-slot="word-${slot}"]`);
+                    wordInputs.push(input);
+                }
+                const checksumInput = container.querySelector(`input[data-row-index="${row}"][data-slot="checksum"]`);
+                const rowInputs = [...wordInputs, checksumInput];
+
+                // c) Check if all 4 satisfy "b" (all parseable and none have parse errors)
+                const anyParseError = rowInputs.some(inp => parseErrors.has(inp));
+                const anyEmpty = rowInputs.some(inp => (inp?.value || '').trim() === '');
+                
+                if (anyParseError || anyEmpty) {
+                    // Can't validate checksum if any field has parse error or is empty
+                    continue;
+                }
+
+                // All 4 fields are parseable, check the checksum
+                const parsedWords = wordInputs.map(inp => parseShareValue(inp.value, { allowNumeric: true }));
+                const parsedChecksum = parseShareValue(checksumInput.value, { allowNumeric: true });
+
+                const sum = ((parsedWords[0].value + parsedWords[1].value + parsedWords[2].value) % FIELD_PRIME);
+                if (sum !== parsedChecksum.value) {
+                    // Checksum wrong: highlight ALL 4 fields in the row
+                    rowInputs.forEach(input => {
+                        markInputInvalid(input, 'Row checksum mismatch', { rowHighlight: true });
+                    });
+                    anyRowFail = true;
+                }
+            }
+
+            // STEP 4: Global Integrity Check Validation
+            // d) Only if all words + row checksums + Global Integrity Check (GIC) satisfy "b" AND no row errors
+            const globalInput = container.querySelector(`#recover-global-integrity-check-${shareIndex}`);
+            const allWordInputs = container.querySelectorAll(`input[data-slot^="word-"]`);
+            const allChecksumInputs = container.querySelectorAll(`input[data-slot="checksum"]`);
+
+            // Check if any field has parse error
+            const anyGlobalParseError = parseErrors.has(globalInput) || 
+                                        Array.from(allWordInputs).some(inp => parseErrors.has(inp)) ||
+                                        Array.from(allChecksumInputs).some(inp => parseErrors.has(inp));
+            
+            // Check if any field is empty
+            const globalEmpty = (globalInput?.value || '').trim() === '';
+            const anyWordEmpty = Array.from(allWordInputs).some(inp => (inp?.value || '').trim() === '');
+            
+            if (!anyGlobalParseError && !anyRowFail && !globalEmpty && !anyWordEmpty) {
+                // All parseable, no row errors, compute Global Integrity Check (GIC)
+                const parsedWords = Array.from(allWordInputs).map(inp => parseShareValue(inp.value, { allowNumeric: true }));
+                const parsedGlobal = parseShareValue(globalInput.value, { allowNumeric: true });
+
+                const globalSum = parsedWords.reduce((acc, p) => (acc + p.value) % FIELD_PRIME, 0);
+                // v0.4.0 Fix: Validate bound GIC (Sum + x)
+                if ((globalSum + shareIndex) % FIELD_PRIME !== parsedGlobal.value) {
+                    // Global wrong: highlight ONLY the global field
+                    markInputInvalid(globalInput, 'Global Integrity Check (GIC) mismatch', { rowHighlight: true });
+                }
+            }
+        }
+
+        /**
          * Highlights all inputs in the specified row across all shares.
          * Note: We cannot determine which specific share has an error, so we highlight all.
          * @param {number} rowIndex - Zero-based index of the row to highlight.
@@ -2638,15 +2864,15 @@ TERMS OF USE & LIABILITY DISCLAIMER:
         }
         
         /**
-         * Marks all "Global Checksum Verification" input fields as invalid.
+         * Marks all "Global Integrity Check (GIC) Verification" input fields as invalid.
          * Note: We cannot determine which specific share has an error, so we highlight all.
          */
-        function highlightGlobalChecksumError() {
-            const globalChecksumInputs = document.querySelectorAll('[id^="recover-global-checksum-"]');
+        function highlightGlobalIntegrityCheckError() {
+            const globalIntegrityCheckInputs = document.querySelectorAll('[id^="recover-global-integrity-check-"]');
             
-            globalChecksumInputs.forEach(input => {
-                const label = input.dataset.fieldLabel || 'Global Checksum verification';
-                markInputInvalid(input, `${label} failed. Check all global checksum fields.`, { rowHighlight: true });
+            globalIntegrityCheckInputs.forEach(input => {
+                const label = input.dataset.fieldLabel || 'Global Integrity Check (GIC) verification';
+                markInputInvalid(input, `${label} failed. Check all Global Integrity Check (GIC) fields.`, { rowHighlight: true });
             });
         }
 
@@ -2731,7 +2957,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                             <strong>Recover and Verify Each Row:</strong> Repeat step 2 for all three word values and the checksum value in a single row. Then, verify your math: add your three recovered word numbers together (modulo 2053). The result MUST equal your recovered checksum number for that row. If it doesn't, you have made a calculation error in that row.
                         </li>
                         <li style="margin-bottom: 0.5em;">
-                            <strong>Final Global Checksum Verification:</strong> After all rows are recovered and verified, use the same method from step 2 to recover the "Global Checksum Verification Number" from the share headers. Then, add all 24 of your recovered word numbers together (modulo 2053). The result MUST equal the recovered Global Checksum Verification Number. If it doesn't, an error exists in one or more rows.
+                            <strong>Final Global Integrity Check (GIC) Verification:</strong> After all rows are recovered and verified, use the same method from step 2 to recover the "Global Integrity Check (GIC) Verification Number" from the share headers. Then, add all 24 of your recovered word numbers together (modulo 2053). The result MUST equal the recovered Global Integrity Check (GIC) Verification Number. If it doesn't, an error exists in one or more rows.
                         </li>
                         <li style="margin-bottom: 0.5em;">
                             <strong>Convert to Words:</strong> Once all checks pass, use the standard BIP39 wordlist to look up the word for each of your 12-24 recovered numbers. The resulting sequence of 12-24 words is your wallet's original recovery phrase.
@@ -2744,23 +2970,47 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             let allSharesPrintHtml = '';
 
             shares.forEach(share => {
-                const globalChecksumValue = share.globalChecksumVerificationShare;
-                const globalChecksumWord = globalChecksumValue < 2048 ? BIP39_WORDLIST[globalChecksumValue] : String(globalChecksumValue);
-                const globalChecksumShareDisplay = `${globalChecksumWord} - ${String(globalChecksumValue).padStart(4, '0')}`;
+                const globalIntegrityCheckValue = share.globalIntegrityCheckShare;
+                // Format share value: 0="0000-0000", 1-2048="word-####", 2049-2052="####-####"
+                let globalIntegrityCheckShareDisplay;
+                if (globalIntegrityCheckValue === 0) {
+                    globalIntegrityCheckShareDisplay = '0000-0000';
+                } else if (globalIntegrityCheckValue >= 1 && globalIntegrityCheckValue <= 2048) {
+                    const word = BIP39_WORDLIST[globalIntegrityCheckValue - 1];
+                    globalIntegrityCheckShareDisplay = `${word}-${String(globalIntegrityCheckValue).padStart(4, '0')}`;
+                } else {
+                    globalIntegrityCheckShareDisplay = `${String(globalIntegrityCheckValue).padStart(4, '0')}-${String(globalIntegrityCheckValue).padStart(4, '0')}`;
+                }
 
                 let wordListHtml = '';
                 let wordCounter = 0;
                 for (let i = 0; i < (metadata.wordCount / 3); i++) {
                     for (let j = 0; j < 3; j++) {
                         const value = share.wordShares[wordCounter];
-                        const word = value < 2048 ? BIP39_WORDLIST[value] : String(value);
-                        const display = `${word} - ${String(value).padStart(4, '0')}`;
+                        // Format share value: 0="0000-0000", 1-2048="word-####", 2049-2052="####-####"
+                        let display;
+                        if (value === 0) {
+                            display = '0000-0000';
+                        } else if (value >= 1 && value <= 2048) {
+                            const word = BIP39_WORDLIST[value - 1];
+                            display = `${word}-${String(value).padStart(4, '0')}`;
+                        } else {
+                            display = `${String(value).padStart(4, '0')}-${String(value).padStart(4, '0')}`;
+                        }
                         wordListHtml += `<div class="share-word-item"><label>${wordCounter + 1}.</label><code class="mono">${display}</code></div>`;
                         wordCounter++;
                     }
                     const checksumValue = share.checksumShares[i];
-                    const checksumWord = checksumValue < 2048 ? BIP39_WORDLIST[checksumValue] : String(checksumValue);
-                    const checksumDisplay = `${checksumWord} - ${String(checksumValue).padStart(4, '0')}`;
+                    // Format share value: 0="0000-0000", 1-2048="word-####", 2049-2052="####-####"
+                    let checksumDisplay;
+                    if (checksumValue === 0) {
+                        checksumDisplay = '0000-0000';
+                    } else if (checksumValue >= 1 && checksumValue <= 2048) {
+                        const word = BIP39_WORDLIST[checksumValue - 1];
+                        checksumDisplay = `${word}-${String(checksumValue).padStart(4, '0')}`;
+                    } else {
+                        checksumDisplay = `${String(checksumValue).padStart(4, '0')}-${String(checksumValue).padStart(4, '0')}`;
+                    }
                     wordListHtml += `<div class="share-word-item"><label>C${i + 1}.</label><code class="mono">${checksumDisplay}</code></div>`;
                 }
 
@@ -2772,7 +3022,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         <p><strong>Creation Date:</strong> ${metadata.date}</p>
                         <p><strong>Scheme:</strong> ${metadata.scheme}</p>
                         <p><strong>Share Number (X):</strong> ${share.shareNumber}</p>
-                        <p><strong>Global Checksum:</strong> <code class="mono">${globalChecksumShareDisplay}</code></p>
+                        <p><strong>Global Integrity Check (GIC):</strong> <code class="mono">${globalIntegrityCheckShareDisplay}</code></p>
                     </div>
                     <h4 style="margin-top: 25px; margin-bottom: 10px; color: var(--text-muted); font-weight: 600;">Share Values (Y)</h4>
                     <div class="share-word-container">
@@ -2925,7 +3175,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 shareNumber: '',
                 words: Array(24).fill(''),
                 checksums: Array(8).fill(''),
-                globalChecksum: ''
+                globalIntegrityCheck: ''
             }));
             
             // Clear autocomplete cache
@@ -3300,10 +3550,62 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             }
             
             /**
-             * Calculates the global checksum by summing all word indices mod 2053.
+             * Calculates the Global Integrity Check (GIC) by summing all word indices mod 2053.
              */
-            function computeGlobalChecksum(wordIndices) {
+            function computeGlobalIntegrityCheck(wordIndices) {
                 return wordIndices.reduce((acc, value) => modAdd(acc, value), 0);
+            }
+
+            /**
+             * Sums polynomial coefficients modulo 2053 to create a checksum polynomial.
+             * PATH B: Polynomial-based checksum computation.
+             * Throws if polynomial degrees differ.
+             */
+            function sumPolynomials(polynomials) {
+                if (!Array.isArray(polynomials) || polynomials.length === 0) {
+                    throw new Error('Cannot sum zero polynomials');
+                }
+                const degree = polynomials[0].length;
+                for (let i = 1; i < polynomials.length; i++) {
+                    if (polynomials[i].length !== degree) {
+                        throw new Error(`Polynomial degree mismatch: expected ${degree - 1} but got ${polynomials[i].length - 1} at index ${i}`);
+                    }
+                }
+                const result = new Array(degree).fill(0);
+                for (const poly of polynomials) {
+                    for (let i = 0; i < degree; i++) {
+                        result[i] = modAdd(result[i], poly[i]);
+                    }
+                }
+                return result;
+            }
+
+            /**
+             * Creates per-row checksum polynomials by summing the 3 word polynomials in each row.
+             * PATH B: Evaluating these polynomials should match the direct sum of word shares (Path A).
+             */
+            function computeRowCheckPolynomials(wordPolynomials) {
+                const wordCount = wordPolynomials.length;
+                const rowCount = wordCount / WORDS_PER_ROW;
+                const rowPolynomials = [];
+                for (let row = 0; row < rowCount; row++) {
+                    const base = row * WORDS_PER_ROW;
+                    const rowPoly = sumPolynomials([
+                        wordPolynomials[base],
+                        wordPolynomials[base + 1],
+                        wordPolynomials[base + 2]
+                    ]);
+                    rowPolynomials.push(rowPoly);
+                }
+                return rowPolynomials;
+            }
+
+            /**
+             * Creates a Global Integrity Check (GIC) polynomial by summing all word polynomials.
+             * PATH B: Evaluating this polynomial should match the direct sum of all word shares (Path A).
+             */
+            function computeGlobalIntegrityCheckPolynomial(wordPolynomials) {
+                return sumPolynomials(wordPolynomials);
             }
             
             /**
@@ -3357,8 +3659,8 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     if (!Array.isArray(share.checksumShares) || share.checksumShares.length !== rowCount) {
                         throw new Error(`Share #${share.shareNumber} does not contain ${rowCount} checksum values.`);
                     }
-                    if (!Number.isInteger(share.globalChecksumVerificationShare)) {
-                        throw new Error(`Share #${share.shareNumber} is missing a global checksum.`);
+                    if (!Number.isInteger(share.globalIntegrityCheckShare)) {
+                        throw new Error(`Share #${share.shareNumber} is missing a Global Integrity Check (GIC).`);
                     }
                 });
             }
@@ -3466,15 +3768,15 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     if (index === -1) {
                         throw new Error(`Unknown mnemonic word: "${word}".`);
                     }
-                    return index;
+                    // Convert from 0-based array index to 1-based BIP39 index
+                    return index + 1;
                 });
-                const checksumSecrets = computeRowChecks(wordIndices);
-                const globalChecksumSecret = wordIndices.reduce((acc, value) => modAdd(acc, value), 0);
                 const degree = k - 1;
 
                 const wordPolynomials = wordIndices.map((secret) => randomPolynomial(secret, degree));
-                const checksumPolynomials = checksumSecrets.map((secret) => randomPolynomial(secret, degree));
-                const globalChecksumPolynomial = randomPolynomial(globalChecksumSecret, degree);
+                // v0.4.0: Create checksum polynomials (Path B) by summing coefficients
+                const rowCheckPolynomials = computeRowCheckPolynomials(wordPolynomials);
+                const globalIntegrityCheckPolynomial = computeGlobalIntegrityCheckPolynomial(wordPolynomials);
                 
                 const shares = [];
                 try {
@@ -3483,25 +3785,57 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                             shareNumber: shareIndex,
                             wordShares: [],
                             checksumShares: [],
-                            globalChecksumVerificationShare: 0
+                            globalIntegrityCheckShare: 0
                         };
+                        
+                        // Evaluate word polynomials
                         for (const polynomial of wordPolynomials) {
                             share.wordShares.push(evaluatePolynomial(polynomial, shareIndex));
                         }
-                        for (const polynomial of checksumPolynomials) {
-                            share.checksumShares.push(evaluatePolynomial(polynomial, shareIndex));
+                        
+                        // v0.4.0 Dual-path checksum validation (Path A: direct sums, Path B: polynomial)
+                        const rowCount = wordIndices.length / WORDS_PER_ROW;
+                        for (let row = 0; row < rowCount; row++) {
+                            const base = row * WORDS_PER_ROW;
+                            // Path A: sum of evaluated word shares
+                            const checksumPathA = modAdd(
+                                modAdd(share.wordShares[base], share.wordShares[base + 1]), 
+                                share.wordShares[base + 2]
+                            );
+                            // Path B: evaluate checksum polynomial
+                            const checksumPathB = evaluatePolynomial(rowCheckPolynomials[row], shareIndex);
+                            if (checksumPathA !== checksumPathB) {
+                                throw new Error(
+                                    `Row checksum path mismatch at share ${shareIndex}, row ${row + 1}: ` +
+                                    `Path A (sum)=${checksumPathA}, Path B (polynomial)=${checksumPathB}. ` +
+                                    'This indicates a hardware fault or memory corruption during share generation.'
+                                );
+                            }
+                            share.checksumShares.push(checksumPathA);
                         }
-                        share.globalChecksumVerificationShare = evaluatePolynomial(globalChecksumPolynomial, shareIndex);
+                        
+                        // Global Integrity Check: validate Path A vs Path B
+                        const globalPathA = share.wordShares.reduce((acc, val) => modAdd(acc, val), 0);
+                        const globalPathB = evaluatePolynomial(globalIntegrityCheckPolynomial, shareIndex);
+                        if (globalPathA !== globalPathB) {
+                            throw new Error(
+                                `Global Integrity Check (GIC) path mismatch at share ${shareIndex}: ` +
+                                `Path A (sum)=${globalPathA}, Path B (polynomial)=${globalPathB}. ` +
+                                'This indicates a hardware fault or memory corruption during share generation.'
+                            );
+                        }
+                        // v0.4.0 Fix: Bind the GIC to the share number (Sum + x)
+                        share.globalIntegrityCheckShare = modAdd(globalPathA, shareIndex);
+                        
                         shares.push(share);
                     }
                     return { shares };
                 } finally {
                     // Security: Clean up sensitive data from memory
                     secureWipeArray(wordIndices);
-                    secureWipeArray(checksumSecrets);
                     wordPolynomials.forEach(poly => secureWipeArray(poly));
-                    checksumPolynomials.forEach(poly => secureWipeArray(poly));
-                    secureWipeArray(globalChecksumPolynomial);
+                    rowCheckPolynomials.forEach(poly => secureWipeArray(poly));
+                    secureWipeArray(globalIntegrityCheckPolynomial);
                 }
             }
 
@@ -3518,21 +3852,27 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 const report = {
                     recoveredMnemonic: null,
                     recoveredIndices: null,
+                    // Core error shape aligned with JS/PY libs
                     errors: {
-                        failedRows: [],  // Array of {rowNumber, wordPositions, checksumLabel}
-                        globalChecksumError: {
+                        row: [],
+                        global: false,
+                        bip39: false,
+                        generic: null,
+                        rowPathMismatch: [],    // v0.4.0: Path A vs Path B row disagreement
+                        globalPathMismatch: false, // v0.4.0: Path A vs Path B global disagreement
+                        // Derived (UI helpers) - populated later
+                        failedRows: [],
+                        globalIntegrityCheckError: {
                             failed: false,
                             isNightmare: false
-                        },
-                        bip39: false,
-                        generic: null
+                        }
                     }
                 };
 
                 // Declare sensitive variables outside try block for cleanup in finally
                 let recoveredWords = [];
                 let recoveredChecks = [];
-                let recoveredGlobalChecksum = 0;
+                let recoveredGlobalIntegrityCheck = 0;
 
                 try {
                     // 1. Pre-flight checks for input validity
@@ -3569,59 +3909,75 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                         recoveredChecks.push(lagrangeInterpolateAtZero(points));
                     }
                     
-                    const globalChecksumPoints = shares.map((share) => ({
+                    const globalIntegrityCheckPoints = shares.map((share) => ({
                         x: mod(share.shareNumber),
-                        y: normalizeShareValue(share.globalChecksumVerificationShare, `Global Checksum verification (share ${share.shareNumber})`)
+                        y: normalizeShareValue(share.globalIntegrityCheckShare, `Global Integrity Check (GIC) verification (share ${share.shareNumber})`)
                     }));
-                    recoveredGlobalChecksum = lagrangeInterpolateAtZero(globalChecksumPoints);
+                    recoveredGlobalIntegrityCheck = lagrangeInterpolateAtZero(globalIntegrityCheckPoints);
                     
-                    // 3. Perform internal Schiavinato validations (COLLECT ALL ERRORS - don't stop early)
+                    // 3. Perform internal Schiavinato validations with dual-path checking (v0.4.0)
+                    // Path A: recompute checksums from recovered words
                     const recomputedChecks = computeRowChecks(recoveredWords);
+                    const recomputedGlobalIntegrityCheck = computeGlobalIntegrityCheck(recoveredWords);
+
                     for (let rowIdx = 0; rowIdx < rowCount; rowIdx++) {
-                        // Use constant-time comparison to prevent timing attacks
-                        if (!constantTimeEqual(recoveredChecks[rowIdx], recomputedChecks[rowIdx])) {
-                            // Convert to 1-indexed for human display
-                            const rowNumber = rowIdx + 1;
-                            const wordPositions = [
-                                rowIdx * WORDS_PER_ROW + 1,
-                                rowIdx * WORDS_PER_ROW + 2,
-                                rowIdx * WORDS_PER_ROW + 3
-                            ];
-                            report.errors.failedRows.push({
-                                rowNumber: rowNumber,
-                                wordPositions: wordPositions,
-                                checksumLabel: `C${rowNumber}`
-                            });
+                        const rowMismatch = !constantTimeEqual(recoveredChecks[rowIdx], recomputedChecks[rowIdx]);
+                        if (rowMismatch) {
+                            // Core errors (parity with JS/PY)
+                            report.errors.rowPathMismatch.push(rowIdx);
+                            report.errors.row.push(rowIdx);
                         }
                     }
 
-                    const recomputedGlobalChecksum = computeGlobalChecksum(recoveredWords);
-                    // Use constant-time comparison to prevent timing attacks
-                    if (!constantTimeEqual(recoveredGlobalChecksum, recomputedGlobalChecksum)) {
-                        report.errors.globalChecksumError.failed = true;
-                        // Nightmare scenario: all rows pass but global checksum fails
-                        report.errors.globalChecksumError.isNightmare = (report.errors.failedRows.length === 0);
+                    const globalMismatch = !constantTimeEqual(recoveredGlobalIntegrityCheck, recomputedGlobalIntegrityCheck);
+                    if (globalMismatch) {
+                        report.errors.globalPathMismatch = true;
+                        report.errors.global = true;
                     }
+
+                    // Derive UI-friendly structures from core errors (keep UI decoupled)
+                    report.errors.failedRows = report.errors.row.map((rowIdx) => {
+                        const rowNumber = rowIdx + 1;
+                        return {
+                            rowNumber,
+                            wordPositions: [
+                                rowIdx * WORDS_PER_ROW + 1,
+                                rowIdx * WORDS_PER_ROW + 2,
+                                rowIdx * WORDS_PER_ROW + 3
+                            ],
+                            checksumLabel: `C${rowNumber}`
+                        };
+                    });
+                    report.errors.globalIntegrityCheckError = {
+                        failed: report.errors.global,
+                        isNightmare: report.errors.global && report.errors.row.length === 0
+                    };
 
                     // 4. ALWAYS build the mnemonic (even if checksums failed)
                     // Check if indices are in BIP39 range
                     let canFormMnemonic = true;
                     for(let i = 0; i < recoveredWords.length; i++) {
                         const value = recoveredWords[i];
-                        if (value < 0 || value >= 2048) {
-                            report.errors.generic = `Recovered word #${i + 1} ("${value}") is outside the BIP39 range (0–2047). Cannot form a valid mnemonic.`;
+                        if (value < 1 || value > 2048) {
+                            report.errors.generic = `Recovered word #${i + 1} ("${value}") is outside the BIP39 range (1–2048). Cannot form a valid mnemonic.`;
                             canFormMnemonic = false;
                             break;
                         }
                     }
                     
                     if (canFormMnemonic) {
-                        const mnemonic = recoveredWords.map((index) => wordlist[index]).join(' ');
+                        // Convert from 1-based indices to 0-based wordlist array indices
+                        const mnemonic = recoveredWords.map((index) => wordlist[index - 1]).join(' ');
                         report.recoveredMnemonic = mnemonic;
                         report.recoveredIndices = [...recoveredWords];  // Store copy
 
-                        // 5. Validate BIP39 ONLY if all Schiavinato checks passed
-                        if (report.errors.failedRows.length === 0 && !report.errors.globalChecksumError.failed) {
+                    // 5. Validate BIP39 ONLY if all Schiavinato checks passed
+                    if (
+                        report.errors.row.length === 0 &&
+                        !report.errors.global &&
+                        report.errors.rowPathMismatch.length === 0 &&
+                        !report.errors.globalPathMismatch
+                    ) {
                             try {
                                 await validateBIP39Mnemonic(mnemonic, wordlist);
                             } catch (bip39Error) {
@@ -3638,7 +3994,7 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                     // Security: Clean up sensitive data from memory
                     secureWipeArray(recoveredWords);
                     secureWipeArray(recoveredChecks);
-                    recoveredGlobalChecksum = 0;
+                    recoveredGlobalIntegrityCheck = 0;
                 }
 
                 return report;
@@ -3650,7 +4006,11 @@ TERMS OF USE & LIABILITY DISCLAIMER:
                 recoverAndValidate,
                 validateBIP39Mnemonic,
                 computeRowChecks,
-                computeGlobalChecksum,
+                computeGlobalIntegrityCheck,
+                // v0.4.0 checksum polynomial helpers
+                sumPolynomials,
+                computeRowCheckPolynomials,
+                computeGlobalIntegrityCheckPolynomial,
                 configureEnvironment,
                 getRandomFieldElement, // Expose for the manual helper tool
                 computeLagrangeMultipliers,

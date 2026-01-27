@@ -7,7 +7,7 @@ This document contains the test mnemonic used for automated testing of the Schia
 ## Test Mnemonic (24 words)
 
 ```
-sand design enrich young absurd maximum fancy obvious system code spider grit toilet minimum also orchard birth scatter horn bargain beauty media rapid parade
+abandon zoo enhance young join maximum fancy call minimum code spider olive alcohol system also share birth profit horn bargain beauty media rapid tattoo
 ```
 
 ## Usage
@@ -42,7 +42,7 @@ This test mnemonic was chosen because it:
 The automated test validates:
 - ✅ Share generation from 24-word mnemonic
 - ✅ Proper formatting of share data (words and checksums)
-- ✅ Global Checksum verification code generation
+- ✅ Global Integrity Check (GIC) verification code generation
 - ✅ Share metadata (share numbers, threshold)
 - ✅ Recovery form input handling
 - ✅ Lagrange interpolation reconstruction

@@ -1,133 +1,216 @@
 # Security Policy
 
-## Supported Versions
+## Reporting Security Vulnerabilities
 
-| Version | Status | Supported |
-|---------|--------|-----------|
-| < 1.0   | Experimental | ⚠️ For testing only |
-| 1.0+    | Not yet released | - |
+**DO NOT** open a public GitHub issue for security vulnerabilities.
 
-## ⚠️ Security Status: EXPERIMENTAL
+Email: **security@grifortis.com**
 
-**This specification and reference implementation have NOT been professionally audited.**
+Include: Description, steps to reproduce, potential impact, suggested fix (if any)
 
-While the Schiavinato Sharing scheme is based on well-established cryptographic principles (Shamir's Secret Sharing), this specific implementation is **experimental research software**.
-
-### DO NOT USE FOR REAL FUNDS
-
-This software is provided for:
-- ✅ Educational purposes
-- ✅ Research and analysis
-- ✅ Testing and experimentation
-- ✅ Contributing to development
-
-**NOT** for:
-- ❌ Securing real cryptocurrency wallets
-- ❌ Production use with valuable assets
-- ❌ Critical inheritance planning (until audited)
-
-## Reporting a Vulnerability
-
-We take security seriously. If you discover a security vulnerability, please help us by reporting it responsibly.
-
-### What to Report
-
-**Critical Issues** (report privately):
-- Cryptographic flaws in the scheme
-- Potential for secret reconstruction with fewer than k shares
-- Entropy weaknesses or bias in random number generation
-- Checksum bypass that allows invalid shares
-- Any issue that could lead to loss of funds
-
-**Non-Critical Issues** (can be public):
-- UI/UX bugs in reference implementation
-- Documentation clarifications
-- Performance improvements
-- General feature requests
-
-### How to Report
-
-**For Critical Security Issues:**
-
-1. **DO NOT** open a public GitHub issue
-2. Send an email to: **security@grifortis.com** *(or create private security advisory on GitHub)*
-   - Subject: `[SECURITY] Schiavinato Sharing - Brief Description`
-   - Include:
-     - Detailed description of the vulnerability
-     - Steps to reproduce
-     - Potential impact assessment
-     - Suggested fix (if you have one)
-
-3. We will acknowledge receipt within **48 hours**
-4. We will provide a detailed response within **7 days**
-5. We will work with you to understand and resolve the issue
-
-**For Non-Critical Issues:**
-- Open a regular GitHub issue using the appropriate template
-
-### Disclosure Policy
-
-- We follow **coordinated disclosure** principles
-- We will work to fix critical issues before public disclosure
-- We will credit researchers who report valid issues (unless they prefer to remain anonymous)
-- Once a fix is available, we will:
-  1. Release a patched version
-  2. Publish a security advisory
-  3. Credit the reporter (if agreed)
-
-### Timeline
-
-For critical security vulnerabilities:
-- **48 hours**: Initial acknowledgment
-- **7 days**: Detailed response and assessment
-- **30 days**: Target for fix and coordinated disclosure
-- **90 days**: Maximum disclosure timeline (even if not fully resolved)
-
-## Security Best Practices for Users
-
-If you're using this specification for any purpose:
-
-1. **Verify test vectors** – Ensure your implementation matches `TEST_VECTORS.md`
-2. **Use audited RNG** – Never use predictable random number generation
-3. **Handle shares carefully** – Each share is sensitive; protect them
-4. **Test recovery** – Always verify you can recover before relying on shares
-5. **Check checksums** – Never skip checksum validation
-6. **Use offline** – Perform sensitive operations on air-gapped machines
-
-## Known Limitations
-
-Current known limitations (not security vulnerabilities, but good to know):
-
-- **No formal security proof**: While based on Shamir's scheme, this specific implementation lacks formal verification
-- **Human error potential**: Manual arithmetic steps can introduce errors (checksums help but aren't foolproof)
-- **Implementation variance**: Different implementations may have subtle differences
-- **No entropy analysis**: Random number generation quality depends on implementation
-
-## Security Roadmap
-
-Before v1.0 release, we plan to:
-- [ ] Independent cryptographic review
-- [ ] Professional security audit
-- [ ] Formal security model documentation
-- [ ] Extensive fuzzing and edge case testing
-- [ ] Peer review by established cryptographers
-
-## Contact
-
-- **Security issues**: security@grifortis.com *(or GitHub Security Advisory)*
-- **General questions**: Open a GitHub Discussion
-- **Project maintainer**: [@renatoslopes](https://github.com/renatoslopes)
-
-## References
-
-This specification builds on:
-- Shamir, A. (1979). "How to Share a Secret"
-- BIP39: Mnemonic code for generating deterministic keys
-- Modern secret sharing research and best practices
+Response time: Within 48 hours
 
 ---
 
-**Remember**: When in doubt, report it. False positives are better than overlooked vulnerabilities.
+## Scope
 
-*Last updated: November 25, 2025*
+This repository contains the **specification and reference implementation** for Schiavinato Sharing. Security issues may relate to:
 
+- Mathematical/cryptographic flaws in the specification
+- Implementation bugs in the reference HTML tool
+- Security validation experiment issues
+- Documentation that could mislead implementers
+
+For production library vulnerabilities:
+- **JavaScript/TypeScript**: [schiavinato-sharing-js security](https://github.com/GRIFORTIS/schiavinato-sharing-js/security)
+- **Python**: [schiavinato-sharing-py security](https://github.com/GRIFORTIS/schiavinato-sharing-py/security)
+
+---
+
+## Security Status
+
+**⚠️ EXPERIMENTAL - NOT AUDITED**
+
+This specification and reference implementation have **NOT** been professionally audited.
+
+**DO NOT USE FOR REAL FUNDS** until:
+- Professional security audit completed
+- Extensive peer review conducted
+- Production testing in controlled environments
+- v1.0 release
+
+For now, use this for **learning, experimentation, and contribution only**.
+
+---
+
+## Known Security Considerations
+
+### 1. Checksum Integrity (Not Authenticity)
+
+The scheme includes error detection checksums but **NOT cryptographic authentication**.
+
+**Implication**: Checksums detect accidental errors but cannot prevent intentional tampering by adversaries with access to shares.
+
+See the Whitepaper (Section 6.4) for detailed discussion:
+- PDF: https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf
+- LaTeX source: https://github.com/GRIFORTIS/schiavinato-sharing-spec/blob/main/WHITEPAPER.tex
+
+### 2. Share Distribution Security
+
+Security depends on:
+- Keeping shares physically separate
+- Protecting shares from unauthorized access
+- Trusting share custodians
+
+The scheme cannot protect against:
+- Collusion of k or more shareholders
+- Compromise of k or more share storage locations
+
+### 3. Manual Computation Risks
+
+Pencil-and-paper mode is vulnerable to:
+- Arithmetic errors (detected by checksums)
+- Observation by adversaries (use private space)
+- Physical document security
+
+### 4. Reference Implementation Limitations
+
+The HTML reference implementation:
+- Is not optimized for production
+- May have browser-specific behaviors
+- Should be verified independently before use
+
+Use production libraries for real applications.
+
+---
+
+## Validation Experiments
+
+This repository includes security validation experiments in `security-validation/`:
+
+**Completed:**
+- Experiment 1: Entropy Conservation
+- Experiment 2: Adversarial Constraint Solving
+
+These are research experiments, not formal security proofs. See `security-validation/README.md` for details.
+
+---
+
+## Secure Usage Guidelines
+
+### For Testing
+
+1. **Never use real mnemonics** for testing
+2. Generate test mnemonics specifically for experiments
+3. Verify test vector results match expected outputs
+
+### For Future Production Use (Post-Audit)
+
+1. **Air-gapped environments** for sensitive operations
+2. **Verify checksums** for all downloads
+3. **Test recovery** before real use
+4. **Store shares separately** in different locations
+5. **Document locations** securely
+6. **Review security updates** regularly
+
+---
+
+## RFC Feedback Period
+
+**Through January 31, 2026**
+
+We actively seek security analysis and feedback:
+
+- Mathematical analysis and proofs
+- Cryptographic security review
+- Attack scenarios and threat modeling
+- Implementation security considerations
+- Formal verification efforts
+
+Please report findings via:
+- **Critical vulnerabilities**: security@grifortis.com (private)
+- **Academic feedback**: GitHub Issues (public, use "Security Analysis" label)
+- **General discussion**: GitHub Discussions
+
+---
+
+## Security Disclosure Timeline
+
+For privately reported vulnerabilities:
+
+1. **Day 0**: Initial report received
+2. **Day 1-2**: Acknowledgment sent, initial assessment
+3. **Day 3-7**: Detailed analysis, develop fix if needed
+4. **Day 7-14**: Coordinate disclosure with reporter
+5. **Day 14+**: Public disclosure with credit to reporter
+
+Critical issues affecting production implementations will be disclosed immediately after fixes are available.
+
+---
+
+## Supported Versions
+
+| Version | Status | Security Updates |
+|---------|--------|------------------|
+| 0.4.x   | ✅ RFC Active | Yes |
+| 0.3.x   | ⚠️ Superseded | Critical only |
+| 0.2.x   | ⚠️ Superseded | Critical only |
+| 0.1.x   | ⚠️ Superseded | Critical only |
+| < 0.1.0 | ❌ Pre-release | No |
+
+---
+
+## Security Audit Status
+
+- **Status**: Awaiting professional audit
+- **Estimated Timeline**: After RFC period (Q2 2026)
+- **Scope**: Full specification and reference implementation
+
+We welcome:
+- Academic security analysis
+- Independent implementation reviews
+- Formal verification efforts
+- Recommendations for audit firms
+
+---
+
+## Best Practices for Contributors
+
+1. **Never commit secrets** or private keys
+2. **Review security implications** of changes
+3. **Document security considerations** in PRs
+4. **Report issues privately** first
+5. **Follow constant-time practices** when relevant
+6. **Keep dependencies updated**
+7. **Test error handling** thoroughly
+
+---
+
+## Related Security Policies
+
+- **Production JS Library**: [schiavinato-sharing-js/SECURITY.md](https://github.com/GRIFORTIS/schiavinato-sharing-js/blob/main/SECURITY.md)
+- **Production Python Library**: [schiavinato-sharing-py/SECURITY.md](https://github.com/GRIFORTIS/schiavinato-sharing-py/blob/main/SECURITY.md)
+- **Code of Conduct**: [CODE_OF_CONDUCT.md](../CODE_OF_CONDUCT.md)
+- **Contributing Guidelines**: [CONTRIBUTING.md](../CONTRIBUTING.md)
+
+---
+
+## References
+
+- **Whitepaper**: [PDF](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest/download/WHITEPAPER.pdf) ([LaTeX](../WHITEPAPER.tex)) - Full security analysis
+- **RFC Document**: [RFC.md](../RFC.md) - RFC status and process
+- **Validation Study**: [PRELIMINARY_VALIDATION_STUDY.md](../PRELIMINARY_VALIDATION_STUDY.md)
+- **Test Vectors**: [TEST_VECTORS.md](../TEST_VECTORS.md)
+
+---
+
+## Contact
+
+- **Security Issues**: security@grifortis.com
+- **Response Time**: Within 48 hours
+- **PGP Key**: Available upon request
+
+---
+
+**Last Updated**: December 2025  
+**Maintained by**: [GRIFORTIS](https://github.com/GRIFORTIS)

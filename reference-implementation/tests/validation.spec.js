@@ -16,7 +16,7 @@ import {
 
 test('create shares with invalid BIP39 checksum shows error modal', async ({ page }) => {
   // Valid mnemonic except last word changed to "apple"
-  const invalidMnemonic = 'sand design enrich young absurd maximum fancy obvious system code spider grit toilet minimum also orchard birth scatter horn bargain beauty media rapid apple';
+  const invalidMnemonic = 'abandon zoo enhance young join maximum fancy call minimum code spider olive alcohol system also share birth profit horn bargain beauty media rapid apple';
   
   console.log('Phase 1: Opening app and navigating to Create Shares...');
   await openApp(page);
@@ -58,7 +58,7 @@ test('create shares with invalid BIP39 checksum shows error modal', async ({ pag
 
 test('recovery with modified data shows BIP39 warning', async ({ page }) => {
   // Same test mnemonic
-  const originalMnemonic = 'sand design enrich young absurd maximum fancy obvious system code spider grit toilet minimum also orchard birth scatter horn bargain beauty media rapid parade';
+  const originalMnemonic = 'abandon zoo enhance young join maximum fancy call minimum code spider olive alcohol system also share birth profit horn bargain beauty media rapid tattoo';
   
   // PHASE 1: Create Shares (same as happy path)
   console.log('Phase 1: Creating shares...');
@@ -74,13 +74,13 @@ test('recovery with modified data shows BIP39 warning', async ({ page }) => {
   const share1 = await extractShareData(page, 0);
   const share2 = await extractShareData(page, 1);
   
-  // MODIFY: Add 1 mod(2053) to GlobalChecksum, Word1, and Checksum1
-  share1.globalChecksum = modifyShareValue(share1.globalChecksum);
+  // MODIFY: Add 1 mod(2053) to GlobalIntegrityCheck, Word1, and Checksum1
+  share1.globalIntegrityCheck = modifyShareValue(share1.globalIntegrityCheck);
   share1.words[0] = modifyShareValue(share1.words[0]);
   share1.checksums[0] = modifyShareValue(share1.checksums[0]);
   
   console.log('Modified share 1:', {
-    globalChecksum: share1.globalChecksum,
+    globalIntegrityCheck: share1.globalIntegrityCheck,
     word1: share1.words[0],
     checksum1: share1.checksums[0]
   });
