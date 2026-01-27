@@ -37,32 +37,12 @@ jobs:
           cd reference-implementation
           gpg --batch --yes --clearsign --armor --default-key ${{ steps.import_pgp.outputs.fingerprint }} schiavinato_sharing.html.sha256
 
-      - name: Upload checksum to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: reference-implementation/schiavinato_sharing.html.sha256
-          asset_name: schiavinato_sharing.html.sha256
-          asset_content_type: text/plain
+      - name: Upload release assets
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} \
+            reference-implementation/schiavinato_sharing.html.sha256 \
+            reference-implementation/schiavinato_sharing.html.asc \
+            reference-implementation/schiavinato_sharing.html.sha256.asc \
+            --clobber
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload HTML signature to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: reference-implementation/schiavinato_sharing.html.asc
-          asset_name: schiavinato_sharing.html.asc
-          asset_content_type: application/pgp-signature
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload checksum signature to release
-        uses: actions/upload-release-asset@v1
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: reference-implementation/schiavinato_sharing.html.sha256.asc
-          asset_name: schiavinato_sharing.html.sha256.asc
-          asset_content_type: application/pgp-signature
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
