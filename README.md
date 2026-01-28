@@ -127,6 +127,120 @@ See [reference-implementation/README.md](reference-implementation/README.md) for
 
 ---
 
+## 🔐 Verifying Release Authenticity
+
+**CRITICAL:** Before using the HTML file with real crypto seeds, verify it hasn't been tampered with.
+
+All official releases are cryptographically signed with GRIFORTIS GPG key. Follow these steps to verify:
+
+### Step 1: Import GRIFORTIS Public Key (One-Time Setup)
+
+```bash
+# Download and import the public key
+curl -fsSL https://raw.githubusercontent.com/GRIFORTIS/schiavinato-sharing-spec/main/GRIFORTIS-PGP-PUBLIC-KEY.asc | gpg --import
+```
+
+**Expected output:**
+```
+gpg: key 4CFE6248C57F15DF: public key "GRIFORTIS <security@grifortis.com>" imported
+gpg: Total number processed: 1
+gpg:               imported: 1
+```
+
+**Verify the key fingerprint:**
+```bash
+gpg --fingerprint security@grifortis.com
+```
+
+**Expected fingerprint:**
+```
+7921 FD56 9450 8DA4 020E  671F 4CFE 6248 C57F 15DF
+```
+
+⚠️ **If the fingerprint doesn't match exactly, DO NOT proceed. Report it immediately.**
+
+### Step 2: Download Release Files
+
+Download both the HTML file and its signature from the [latest release](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest):
+
+```bash
+# Example for v0.4.0 (replace with actual version)
+wget https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/download/v0.4.0/schiavinato_sharing.html
+wget https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/download/v0.4.0/schiavinato_sharing.html.asc
+```
+
+Or use `curl`:
+```bash
+curl -fsSL -O https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/download/v0.4.0/schiavinato_sharing.html
+curl -fsSL -O https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/download/v0.4.0/schiavinato_sharing.html.asc
+```
+
+### Step 3: Verify the Signature
+
+```bash
+gpg --verify schiavinato_sharing.html.asc schiavinato_sharing.html
+```
+
+**Expected output (signature is GOOD):**
+```
+gpg: Signature made [date]
+gpg:                using RSA key E73C2E9C97BB89D3B223C3E9E1AC5385F32E112A
+gpg: Good signature from "GRIFORTIS <security@grifortis.com>" [unknown]
+gpg: WARNING: This key is not certified with a trusted signature!
+gpg:          There is no indication that the signature belongs to the owner.
+Primary key fingerprint: 7921 FD56 9450 8DA4 020E  671F 4CFE 6248 C57F 15DF
+     Subkey fingerprint: E73C 2E9C 97BB 89D3 B223  C3E9 E1AC 5385 F32E 112A
+```
+
+✅ **"Good signature"** means the file is authentic and hasn't been modified.
+
+⚠️ The "WARNING" about untrusted signature is normal - it means you haven't explicitly marked this key as trusted in your GPG keyring. As long as the fingerprint matches, the file is authentic.
+
+### Step 4: Verify Checksums (Optional but Recommended)
+
+```bash
+# Download checksums and signature
+curl -fsSL -O https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/download/v0.4.0/CHECKSUMS.txt
+curl -fsSL -O https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/download/v0.4.0/CHECKSUMS.txt.asc
+
+# Verify checksums file signature
+gpg --verify CHECKSUMS.txt.asc CHECKSUMS.txt
+
+# Verify HTML file checksum
+sha256sum --check CHECKSUMS.txt --ignore-missing
+```
+
+**Expected output:**
+```
+schiavinato_sharing.html: OK
+```
+
+### Common Issues
+
+**"gpg: command not found"**
+- **macOS:** `brew install gnupg`
+- **Ubuntu/Debian:** `sudo apt install gnupg`
+- **Windows:** Install [Gpg4win](https://gpg4win.org/)
+
+**"No public key"**
+- You skipped Step 1. Import the public key first.
+
+**"BAD signature"**
+- ❌ **DO NOT USE THIS FILE.** It has been modified or corrupted.
+- Download again from official GitHub releases only.
+- If problem persists, report to security@grifortis.com
+
+### Why Verify?
+
+Without verification, you cannot be certain:
+- The file came from GRIFORTIS
+- The file wasn't modified by an attacker
+- You're running the correct, audited code
+
+For a tool managing crypto seeds worth potentially millions, **verification is not optional.**
+
+---
+
 ## Getting Started
 
 ### For Users

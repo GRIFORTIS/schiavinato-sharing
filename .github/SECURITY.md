@@ -43,6 +43,29 @@ For now, use this for **learning, experimentation, and contribution only**.
 
 ---
 
+## Verifying Release Authenticity
+
+**All official releases are cryptographically signed with GPG.**
+
+Before using any release artifacts (especially the HTML reference implementation), you **MUST** verify their authenticity to ensure they haven't been tampered with.
+
+**📖 Complete verification guide:** See [README.md - Verifying Release Authenticity](../README.md#-verifying-release-authenticity)
+
+**Quick verification:**
+```bash
+# Import public key (one-time)
+curl -fsSL https://raw.githubusercontent.com/GRIFORTIS/schiavinato-sharing-spec/main/GRIFORTIS-PGP-PUBLIC-KEY.asc | gpg --import
+
+# Verify signature
+gpg --verify schiavinato_sharing.html.asc schiavinato_sharing.html
+```
+
+**Expected fingerprint:** `7921 FD56 9450 8DA4 020E  671F 4CFE 6248 C57F 15DF`
+
+⚠️ **Never skip verification** when using the tool with real crypto seeds.
+
+---
+
 ## Known Security Considerations
 
 ### 1. Checksum Integrity (Not Authenticity)
