@@ -3296,6 +3296,22 @@ TERMS OF USE & LIABILITY DISCLAIMER:
             // ==========================================================================
             // SECURITY UTILITIES
             // ==========================================================================
+            // Constant-Time Guarantees:
+            // All comparison functions in this section are designed to prevent timing
+            // side-channel attacks. Their constant-time properties are guaranteed by
+            // construction, not empirical testing:
+            // - Uses only constant-time primitives (XOR, OR, AND)
+            // - No conditional branching on secret data
+            // - Fixed iteration counts independent of input values
+            //
+            // This matches Bitcoin Core's security model: constant-time by design,
+            // verified through code review and static analysis, not runtime measurements.
+            //
+            // JavaScript's timing APIs (performance.now()) are too coarse and variable
+            // to reliably validate constant-time properties empirically. JIT optimization,
+            // OS scheduling, and garbage collection introduce noise that exceeds typical
+            // timing differences from side-channel vulnerabilities.
+            
             /**
              * Constant-time equality comparison for field elements.
              * Prevents timing attacks by avoiding early exit on mismatch.
