@@ -1,4 +1,3 @@
-import { expect } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import { dirname, resolve } from 'path';
 

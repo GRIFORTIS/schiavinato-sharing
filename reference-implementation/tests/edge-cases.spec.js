@@ -8,7 +8,6 @@ import {
   selectScheme,
   generateShares,
   extractShareData,
-  navigateToRecover,
   setupRecovery,
   fillRecoveryShare,
   createSyntheticShare

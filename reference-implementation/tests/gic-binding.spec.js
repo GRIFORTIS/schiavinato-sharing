@@ -14,7 +14,6 @@ import {
 } from './test-helpers.js';
 
 const FIELD_PRIME = 2053;
-const WORDS_PER_ROW = 3;
 
 // Test mnemonic (valid BIP39)
 const TEST_MNEMONIC = 'abandon zoo enhance young join maximum fancy call minimum code spider olive alcohol system also share birth profit horn bargain beauty media rapid tattoo';
