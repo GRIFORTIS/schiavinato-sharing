@@ -1,11 +1,18 @@
 # Schiavinato Sharing: Specification & Reference Implementation
 
+> ## ⚠️ EXPERIMENTAL - NOT AUDITED - DO NOT USE FOR REAL FUNDS
+> 
+> This specification has NOT been professionally audited. Use only for testing, learning, and experimentation.
+> 
+> **[See Security Status](#security-warning) for details.**
+
 **Human-Executable Secret Sharing for BIP39 Mnemonics**
 
 A pencil-and-paper arithmetic scheme for inheritance and disaster recovery
 
 [![RFC Status](https://img.shields.io/badge/RFC-Active%20through%20Jan%202026-blue)](RFC.md)
 [![Reference Tests](https://github.com/GRIFORTIS/schiavinato-sharing-spec/workflows/Reference%20Implementation%20Tests/badge.svg)](https://github.com/GRIFORTIS/schiavinato-sharing-spec/actions)
+[![Security: Experimental](https://img.shields.io/badge/Security-⚠️%20Experimental-red)](https://github.com/GRIFORTIS/schiavinato-sharing-spec#security-warning)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Whitepaper: CC BY 4.0](https://img.shields.io/badge/Whitepaper-CC%20BY%204.0-green.svg)](LICENSE-WHITEPAPER.md)
 
