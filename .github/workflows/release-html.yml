@@ -82,6 +82,36 @@ jobs:
             f.write("\n")
         PY
     
+    - name: Import GPG key
+      run: |
+        echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+        echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --quick-set-expire $(gpg --list-secret-keys --with-colons | grep fpr | head -1 | cut -d: -f10) 0
+    
+    - name: Sign HTML file with GPG
+      run: |
+        echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --armor --detach-sign reference-implementation/schiavinato_sharing.html
+        
+        # Verify signature
+        gpg --verify reference-implementation/schiavinato_sharing.html.asc reference-implementation/schiavinato_sharing.html
+        
+        echo "=== HTML GPG Signature Created ==="
+        ls -lh reference-implementation/schiavinato_sharing.html.asc
+    
+    - name: Sign checksums with GPG
+      run: |
+        # Sign CHECKSUMS.txt
+        echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --armor --detach-sign CHECKSUMS.txt
+        
+        # Sign CHECKSUMS.json
+        echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --armor --detach-sign CHECKSUMS.json
+        
+        # Verify signatures
+        gpg --verify CHECKSUMS.txt.asc CHECKSUMS.txt
+        gpg --verify CHECKSUMS.json.asc CHECKSUMS.json
+        
+        echo "=== Checksum GPG Signatures Created ==="
+        ls -lh CHECKSUMS.*.asc
+    
     - name: Create release tarball
       run: |
         tar -czf schiavinato-sharing-spec-${GITHUB_REF_NAME}.tar.gz \
@@ -97,15 +127,30 @@ jobs:
         
         sha256sum schiavinato-sharing-spec-${GITHUB_REF_NAME}.tar.gz > schiavinato-sharing-spec-${GITHUB_REF_NAME}.tar.gz.sha256
     
-    - name: Upload checksums to release
+    - name: Sign tarball with GPG
+      run: |
+        # Sign the tarball
+        echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --armor --detach-sign schiavinato-sharing-spec-${GITHUB_REF_NAME}.tar.gz
+        
+        # Verify signature
+        gpg --verify schiavinato-sharing-spec-${GITHUB_REF_NAME}.tar.gz.asc schiavinato-sharing-spec-${GITHUB_REF_NAME}.tar.gz
+        
+        echo "=== Tarball GPG Signature Created ==="
+        ls -lh schiavinato-sharing-spec-*.tar.gz.asc
+    
+    - name: Upload release artifacts with signatures
       uses: softprops/action-gh-release@v1
       with:
         files: |
+          reference-implementation/schiavinato_sharing.html.asc
           WHITEPAPER.pdf
           CHECKSUMS.txt
+          CHECKSUMS.txt.asc
           CHECKSUMS.json
+          CHECKSUMS.json.asc
           schiavinato-sharing-spec-*.tar.gz
           schiavinato-sharing-spec-*.tar.gz.sha256
+          schiavinato-sharing-spec-*.tar.gz.asc
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -20,29 +20,39 @@ jobs:
           cd reference-implementation
           sha256sum schiavinato_sharing.html > schiavinato_sharing.html.sha256
       
-      - name: Import PGP key
-        id: import_pgp
-        uses: crazy-max/ghaction-import-gpg@v6
-        with:
-          gpg_private_key: ${{ secrets.PGP_PRIVATE_KEY }}
-          passphrase: ${{ secrets.PGP_PASSPHRASE }}
+      - name: Import GPG key
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --quick-set-expire $(gpg --list-secret-keys --with-colons | grep fpr | head -1 | cut -d: -f10) 0
 
-      - name: Sign HTML file with PGP
+      - name: Sign HTML file with GPG
         run: |
           cd reference-implementation
-          gpg --batch --yes --detach-sign --armor --default-key ${{ steps.import_pgp.outputs.fingerprint }} schiavinato_sharing.html
+          echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --armor --detach-sign schiavinato_sharing.html
+          
+          # Verify signature
+          gpg --verify schiavinato_sharing.html.asc schiavinato_sharing.html
+          
+          echo "=== HTML GPG Signature Created ==="
+          ls -lh schiavinato_sharing.html.asc
 
-      - name: Sign checksum file with PGP
+      - name: Sign checksum file with GPG
         run: |
           cd reference-implementation
-          gpg --batch --yes --clearsign --armor --default-key ${{ steps.import_pgp.outputs.fingerprint }} schiavinato_sharing.html.sha256
+          echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --pinentry-mode loopback --armor --detach-sign schiavinato_sharing.html.sha256
+          
+          # Verify signature
+          gpg --verify schiavinato_sharing.html.sha256.asc schiavinato_sharing.html.sha256
+          
+          echo "=== Checksum GPG Signature Created ==="
+          ls -lh schiavinato_sharing.html.sha256.asc
 
-      - name: Upload release assets
+      - name: Upload release assets with signatures
         run: |
           gh release upload ${{ github.event.release.tag_name }} \
             reference-implementation/schiavinato_sharing.html.sha256 \
-            reference-implementation/schiavinato_sharing.html.asc \
             reference-implementation/schiavinato_sharing.html.sha256.asc \
+            reference-implementation/schiavinato_sharing.html.asc \
             --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
