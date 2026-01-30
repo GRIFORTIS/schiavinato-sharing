@@ -1,6 +1,16 @@
 # Reference Implementation: Schiavinato Sharing HTML Tool
 
-A self-contained, browser-based reference implementation of the Schiavinato Sharing scheme.
+A self-contained, single-file, air-gapped (offline) HTML reference implementation of the Schiavinato Sharing scheme.
+
+> ## ⚠️ EXPERIMENTAL - NOT AUDITED - DO NOT USE FOR REAL FUNDS
+>
+> This tool is provided for testing, learning, and experimentation only.
+
+[![Security: Experimental](https://img.shields.io/badge/Security-⚠️%20Experimental-red)](https://github.com/GRIFORTIS/schiavinato-sharing-spec#security-warning)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../LICENSE)
+[![Node.js Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![CI](https://github.com/GRIFORTIS/schiavinato-sharing-spec/actions/workflows/test-reference-implementation.yml/badge.svg)](https://github.com/GRIFORTIS/schiavinato-sharing-spec/actions/workflows/test-reference-implementation.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/GRIFORTIS/schiavinato-sharing-spec)](https://github.com/GRIFORTIS/schiavinato-sharing-spec/releases/latest)
 
 ## 📋 Overview
 
@@ -8,6 +18,8 @@ This directory contains:
 - **`schiavinato_sharing.html`** – Single-file HTML/JavaScript application (copy from `tools/html/` in migration)
 - **`tests/`** – Comprehensive Playwright test suite
 - **`docs/`** – Implementation documentation
+
+The reference implementation fully supports the **Triple-Lock Security Architecture** (Arithmetic, Transport, and Identity locks) and the **Dual-Mode** operation (Manual + Automated) defined in the specification.
 
 ## 🚀 Quick Start
 

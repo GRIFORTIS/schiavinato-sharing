@@ -2,19 +2,17 @@
 
 > ## ⚠️ EXPERIMENTAL - NOT AUDITED - DO NOT USE FOR REAL FUNDS
 > 
-> This specification has NOT been professionally audited. Use only for testing, learning, and experimentation.
+> This specification has NOT been audited. Use only for testing, learning, and experimentation. **We invite cryptographers and developers to review the spec and contribute.**
 > 
 > **[See Security Status](#security-warning) for details.**
 
-**Human-Executable Secret Sharing for BIP39 Mnemonics**
+**Dual-Mode Threshold Secret Sharing for BIP39 Mnemonics**
 
-A pencil-and-paper arithmetic scheme for inheritance and disaster recovery
+Operating directly on BIP39 word indices, Schiavinato Sharing runs over prime field $GF(2053)$ to enable both rapid computational convenience and full manual resilience. It is the only scheme offering universal BIP39 compatibility, flexible $k$-of-$n$ threshold sharing, and a "Triple-Lock" security architecture.
 
-[![RFC Status](https://img.shields.io/badge/RFC-Active%20through%20Jan%202026-blue)](RFC.md)
-[![Reference Tests](https://github.com/GRIFORTIS/schiavinato-sharing-spec/workflows/Reference%20Implementation%20Tests/badge.svg)](https://github.com/GRIFORTIS/schiavinato-sharing-spec/actions)
 [![Security: Experimental](https://img.shields.io/badge/Security-⚠️%20Experimental-red)](https://github.com/GRIFORTIS/schiavinato-sharing-spec#security-warning)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Whitepaper: CC BY 4.0](https://img.shields.io/badge/Whitepaper-CC%20BY%204.0-green.svg)](LICENSE-WHITEPAPER.md)
+[![RFC Status](https://img.shields.io/badge/RFC-Active%20through%20Mar%202026-blue)](RFC.md)
 
 ---
 
@@ -31,20 +29,42 @@ This repository contains the **complete specification** for the Schiavinato Shar
 
 ## What is Schiavinato Sharing?
 
-Schiavinato Sharing is a secret-sharing scheme specifically designed for **BIP39 mnemonic phrases** using **basic arithmetic in GF(2053)**. Unlike other schemes, it can be performed entirely **by hand** with pencil and paper, making it ideal for:
+Schiavinato Sharing is a dual-mode (manual + software) $k$-of-$n$ threshold secret sharing scheme for BIP39 mnemonics. It applies Shamir Secret Sharing over the prime field $GF(2053)$ directly to the 1-indexed BIP39 word indices (1..2048).
 
-- Long-term inheritance planning
-- Disaster recovery scenarios
-- Situations where digital tools are unavailable or untrusted
-- Family backup strategies
+It bridges the usability gap, enabling both rapid computational convenience (via air-gapped tools) and full manual resilience (pencil & paper).
 
 ### Key Features
 
-- **Human-executable**: Designed for pencil-and-paper computation
-- **BIP39-native**: Works directly with standard Bitcoin mnemonics
-- **Threshold schemes**: Support for k-of-n sharing (e.g., 2-of-3, 3-of-5)
-- **Cryptographically sound**: Based on Shamir's Secret Sharing principles
-- **Built-in checksums**: Detects errors in manual computation
+- **Triple-Lock Security Architecture**:
+    1.  **Arithmetic Lock**: A two-layer checksum (row + GIC) embedded in the polynomial structure detects calculation errors.
+    2.  **Transport Lock**: A Transport Hash validates the physical integrity of the digital envelope.
+    3.  **Identity Lock**: A Blinded Identity Tag binds shares to a specific wallet fingerprint, preventing substitution attacks.
+- **Dual-Mode Execution**:
+    - **Manual**: Fully executable with pencil, paper, and pre-computed Lagrange tables.
+    - **Automated**: Air-gapped HTML tool with QR/Bech32m transport.
+- **BIP39-Native**: Works directly with standard Bitcoin mnemonics (1-based indexing).
+- **Share Manifest**: A logistic aid for tracking shares and verifying integrity without recovering secrets.
+
+### Technical Constraints & Properties
+
+- **1-Based Indexing**: Strictly uses BIP39 indices 1–2048 (abandon=1, zoo=2048).
+- **GF(2053) Field**: Shares are computed in $GF(2053)$. Intermediate share values may occasionally fall outside the BIP39 range (values 0, 2049, 2050, 2051, 2052). These occur in ~0.24% of shares and are represented explicitly (e.g., `2049-2049`).
+- **No Passphrase Storage**: The BIP39 passphrase ("25th word") is **NOT** stored or recovered by the scheme. It must be backed up separately.
+
+---
+
+## Manual Execution Estimates
+
+The scheme is designed to be practical for manual execution. Observed times from experimental runs (zero errors):
+
+| Task | Configuration | Time |
+|------|---------------|------|
+| **Sharing** | 12 words, 2-of-3 | ~2h |
+| **Sharing** | 24 words, 3-of-5 | ~5h |
+| **Recovery** | 12 words, 2-of-3 | ~30 min |
+| **Recovery** | 24 words, 3-of-5 | ~60 min |
+
+*Note: Times include validation and transcription.*
 
 ---
 
@@ -92,7 +112,7 @@ This repository provides the **specification and reference implementation**. For
 
 **[@grifortis/schiavinato-sharing](https://github.com/GRIFORTIS/schiavinato-sharing-js)**
 
-Production-ready npm package for Node.js and browser environments.
+Primary npm library for Node.js and browser environments.
 
 ```bash
 npm install @grifortis/schiavinato-sharing
@@ -102,7 +122,7 @@ npm install @grifortis/schiavinato-sharing
 
 **[schiavinato-sharing](https://github.com/GRIFORTIS/schiavinato-sharing-py)**
 
-PyPI package for Python applications. (Coming soon)
+PyPI package for Python applications.
 
 ```bash
 pip install schiavinato-sharing
@@ -269,7 +289,7 @@ For a tool managing crypto seeds worth potentially millions, **verification is n
 
 ## RFC Status
 
-**Request for Comments Period**: Through January 31, 2026
+**Request for Comments Period**: Through March 31, 2026
 
 This specification is currently in RFC status, seeking community review and feedback. We welcome:
 
@@ -399,7 +419,7 @@ Special thanks to all contributors and reviewers who help make this specificatio
 
 ---
 
-**Status**: Experimental (RFC Period through January 31, 2026)  
+**Status**: Experimental (RFC Period through March 31, 2026)  
 **Created by**: [Renato Schiavinato Lopez](https://github.com/renatoslopes)  
 **Maintained by**: [GRIFORTIS](https://github.com/GRIFORTIS)
 
