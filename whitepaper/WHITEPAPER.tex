@@ -1,0 +1,1198 @@
+\documentclass[11pt]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{geometry}
+\usepackage[breaklinks]{hyperref}
+\usepackage{url}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{graphicx}
+
+% --- Version ---
+\newcommand{\SchiavinatoSharingVersion}{v0.4.0}
+
+% --- Theorem Environments ---
+\newtheorem{proposition}{Proposition}[section]
+\newtheorem{theorem}{Theorem}[section]
+
+% --- Formatting ---
+\geometry{a4paper, margin=1in}
+
+% Hyperlink setup
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue,
+    pdftitle={Schiavinato Sharing: Dual-Mode Threshold Secret Sharing for BIP39 Mnemonics},
+    pdfauthor={Renato Schiavinato Lopez}
+}
+
+% Header and Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small \textit{Schiavinato Sharing \SchiavinatoSharingVersion}}
+\fancyhead[R]{\small \today}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% Section Title Spacing
+\titlespacing{\section}{0pt}{14pt plus 4pt minus 2pt}{8pt plus 2pt minus 2pt}
+\titlespacing{\subsection}{0pt}{12pt plus 4pt minus 2pt}{6pt plus 2pt minus 2pt}
+\titlespacing{\subsubsection}{0pt}{10pt plus 4pt minus 2pt}{4pt plus 2pt minus 2pt}
+
+% --- Title Data ---
+\title{\textbf{Schiavinato Sharing: Dual-Mode Threshold Secret Sharing for BIP39 Mnemonics}}
+\author{
+    \textbf{Renato Schiavinato Lopez} \\
+    GRIFORTIS \\
+    \texttt{https://grifortis.com}
+}
+\date{\today}
+
+\begin{document}
+
+\sloppy
+\maketitle
+
+\begin{abstract}
+    Crypto assets self-custody confronts two compounding fragilities. First, a single BIP39 mnemonic represents a single point of failure: loss, theft, or physical destruction results in permanent asset forfeiture. Second, recovery methods themselves introduce dependency on specific devices, software implementations, and vendor-maintained formats---creating risk across timescales from immediate hardware failure to multi-decade technological obsolescence.
+    
+    No existing scheme simultaneously offers: (1) universal BIP39 input/output compatibility, (2) flexible $k$-of-$n$ threshold secret sharing with information-theoretic security, (3) dual-mode execution (computational and manual), and (4) auditable arithmetic simplicity.
+    
+    To address this, we present Schiavinato Sharing, a dual-mode threshold secret sharing scheme operating over prime field $GF(2053)$. This construction bridges the usability gap, enabling both rapid computational convenience and full manual resilience (recovery typically requires 30--60 minutes; generation requires 2--5 hours).
+    
+    By operating directly on BIP39 word indices, share creation requires no fund transfers, and recovered secrets are immediately usable with any modern wallet. Integrity is enforced by a three-layer model: an Arithmetic Lock (two-layer checksum architecture) provides manual-verifiable error detection with negligible undetected-error probability under a random arithmetic/transcription error model (on the order of $10^{-30}$ for typical 24-word configurations); computational mode adds a Transport Lock (truncated SHA-256) for media integrity and an Identity Lock (BIP32 fingerprint-derived blinded identity tag) preventing substitution attacks.
+    
+    We explicitly invite cryptographic analysis regarding the integrity bounds when coupling BIP39's SHA-256 checksum with our linear checksums under active share tampering. Reference implementations (JavaScript/TypeScript, Python, HTML) and test vectors are available at \url{https://github.com/GRIFORTIS/schiavinato-sharing}.
+\end{abstract}
+
+\section{Introduction}
+
+Self-custody of crypto assets presents a fundamental challenge: control depends on a single secret---a BIP39 mnemonic~\cite{bip39}---serving as the master seed for hierarchical deterministic wallets~\cite{bip32}. If this secret is lost, assets become unrecoverable; if exposed, they can be stolen. Traditional backup strategies (e.g., a single mnemonic stored in a safe) concentrate risk and fail to provide resilience against technical dependency or environmental catastrophes~\cite{eskandari2015}.
+
+\subsection{The Sovereignty Gap}
+
+True self-custody is built on the principle of \textit{sovereignty}: the ability to control one's assets without permission from, or dependency on, any third party. However, current recovery methods introduce a fundamental vulnerability by centralizing trust in specific hardware devices, proprietary software implementations, and vendor-maintained formats. This technical dependency creates a critical risk across all timescales---from the immediate failure or loss of a specific device to the multi-decade challenge of technological obsolescence.
+
+The ecosystem currently exhibits a high degree of fragmentation. Proprietary formats from early hardware wallet generations, threshold schemes with incomplete adoption,\footnote{SLIP39~\cite{slip39} support remains uneven across implementations, requiring users to track device/software compatibility.} and discontinued software implementations demonstrate that recovery tools required at the time of backup creation may become unavailable or incompatible at the moment of recovery. When a user depends on a "black-box" computational tool to reconstruct their secret, they have traded physical sovereignty for digital convenience.
+
+\subsection{Existing Approaches and Trust Assumptions}
+
+Current threshold-based mnemonic protection solutions typically force a choice between computational efficiency and sovereign auditability.
+
+\paragraph{Electronic-only schemes.} SLIP39~\cite{slip39} and SSKR~\cite{sskr} implement Shamir's Secret Sharing over binary extension fields ($GF(2^{10})$ and $GF(2^8)$). While cryptographically sound, this representation requires polynomial arithmetic over $GF(2)$ that is manually intractable. Consequently, users are forced to depend entirely on specific software implementations to reconstruct their secrets. This creates a modern form of vendor lock-in: even if the output format is standard, the \textit{process} of recovery remains a closed computational loop inaccessible to human verification.
+
+\paragraph{Manual-capable schemes.} Codex32~\cite{codex32} (BIP-93) pioneered fully air-gapped secret sharing using BCH error-correction codes and paper computation wheels (volvelles). While it provides strong error correction and addresses the dependency gap, it requires mastery of complex, multi-step lookup procedures, presenting a steep learning curve that limits its immediate utility for non-technical users. Additionally, it uses bech32-style encoding rather than standard BIP39 words, requiring additional conversion steps.
+
+SeedXOR~\cite{seedxor} offers a simpler approach using XOR operations to split BIP39 mnemonics. While conceptually straightforward, XOR's algebraic properties fundamentally prevent flexible threshold selection---it is inherently an $n$-of-$n$ operation. Furthermore, SeedXOR provides weak error detection: a single arithmetic error propagates undetected until the final wordlist lookup, often necessitating a complete restart of the process.
+
+\paragraph{The gap.} No existing scheme simultaneously addresses these combined requirements for universal BIP39 compatibility, flexible threshold security, dual-mode operation, and auditable arithmetic. Addressing this gap is the primary motivation for Schiavinato Sharing.
+
+\subsection{Schiavinato Sharing: Sovereign Custody through Dual-Mode Resilience}
+
+Schiavinato Sharing is a dual-mode threshold secret sharing scheme for BIP39 mnemonics over prime field $GF(2053)$. The design is fundamentally driven by the principle of \textit{sovereign custody}: the total avoidance of vendor, device, and software dependency. While its mathematical construction is designed for long-horizon recoverability independent of specific vendors/devices/software, it is primarily a tool for active, sovereign protection of assets today.
+
+The core scheme---Shamir Secret Sharing over $GF(2053)$ with Shamir-shared linear checksums (the Arithmetic Lock)---is fully manual-capable. Unassisted manual generation typically requires 2--5 hours using standard office supplies, primarily due to the volume of polynomial evaluations and transcription required for redundancy. Manual recovery is significantly faster, requiring only 30--60 minutes for a complete reconstruction using pre-computed Lagrange coefficient tables. Computational mode augments this foundation with a Digital Envelope comprising QR codes and Bech32m-encoded strings~\cite{bip350} (reference encoding in Appendix~\ref{app:encoding}), while strictly maintaining the human-readable format for fallback. This hybrid output enables a defense-in-depth architecture with three independent integrity checks: the Arithmetic Lock (manual/computational), a Transport Lock (truncated SHA-256 for media corruption detection), and an Identity Lock (BIP32 fingerprint-derived blinded identity tag) to mitigate share substitution attacks.
+
+Computational implementations are available as air-gapped reference tools (single-file HTML for bootable environments like TailsOS, plus JavaScript/TypeScript and Python libraries). For scenarios where computational tools are unavailable or untrusted, manual mode provides a complete fallback. The scheme is mode-agnostic: shares generated computationally remain manually recoverable, and vice versa.
+
+A technical note: shares display all values in "index-word" format (e.g., 0001-abandon, 2048-zoo). Since $GF(2053)$ contains five elements beyond the BIP39 range, approximately 0.24\% of share values fall outside $\{1, \ldots, 2048\}$ and appear as "index-index" representations (0000-0000, 2049-2049, 2050-2050, 2051-2051, 2052-2052). This does not impair security or recovery correctness.
+
+Furthermore, the construction natively supports up to four layers of recursive composition (nesting). This allows for the implementation of complex custody policies---such as corporate multi-signature structures or multi-generational inheritance tiers---within a single, unified mathematical framework that remains manually verifiable.
+
+\subsection{Summary of Contributions}
+
+This paper formalizes Schiavinato Sharing and establishes its position within the cryptographic landscape. Our primary contributions include:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Algebraic Mapping for BIP39:} The formal application of Shamir's Secret Sharing over prime field $GF(2053)$, optimized for a 1-based native mapping of the BIP39 wordlist ($\text{abandon} = 1, \text{zoo} = 2048$).
+    \item \textbf{Three-Layer Integrity Model:} The definition of a unified integrity architecture: the Arithmetic Lock enables manual error detection, while the Transport and Identity Locks provide computational-mode enhancements for media corruption and share-substitution attack prevention.
+    \item \textbf{Architectural Interoperability:} A framework for bridging air-gapped computational environments with a high-assurance, auditable manual fallback, ensuring zero vendor lock-in.
+    \item \textbf{Hierarchical Recursive Nesting:} The formalization of multi-layer threshold compositions, enabling complex organizational governance models without departing from the core manual-capability requirements.
+\end{enumerate}
+
+\subsection{Paper Organization}
+
+Section~\ref{sec:background} reviews related work. Section~\ref{sec:constraints} articulates design constraints defining the architecture. Section~\ref{sec:technical} provides complete technical specification. Section~\ref{sec:example} demonstrates mechanics through worked example. Section~\ref{sec:security} analyzes security properties and presents open questions for peer review. Section~\ref{sec:implementation} describes reference implementations. Section~\ref{sec:discussion} discusses limitations and community engagement. Appendices contain the detailed usability pilot write-up (Appendix~\ref{app:validation}), physical security analysis, and extended discussions.
+
+\section{Background and Related Work}
+\label{sec:background}
+
+\subsection{Shamir's Secret Sharing}
+
+Shamir's Secret Sharing (SSS)~\cite{shamir1979} provides the cryptographic foundation. Given secret $s$ and parameters $(k, n)$, SSS splits $s$ into $n$ shares where any $k$ suffice to reconstruct $s$ and any $t < k$ reveal zero information about $s$ beyond its domain.
+
+\textbf{Construction.} Over finite field $GF(p)$ where $p > n$: (1) construct polynomial $f(x) = a_0 + a_1 x + \cdots + a_{k-1} x^{k-1}$ where $a_0 = s$ and coefficients sampled uniformly at random from $GF(p)$, (2) evaluate $f$ at $n$ distinct non-zero points to generate shares, (3) recover via Lagrange interpolation: $s = f(0) = \sum_{j=1}^k \gamma_j y_j$ where $\gamma_j$ depends only on share indices.
+
+\textbf{Security.} Information-theoretic (unconditional) secrecy: for any two candidate secrets, the distribution of any $t < k$ shares is identical. Security holds regardless of adversary computational resources, including quantum computers.
+
+\subsection{Linear Secret Sharing Schemes}
+
+Schiavinato Sharing is an instance of a Linear Secret Sharing Scheme (LSSS)~\cite{beimel2011}—a framework where share values are linear functions of underlying secrets. We Shamir-share the BIP39 word indices $(w_1,\ldots,w_{24})$ over $GF(2053)$, and add integrity fields computed \emph{linearly} from those word shares: 8 row checksum values and one Global Integrity Check (GIC). Concretely, each share contains 33 field elements (24 word values, 8 row checksum values, and the GIC value for that share index), but only the 24 word polynomials require independent randomness; the remaining fields are derived by linear combinations.
+
+By standard LSSS theory~\cite{cramer2000}, linear relationships among shared secrets do not compromise information-theoretic security: any authorized set of $k$ shares uniquely determines all secrets; any unauthorized set of $t < k$ shares reveals zero information, regardless of public linear constraints. Multi-secret sharing with linear relations is well-studied~\cite{blundo1993}.
+
+The two-layer checksum architecture (8 row checksums plus 1 Global Integrity Check, comprising the Arithmetic Lock within the broader three-layer integrity model) follows the tradition of error-detecting and verifiable secret sharing schemes~\cite{tompa1988,feldman1987} that augment standard Shamir sharing with redundancy. While classical Verifiable Secret Sharing uses cryptographic commitments, and code-based approaches like Codex32~\cite{codex32} employ BCH codes, Schiavinato's integrity fields optimize specifically for manual verification through elementary modular arithmetic. The GIC includes the share number, enabling share-number validation during recovery.
+
+This theoretical grounding establishes that Schiavinato's core security follows from established principles. The novel aspects—operating on BIP39-constrained secrets, dual-mode execution, and manual error detection—are engineering choices within a proven framework, not departures from it.
+
+\subsection{Positioning and Comparison with Existing Schemes}
+
+\paragraph{Electronic threshold schemes.} SLIP39~\cite{slip39} and SSKR~\cite{sskr} implement Shamir sharing over extension fields $GF(2^{10})$ and $GF(2^8)$ respectively, operating on binary entropy. While cryptographically sound and computationally efficient, field arithmetic (polynomial operations over $GF(2)$ reduced modulo irreducible polynomials) is impractical for manual execution. Both use custom formats rather than standard BIP39, requiring vendor-specific implementations.
+
+\paragraph{Manual-capable schemes.} Codex32~\cite{codex32} (BIP-93) pioneered manual Shamir sharing using BCH error-correction codes and paper computation wheels (volvelles). Provides error correction but requires mastery of complex multi-step lookup procedures; uses bech32-style encoding rather than standard BIP39. SeedXOR~\cite{seedxor} offers simple XOR operations but algebraic properties limit it to $n$-of-$n$ (all shares required); provides weak error detection.
+
+\paragraph{Positioning.} Schiavinato occupies a unique position: the only scheme combining (1) native BIP39 interoperability, (2) flexible threshold secret sharing with information-theoretic security, (3) dual-mode operation as co-equal features, and (4) verifiable arithmetic through standard integer operations. Additionally, the construction natively supports up to four layers of hierarchical recursive nesting, enabling complex governance models without sacrificing manual auditability. We position Schiavinato as complementary to existing threshold schemes (e.g., SLIP39/SSKR) and manual-capable approaches (e.g., Codex32/SeedXOR), not as a replacement. See Tables~\ref{tab:manual} and~\ref{tab:electronic} for detailed comparisons.
+
+\paragraph{Manual Execution Performance.} The time requirements for Schiavinato Sharing scale linearly with the mnemonic length and the threshold $k$. While a 24-word, 3-of-5 scheme serves as our high-security benchmark for the complete manual lifecycle (5 hours for generation and 60 minutes for recovery), simpler configurations like a 12-word mnemonic in a 2-of-3 threshold are significantly more efficient (2 hours for generation and 30 minutes for recovery).
+
+\paragraph{Distinct problem space.} Other custody solutions---MPC wallets, multisignature schemes, smart contract social recovery~\cite{buterin}---address \textit{operational security} for active asset management: transaction signing, policy enforcement, and real-time access control. We classify these as \textit{stateful operational schemes}, as they require ongoing interaction and network coordination. In contrast, Schiavinato is a \textit{stateless offline recovery scheme} designed for \textit{cold storage and disaster recovery}: long-term backup with manual capability. These problem spaces are complementary. MPC wallets still require backup strategies; Schiavinato can protect those recovery mechanisms or serve as an independent cold storage layer.
+
+\begin{table*}[t]
+\centering
+\caption{Comparison of Manual-Capable Schemes (Benchmark: 24-word, 3-of-5 scheme)}
+\label{tab:manual}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Feature} & \textbf{Schiavinato} & \textbf{Codex32} & \textbf{SeedXOR} \\ \midrule
+Threshold support & Full $k$-of-$n$ & Full $k$-of-$n$ & Primarily $n$-of-$n$ \\
+Manual complexity & Integer Modulo 2053 & Volvelles/tables & XOR operations \\
+Integrity Mechanism & Detection (random-error model) & Correction (BCH) & Weak/None \\
+Composition & Recursive (4 layers) & Flat & Flat \\
+Output format & Standard BIP39 & Custom bech32 & Standard BIP39 \\
+Computational tools & \textbf{Available} & Manual-first & Not provided \\
+Recovery time & 30--60 minutes & 4--8 hours & 1--2 hours \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{Comparison with Electronic Threshold Schemes}
+\label{tab:electronic}
+\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Feature} & \textbf{Schiavinato} & \textbf{SLIP39} & \textbf{SSKR} \\ \midrule
+Algebraic Field & Prime $GF(2053)$ & Extension $GF(2^{10})$ & Extension $GF(2^8)$ \\
+Operation on & Word indices & Binary entropy & Binary entropy \\
+BIP39 Native & Input \& Output & Entropy only & Entropy only \\
+Manual operation & \textbf{Complete lifecycle} & No & No \\
+Electronic tools & \textbf{Available (optional)} & Required & Required \\
+Vendor Lock-in & Zero (BIP39 Native) & High (Format-dependent) & High (Format-dependent) \\
+Output format & BIP39 & Custom & Binary \\
+Interoperability & \textbf{Native BIP39} & Limited & Minimal \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{Design Constraints and Architecture}
+\label{sec:constraints}
+
+Schiavinato Sharing emerged from analyzing the requirements for resilient self-custody in the presence of rapid technological evolution. Four constraints, taken together, define the design space.
+
+\subsection{Constraint 1: Dual-Mode Operation with Verifiable Arithmetic}
+
+\paragraph{Requirement.} The scheme must enable both computational convenience for routine operation and manual capability for long-term assurance, with all operations verifiable through transparent arithmetic.
+
+\paragraph{Design implications.} This constraint eliminates extension field arithmetic ($GF(2^n)$) used by SLIP39~\cite{slip39} and SSKR~\cite{sskr}. While extension fields provide computational efficiency through shift-and-XOR operations, their polynomial arithmetic over $GF(2)$ reduced modulo irreducible polynomials is opaque to users—operations are neither manually executable nor easily verifiable without specialized knowledge and tools.
+
+Prime field $GF(2053)$ satisfies both requirements: microprocessors perform standard integer arithmetic efficiently (multiply, add, modulo); humans can execute and verify the identical operations with calculator or pencil. The mathematics are transparent, auditable, and implementable in both computational and manual contexts.
+
+\paragraph{Computational mode.} Reference implementations (Section~\ref{sec:implementation}) handle all field arithmetic, polynomial evaluation, and checksum validation automatically. Share generation: sample $\ell$ independent degree-$(k-1)$ polynomials for the $\ell$ word indices and evaluate at $n$ points; derive the $r$ row checksum values by linear combinations; compute the GIC for each share index. Share recovery: validate each input share using the GIC (word-sum+$x$ and checksum-sum+$x$), perform Lagrange interpolation for the $\ell$ word indices (and interpolate row checksums as needed for row validation), then verify row checksums. Time: typically a few minutes for both generation and recovery in the reference tools. Serves routine operational needs when trusted computational devices are available.
+
+\paragraph{Manual mode.} The complete lifecycle---both generation and recovery---is manually executable using only basic arithmetic.
+
+\textit{Generation:} User generates cryptographically secure random coefficients to construct independent polynomials for the 24 word indices. Using optimized manual sampling methods (e.g., the Schiavinato RNG: a manual uniform sampler for coefficients in $GF(2053)$; Appendix~\ref{app:manual-rng}), this entropy generation phase is feasible in practice (e.g., on the order of 30--40 minutes for a 24-word, 3-of-5 configuration, which requires 48 random coefficients). The remaining 9 polynomials (8 row checksums + 1 GIC) are derived linearly by summing the word polynomials, requiring no additional entropy. Evaluating these 33 polynomials at $n$ share indices and validating the checksum architecture typically requires about 2 hours for a 24-word, 3-of-5 scheme; end-to-end manual sharing (including transcription/materialization) is typically about 5 hours for that benchmark configuration (Section~\ref{sec:background}).
+
+\textit{Recovery:} Pre-computed Lagrange coefficient tables eliminate polynomial construction. Operations reduce to three types: (1) coefficient lookup from published tables, (2) multiply and accumulate with modular reduction, (3) verify checksums at row and global levels. In our measurements, a complete recovery for a 24-word, 3-of-5 scheme requires approximately 60 minutes (40 minutes for core arithmetic recovery and validation, plus 20 minutes for share validation and transcription). Simpler configurations (12-word, 2-of-3) can complete in roughly 30 minutes. Provides insurance for scenarios where compatible electronics are unavailable, obsolete, or untrusted.
+
+Crucially, the manual workflow is encapsulated and repetitive, with natural checkpoints (per-share, per-row, and global validation) that allow the process to be paused and resumed in short, low-risk segments rather than requiring a single uninterrupted session.
+
+\paragraph{Operational transparency.} Both modes execute identical mathematical operations---only the executor differs (silicon vs human).\footnote{Some computational-mode components (e.g., QR/Bech32m encoding, Transport Hash, and the BIP32 fingerprint-derived blinded identity tag) are engineering choices to improve usability and tamper-resistance in software workflows; they are not required for manual recovery and do not change the information-theoretic confidentiality guarantees of the underlying $GF(2053)$ sharing. Reasonable design disagreements may exist at this layer without affecting the core construction.} Every calculation is user-verifiable with any calculator: multiply each share value by its Lagrange coefficient, sum the products, reduce modulo 2053.
+
+\subsection{Constraint 2: Information-Theoretic Security}
+
+\paragraph{Requirement.} Standard Shamir Secret Sharing security guarantees: any $k$ shares uniquely determine secret; any $t < k$ reveal zero information beyond domain.
+
+\paragraph{Design implications.} We instantiate standard Shamir~\cite{shamir1979} over $GF(2053)$ without modification. For the 24 word indices, we construct independent polynomials of degree $k-1$ with cryptographically secure random coefficients. Row checksum polynomials and the GIC polynomial are derived linearly from the word polynomials, and the GIC includes the share number at evaluation time (Section~\ref{sec:technical}).
+
+\paragraph{Security reduction.} Information-theoretic security follows directly from Shamir's original construction. For any two candidate secrets $s_0, s_1 \in GF(2053)$, distribution of $t < k$ shares is identical whether secret is $s_0$ or $s_1$. This is \textit{information-theoretic} (unconditional) secrecy, not computational—holds regardless of adversary resources including quantum computers.
+
+Effective keyspace remains $\approx 2^{256}$ for 24-word mnemonics (determined by BIP39 entropy generation). Sharing over $GF(2053)$ maps word indices into larger ambient field without compressing entropy. We introduce no additional cryptographic assumptions beyond those required by BIP39 and standard Shamir sharing.
+
+\subsection{Constraint 3: BIP39 Native Integration}
+
+\paragraph{Requirement.} The scheme must accept standard BIP39 mnemonics as input and produce standard BIP39 mnemonics as output, ensuring universal compatibility with the existing wallet ecosystem.
+
+\paragraph{Design implications.} Schiavinato operates directly on the 1-based indices of the standard BIP39 wordlist. While schemes like SSKR also achieve BIP39 input/output compatibility, they rely on custom encodings (Bytewords, UR) for the shares themselves, mandating software for interpretation. Schiavinato shares reuse the native BIP39 alphabet (words and indices). This design choice is what enables the manual recovery path: users process the shares using the same vocabulary as the secret, without needing software to decode the share format first.
+
+\paragraph{Long-term viability guarantees.} This integration provides three critical properties:
+
+\textit{Universal Compatibility}: As with SSKR, Schiavinato preserves standard BIP39 input/output: the recovered output is a standard BIP39 mnemonic compatible with existing wallets.
+
+\textit{Zero Tooling Dependency}: This is the critical differentiator. While SSKR is forward-compatible with wallets \textit{once recovered}, the recovery process itself depends on specific software tools. If those tools become unavailable or incompatible with future OSs, recovery is blocked. Schiavinato's recovery depends only on the mathematics (public domain) and the wordlist (standard), ensuring the \textit{capability to recover} persists as long as the standard does.
+
+\textit{Vendor Agnosticism}: Users are not dependent on GRIFORTIS or any specific software maintainer. If the project disappears, the construction remains valid and executable indefinitely.
+
+\paragraph{Multi-chain protection.} Because BIP39 is de facto standard across cryptocurrency ecosystem, single Schiavinato-protected mnemonic secures assets across multiple blockchains: Bitcoin, Ethereum (and EVM chains: Polygon, Arbitrum, Optimism), Cosmos ecosystem, Polkadot, Cardano, Solana, and modern smart contract platforms. Different blockchains accessed via distinct BIP32~\cite{bip32}/BIP44~\cite{bip44} derivation paths from same master seed. One sharing instance protects entire multi-chain portfolio.
+
+\paragraph{Passphrase Independence.} The BIP39 specification defines an optional passphrase (informally the ``25th word'') used for seed derivation. Schiavinato Sharing deliberately treats this passphrase as an independent layer and does not attempt to shard or encode it. Folding the passphrase into the shared structure would blur the clean boundary of the BIP39 model and complicate interoperability. Consequently, users relying on a passphrase must manage its backup separately; the recovered mnemonic alone will not access the passphrase-protected wallet.
+
+\subsection{Constraint 4: The Triple-Lock Security Architecture}
+\label{sec:triple-lock}
+
+\paragraph{Requirement.} Manual arithmetic and physical share handling create multiple error and attack vectors. The scheme must provide defense-in-depth to detect both accidental errors and active tampering without requiring constant electronic validation.
+
+\paragraph{The Triple-Lock Design.} To address these risks, we implement a three-layer integrity architecture that protects the secret across different stages of the recovery lifecycle.
+
+\textit{1. Arithmetic Lock (Integrity of Calculation):} This layer protects against human error during modular arithmetic. BIP39's intrinsic checksum is too weak for multi-step manual recovery: for a 12-word mnemonic it is only 4 bits, offering a false positive rate of $2^{-4} = 6.25\%$.\footnote{For 24 words, the checksum is 8 bits ($2^{-8} \approx 0.39\%$), still far too weak for long manual workflows.} We include 9 additional integrity fields (8 row checksums + the Global Integrity Check) computed linearly from the word shares. The Global Integrity Check also includes the share number, enabling share-number validation during recovery. This provides row-level feedback and error localization, and enables per-share validation before recovery. Under a random arithmetic/transcription error model, the probability of an incorrect recovery passing all integrity checks is negligible (Proposition~\ref{prop:checksum}).
+
+\textit{2. Transport Lock (Integrity of Media):} This layer protects the physical or digital integrity of individual shares during storage and transport. Each share's digital payload (e.g., in a QR code) includes a 16-byte truncated SHA-256 hash~\cite{fips1804} of the encoded header and share data (reference encoding in Appendix~\ref{app:encoding}). This provides a $2^{-128}$ detection rate for random bit flips, scanning errors, or physical damage to the media before any mathematical processing begins.
+
+\textit{3. Identity Lock (Integrity of Source):} This layer prevents share substitution or "denial-of-inheritance" attacks where an adversary replaces a share with one from a different wallet. We embed a \textit{Blinded Identity} tag: an HMAC-SHA256 hash~\cite{rfc2104} generated using the wallet's BIP32 Master Key Fingerprint~\cite{bip32} as the key over a random Session Batch ID. During recovery, the software re-derives the fingerprint from the reconstructed mnemonic and verifies the HMAC, linking the shares to the specific wallet identity while keeping the fingerprint itself cryptographically concealed.
+
+\section{Technical Specification}
+\label{sec:technical}
+
+\subsection{Scheme Definition}
+\label{sec:scheme-def}
+
+\paragraph{Parameters and notation.}
+\begin{itemize}[noitemsep]
+    \item \textbf{Threshold parameters:} $(k, n)$ where $2 \leq k \leq n$
+    \item \textbf{Field:} Prime field $GF(p)$ with $p = 2053$ (smallest prime $> 2048$)
+    \item \textbf{BIP39 mnemonic:} Sequence of $\ell \in \{12, 15, 18, 21, 24\}$ words from standard 2048-word list
+    \item \textbf{Share indices:} Distinct nonzero field elements; in this specification we use $x \in \{1, \ldots, n\} \subset GF(2053)$
+    \item \textbf{Mnemonic words:} $(w_1, \ldots, w_\ell) \in GF(2053)^{\ell}$ where $w_i \in \{1, \ldots, 2048\}$ are BIP39 word indices (1-indexed)
+    \item \textbf{Row checksums (integrity values):} $r = \ell/3$ and $c_j = (w_{3j-2} + w_{3j-1} + w_{3j}) \bmod 2053$ for $j = 1, \ldots, r$
+    \item \textbf{Global Integrity Check (GIC):} For share index $x$, the GIC value is:
+    \[
+    GIC(x) = \left(\sum_{j=1}^{r} y_{c_j}^{(x)} + x\right) \bmod 2053 \equiv \left(\sum_{i=1}^{\ell} y_{w_i}^{(x)} + x\right) \bmod 2053
+    \]
+    where $y_{w_i}^{(x)}$ and $y_{c_j}^{(x)}$ are the share values stored for words and row checksums, respectively.
+    Equivalently, define the derived polynomial $f_{GIC}(x) = \sum_{j=1}^{r} f_{c_j}(x) \bmod 2053$; each share stores exactly one check value $GIC(x) = (f_{GIC}(x) + x) \bmod 2053$, and $f_{GIC}(0) = \sum_{j=1}^{r} c_j \equiv \sum_{i=1}^{\ell} w_i \pmod{2053}$ is the corresponding global sum at $x=0$.
+    \begin{itemize}[noitemsep]
+        \item Per share, the scheme stores $\ell$ word values, $r$ row checksum values, and one GIC value (total: $\ell + r + 1$ field elements).
+    \end{itemize}
+    \item \textbf{Metadata and Envelope:}
+    \begin{itemize}[noitemsep]
+        \item \textbf{Batch ID:} $B \in \{0, \ldots, 2^{64}-1\}$ (random session identifier)
+        \item \textbf{Blinded Identity:} $I \in \{0, \ldots, 2^{64}-1\}$, computed as $\text{Trunc}_{64}(\text{HMAC-SHA256}(key=F,\ msg=B))$, where $F$ is the BIP32 Master Key Fingerprint and $B$ is the session Batch ID
+        \item \textbf{Transport Hash:} $H \in \{0, \ldots, 2^{128}-1\}$, defined as the first 16 bytes of $\text{SHA-256}(\text{HeaderBytes}\parallel B\parallel I\parallel \text{ShareDataBytes})$ under the reference encoding of Appendix~\ref{app:encoding}
+    \end{itemize}
+    The BIP32 Master Key Fingerprint $F$ is derived from $M$ and used only as the HMAC key; it is not stored in shares.
+    \item \textbf{Share payload values:} Each share at index $x$ stores $(y_{w_1}^{(x)}, \ldots, y_{w_\ell}^{(x)}, y_{c_1}^{(x)}, \ldots, y_{c_r}^{(x)}, GIC(x))$, totaling $\ell + r + 1$ values in $GF(2053)$ (plus metadata). The recovery process uses $GIC(x)$ for per-share validation; it interpolates words (and may interpolate row checksums) at $x=0$.
+    \item \textbf{Example (24 words):} $24$ word values $+\,8$ row checksums $+\,GIC = 33$ values per share
+\end{itemize}
+
+\subsection{Non-secret Operational Metadata and Share Manifest (Optional)}
+\label{sec:manifest}
+
+\paragraph{Header metadata (non-secret).}
+For paper or otherwise human-transcribed shares, implementations SHOULD print a self-describing header to prevent operational recovery failures. In particular, for \emph{manual recovery without relying on any separate manifest}, the share MUST carry enough non-secret metadata to (a) be parsed unambiguously and (b) provide the share coordinates needed for interpolation.
+
+At minimum, a human-readable header SHOULD include:
+\begin{itemize}[noitemsep]
+    \item \textbf{Format identifier and version:} e.g., ``Schiavinato Sharing'' and a protocol/version tag, to avoid misinterpreting unrelated backups (cf.\ SLIP-0039, codex32).
+    \item \textbf{Mnemonic size:} the word count $\ell$ (equivalently the row count $r=\ell/3$), so the expected number of payload values is clear.
+    \item \textbf{Threshold:} $k$ (and optionally $n$). The value $k$ is required to know how many distinct shares are needed; it is not derivable from a single share.
+    \item \textbf{Share coordinate:} the share index $x$ (e.g., $x$-of-$n$). As a robustness fallback, $x$ can be recovered from the share contents when $GIC(x)$ and the row checksums are present and correctly labeled:
+    \[
+        x \equiv \left(GIC(x) - \sum_{j=1}^{r} y_{c_j}^{(x)}\right) \bmod 2053
+    \]
+    Printing $x$ remains strongly recommended to reduce human error and to simplify Lagrange coefficient selection.
+\end{itemize}
+
+Additional non-secret fields are OPTIONAL but often useful: session Batch ID $B$ (mixing-prevention), Blinded Identity tag $I$ (post-recovery identity check when software is available), wallet label, creation date, and coarse recovery hints such as ``passphrase required'' (without the passphrase itself) and a derivation/wallet-type hint to reduce ``correct mnemonic, wrong wallet'' false negatives during restore.
+
+\paragraph{Share Manifest (optional, tailored).} A Share Manifest is an optional, separate document that summarizes a sharing session for logistics (especially inheritance). A full manifest may list all produced shares with (i) share index $x$, (ii) the corresponding $GIC(x)$ value, and (iii) optional custodian/location hints. A minimal manifest may omit locations entirely and retain only scheme summary and recovery hints. Because it reduces plausible deniability and increases operational exposure, the manifest SHOULD be created only when the user explicitly prioritizes recoverability/logistics over deniability, and SHOULD be tailored accordingly (none/minimal/full).
+
+\paragraph{Leakage and risks.} The manifest is \textit{non-secret but sensitive}.
+\begin{itemize}[noitemsep]
+    \item \textbf{Cryptographic leakage (small).} Each $GIC(x)$ is one field element in $GF(2053)$ (about $\log_2(2053)\approx 11$ bits). If an adversary obtains at least $k$ distinct $GIC(x)$ values from the same session, they can interpolate the derived degree-$(k-1)$ polynomial (after removing the public $+x$ term) and recover its value at $x=0$, which equals a single linear relation of the mnemonic over $GF(2053)$ (approximately 11 bits total leakage). This is negligible relative to BIP39 entropy.
+    Under Grover-style quantum search, this does not change the information leaked, but it reduces the remaining brute-force work by a factor of about $\sqrt{2053}$ (i.e., roughly half the bit reduction).
+    \item \textbf{OPSEC exposure (practical).} A manifest can act as a map of the scheme (how many shares exist, which indices are valid, and potentially where they are stored), enabling targeted share-harvesting attacks. The manifest MUST NOT be co-stored with any share.
+    \item \textbf{Manifest-aware substitution.} The $GIC$ and row checksums are designed for error detection and localization, not as an authentication mechanism. A manifest-aware adversary may be able to fabricate a substituted share that matches the manifest's $GIC(x)$ (and internal checksum relationships), enabling recovery sabotage/denial-of-inheritance. When software is available, the Identity Lock (Section~\ref{sec:triple-lock}) provides stronger substitution resistance via blinded identity binding.
+\end{itemize}
+
+\paragraph{Heirs note (pointer).} Inheritance recovery benefits from dedicated, step-by-step operational guidance (separate from this paper). Non-sensitive decoding instructions (e.g., how to recognize and import QR/Bech32m/human-readable formats) may be stored with shares if desired, but location/custodian mappings and full manifests should be treated as sensitive OPSEC material. Regardless of optional assistance offerings, the construction is designed to remain recoverable without vendor dependency.
+
+\paragraph{Share generation algorithm.}
+
+\textbf{Input:} BIP39 mnemonic $M = (w_1, \ldots, w_\ell)$, threshold $(k, n)$
+
+\textbf{Output:} $n$ shares $S_1, \ldots, S_n$
+
+\textbf{Procedure:}
+\begin{enumerate}[noitemsep]
+    \item Compute $F$ from $M$ via BIP32 master key derivation.
+    \item Generate random Batch ID $B$.
+    \item Compute Blinded Identity $I = \text{HMAC-SHA256}(key=F, msg=B)$ truncated to 64 bits.
+    \item For each word $w_i \in \{w_1, \ldots, w_\ell\}$:
+    \begin{itemize}[noitemsep]
+        \item Sample random coefficients $a_1, \ldots, a_{k-2} \in \{0, \ldots, 2052\}$ uniformly
+        \item Sample $a_{k-1} \in \{1, \ldots, 2052\}$ uniformly (ensures degree exactly $k-1$)
+        \item Construct polynomial $f_{w_i}(x) = w_i + a_1 x + \cdots + a_{k-1} x^{k-1} \pmod{2053}$
+        \item Evaluate at share indices: $y_{w_i}^{(t)} = f_{w_i}(t) \bmod 2053$ for $t = 1, \ldots, n$
+    \end{itemize}
+    \item For each row checksum $c_j \in \{c_1, \ldots, c_r\}$:
+    \begin{itemize}[noitemsep]
+        \item Construct polynomial by summing word polynomials: $f_{c_j}(x) = (f_{w_{3j-2}}(x) + f_{w_{3j-1}}(x) + f_{w_{3j}}(x)) \bmod 2053$
+        \item Evaluate at share indices: $y_{c_j}^{(t)} = f_{c_j}(t) \bmod 2053$ for $t = 1, \ldots, n$
+        \item Validate per-share row checksum: verify $(y_{w_{3j-2}}^{(t)} + y_{w_{3j-1}}^{(t)} + y_{w_{3j}}^{(t)}) \bmod 2053 \stackrel{?}{=} y_{c_j}^{(t)}$ for all $t = 1, \ldots, n$; if any mismatch occurs, abort; indicates an implementation fault or data corruption
+    \end{itemize}
+    \item For Global Integrity Check:
+    \begin{itemize}[noitemsep]
+        \item Construct GIC polynomial by summing row checksum polynomials: $f_{GIC}(x) = \sum_{j=1}^{r} f_{c_j}(x) \bmod 2053$
+        \item Compute $GIC(t) = (f_{GIC}(t) + t) \bmod 2053$ for $t = 1, \ldots, n$
+        \item Validate the same $GIC(t)$ from the share contents (two equivalent checks):
+        \begin{itemize}[noitemsep]
+            \item Word-sum check: verify $\sum_{i=1}^{\ell} y_{w_i}^{(t)} + t \equiv GIC(t) \pmod{2053}$
+            \item Checksum-sum check: verify $\sum_{j=1}^{r} y_{c_j}^{(t)} + t \equiv GIC(t) \pmod{2053}$
+        \end{itemize}
+    \end{itemize}
+    \item Assemble share payloads: $P_t = (\text{Header}, B, I, y_{w_1}^{(t)}, \ldots, y_{w_\ell}^{(t)}, y_{c_1}^{(t)}, \ldots, y_{c_r}^{(t)}, GIC(t))$
+    \item For each $P_t$, compute Transport Hash $H_t$ as defined above using the reference encoding (Appendix~\ref{app:encoding}).
+    \item Final shares: $S_t = (P_t, H_t)$.
+\end{enumerate}
+
+\paragraph{Recovery algorithm.}
+
+\textbf{Input:} $k$ shares $S_{i_1}, \ldots, S_{i_k}$
+
+\textbf{Output:} BIP39 mnemonic $M = (w_1, \ldots, w_\ell)$ or error
+
+\textbf{Procedure:}
+\begin{enumerate}[noitemsep]
+    \item For each share $S_j = (P_j, H_j)$:
+    \begin{itemize}[noitemsep]
+        \item Verify Transport Lock: recompute the Transport Hash over the reference encoding of $P_j$ (Appendix~\ref{app:encoding}) and require it equals $H_j$.
+        \item If mismatch: return error (``Transport corruption detected in share $j$'').
+    \end{itemize}
+    \item Verify Identity Consistency: all shares must have identical Batch ID $B$ and Blinded Identity $I$.
+    \item Compute Lagrange coefficients for indices $\{i_1, \ldots, i_k\}$:
+    \[
+    \gamma_j = \prod_{\substack{t=1 \\ t \neq j}}^k \frac{i_t}{i_t - i_j} \pmod{2053} \quad \text{for } j = 1, \ldots, k
+    \]
+    \item Pre-recovery validation:
+    \begin{itemize}[noitemsep]
+        \item Lagrange coefficient sanity check: $\sum_{j=1}^{k} \gamma_j \cdot i_j \bmod 2053 \stackrel{?}{=} 0$
+        \item If nonzero: return error (``Lagrange coefficient error'')
+        \item For each share $j$ with index $i_j$ and $GIC(i_j)$:
+        \begin{itemize}[noitemsep]
+            \item Share-number validation via the GIC: because $GIC(x)$ includes $+x$, these checks fail if the share number is wrong/mislabeled.
+            \item Word-sum check: $U_j = \sum_{i=1}^{\ell} y_{w_i}^{(i_j)} \bmod 2053$, require $(U_j + i_j) \bmod 2053 \stackrel{?}{=} GIC(i_j)$
+            \item Checksum-sum check: $T_j = \sum_{\lambda=1}^{r} y_{c_\lambda}^{(i_j)} \bmod 2053$, require $(T_j + i_j) \bmod 2053 \stackrel{?}{=} GIC(i_j)$
+            \item If any mismatch: return error (``Share $j$ number validation failed'')
+        \end{itemize}
+    \end{itemize}
+    \item For each secret position $s \in \{w_1, \ldots, w_\ell, c_1, \ldots, c_r\}$:
+    \begin{itemize}[noitemsep]
+        \item Extract share values: $y_s^{(i_1)}, \ldots, y_s^{(i_k)}$ from shares
+        \item Interpolate: $s = \sum_{j=1}^k \gamma_j \cdot y_s^{(i_j)} \pmod{2053}$
+    \end{itemize}
+    \item Verify row checksums: for each row $j = 1, \ldots, r$:
+    \begin{itemize}[noitemsep]
+        \item Compute $\tilde{c}_j = (w_{3j-2} + w_{3j-1} + w_{3j}) \bmod 2053$
+        \item If $\tilde{c}_j \neq c_j$: return error (``Row $j$ checksum failed'')
+    \end{itemize}
+    \item Optional global cross-check: interpolate the stored per-share check values and compare against the recovered checksums:
+    \[
+        f_{GIC}(0) = \sum_{j=1}^{k} \gamma_j \cdot GIC(i_j) \pmod{2053}
+    \]
+    and verify $f_{GIC}(0) \equiv \sum_{\lambda=1}^{r} c_\lambda \pmod{2053}$ (equivalently $\sum_{i=1}^{\ell} w_i \pmod{2053}$). This works because the $+x$ terms in $GIC(x)$ cancel automatically under interpolation due to $\sum \gamma_j \cdot i_j = 0$.
+    \item Convert indices to BIP39 words: $M = (w_1, \ldots, w_\ell)$
+    \item Verify Identity Lock: Derive $\tilde{F}$ from $M$, compute $\tilde{I} = \text{HMAC-SHA256}(key=\tilde{F}, msg=B)$ truncated to 64 bits, and compare to $I$. If $\tilde{I} \neq I$: issue warning (``Identity tag mismatch'').
+    \item Return $M$
+\end{enumerate}
+
+\subsection{\texorpdfstring{Field Selection: $GF(2053)$}{Field Selection: GF(2053)}}
+
+Standard Shamir implementations (SLIP39, SSKR) operate on binary entropy in extension fields $GF(2^n)$. Schiavinato instantiates Shamir over prime field $GF(p)$ with $p = 2053$, the smallest prime greater than BIP39 wordlist size (2048). This provides:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Direct word-index mapping:} Every BIP39 word index (1-2048) representable in $GF(2053)$ without encoding overhead
+    \item \textbf{Simple arithmetic:} Prime field operations reduce to integer arithmetic with modulo reduction
+    \item \textbf{Standard security:} $GF(2053)$ is standard finite field with no structure weakening Shamir's guarantees
+\end{enumerate}
+
+A 24-word BIP39 mnemonic is treated as vector $(w_1, \ldots, w_{24})$ where $w_i \in \{1, \ldots, 2048\}$. Effective keyspace remains $\approx 2^{256}$ for security analysis.
+
+\paragraph{Manual arithmetic.} For modular multiplication $A \times B \bmod 2053$ on basic calculator: (1) Multiply: $P = A \times B$, (2) Divide: $Q = P \div 2053$, (3) Subtract integer part to get fractional remainder, (4) Multiply fractional part by 2053 to get result. Example: $1523 \times 1028 \pmod{2053}$ yields $1{,}256$. Intermediate values in $GF(2053)$ that exceed 2048 are handled as numeric indices, maintaining field integrity.
+
+\subsection{Two-Layer Checksum Architecture}
+\label{sec:checksums}
+
+\paragraph{Row checksums (linear, share-level).} For a 24-word mnemonic arranged as 8 rows $\times$ 3 words, row $j$ checksum is defined as $c_j = (w_{3j-2} + w_{3j-1} + w_{3j}) \bmod 2053$. In shares, the corresponding row checksum values are computed linearly from word shares:
+\[
+y_{c_j}^{(x)} = \left(y_{w_{3j-2}}^{(x)} + y_{w_{3j-1}}^{(x)} + y_{w_{3j}}^{(x)}\right) \bmod 2053
+\]
+This enables immediate share-level validation (during generation or upon data entry). During recovery, after interpolation, verify each row by recomputing $\tilde{c}_j$ from recovered words and checking $\tilde{c}_j = c_j$ to localize errors to a specific row.
+
+\paragraph{Global Integrity Check (GIC).} Each share stores exactly one Global Integrity Check value for its share index $x$:
+\[
+GIC(x) = \left(\sum_{j=1}^{r} y_{c_j}^{(x)} + x\right) \bmod 2053 \equiv \left(\sum_{i=1}^{\ell} y_{w_i}^{(x)} + x\right) \bmod 2053
+\]
+This detects transcription/corruption and also validates the share number during recovery, because the check explicitly includes $+x$.
+
+\textit{Construction (Path A):} Derive the GIC polynomial by summing row checksum polynomials, then define the per-share check value as $GIC(x) = (f_{GIC}(x) + x) \bmod 2053$.
+
+\textit{Consistency validation (Path B):} For any share at index $x$ (during generation, upon manual transcription/data entry, or as a pre-check before recovery), validate the stored $GIC(x)$ in two equivalent ways:
+\[
+\left(\sum_{i=1}^{\ell} y_{w_i}^{(x)} + x\right) \bmod 2053 \stackrel{?}{=} GIC(x), \quad
+\left(\sum_{j=1}^{r} y_{c_j}^{(x)} + x\right) \bmod 2053 \stackrel{?}{=} GIC(x)
+\]
+During interpolation, the $+x$ term cancels automatically due to $\sum \gamma_j \cdot i_j = 0$.
+
+\paragraph{Detection probability.} Under a random error model, incorrect recovery passing all integrity checks requires satisfying multiple equalities over $GF(2053)$. For a 24-word mnemonic ($r=8$) recovered from $k$ shares, validating all $r$ row checksums and all $k$ per-share GIC checks yields an upper bound of $(1/2053)^{r+k}$. Comparison: BIP39 24-word has 8-bit checksum (false positive $1/256 = 0.39\%$).
+
+\paragraph{Positioning within robust secret sharing.} This error-detection approach follows the tradition of robust secret sharing schemes~\cite{tompa1988,feldman1987} which augment standard Shamir sharing with redundancy to detect faulty shares or reconstruction errors. Unlike cryptographic commitment-based Verifiable Secret Sharing~\cite{feldman1987} requiring modular exponentiation, or BCH code approaches~\cite{codex32} requiring lookup tables and polynomial operations, Schiavinato's Shamir-shared checksums optimize specifically for manual verification using only addition and modulo operations performable with basic calculator.
+
+\subsection{Lagrange Coefficients: Pre-Computation Solution}
+\label{sec:lagrange}
+
+Recovery via Lagrange interpolation: $a_0 = \sum_{j=1}^k \gamma_j y_j \pmod{2053}$ where
+\[
+\gamma_j = \prod_{\substack{i=1 \\ i \neq j}}^k \frac{x_i}{x_i - x_j} \pmod{2053}
+\]
+
+\paragraph{Static coefficients impossible.} For any threshold $k < n$, no index assignment makes any share's coefficient invariant across all $k$-subsets containing it. This follows directly from Lagrange interpolation algebra (proof: consider 2-of-3, coefficients for share 1 with shares 2 vs. 3 differ).
+
+\paragraph{Solution: Pre-computed non-secret coefficients.} Lagrange coefficients are determined entirely by share indices, not values—they contain zero secret information. They can be pre-computed for common schemes and published in tables, or computed on-demand using any convenient device (even untrusted). This transforms polynomial interpolation into scalar multiplications and additions performable with calculator.
+
+Table~\ref{tab:coefficients} lists pre-computed coefficients for common schemes.
+
+\begin{table}[t]
+\centering
+\caption{Pre-Computed Lagrange Coefficients in $GF(2053)$}
+\label{tab:coefficients}
+\small
+\begin{tabular}{@{}llp{4cm}@{}}
+\toprule
+\textbf{Scheme} & \textbf{Shares} & \textbf{Coefficients $(\gamma)$} \\ \midrule
+\textbf{2-of-3} & $\{1, 2\}$ & $(2, 2052)$ \\
+                & $\{1, 3\}$ & $(1028, 1026)$ \\
+                & $\{2, 3\}$ & $(3, 2051)$ \\ \midrule
+\textbf{2-of-4} & $\{1, 2\}$ & $(2, 2052)$ \\
+                & $\{1, 3\}$ & $(1028, 1026)$ \\
+                & $\{1, 4\}$ & $(1370, 684)$ \\
+                & $\{2, 3\}$ & $(3, 2051)$ \\
+                & $\{2, 4\}$ & $(2, 2052)$ \\
+                & $\{3, 4\}$ & $(4, 2050)$ \\ \midrule
+\textbf{3-of-5} & $\{1, 2, 3\}$ & $(3, 2050, 1)$ \\
+                & $\{1, 2, 4\}$ & $(687, 2051, 1369)$ \\
+                & $\{1, 2, 5\}$ & $(1029, 1367, 1711)$ \\
+                & $\{1, 3, 4\}$ & $(2, 2051, 1)$ \\
+                & $\{1, 3, 5\}$ & $(1285, 512, 257)$ \\
+                & $\{1, 4, 5\}$ & $(686, 1367, 1)$ \\
+                & $\{2, 3, 4\}$ & $(6, 2045, 3)$ \\
+                & $\{2, 3, 5\}$ & $(5, 2048, 1)$ \\
+                & $\{2, 4, 5\}$ & $(1372, 2048, 687)$ \\
+                & $\{3, 4, 5\}$ & $(10, 2038, 6)$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{\texorpdfstring{Worked Example in $GF(13)$}{Worked Example in GF(13)}}
+\label{sec:example}
+
+To illustrate mechanics with tractable arithmetic, we use $GF(13)$ for toy example. Real scheme uses $GF(2053)$; structure identical, numbers smaller.
+
+\textbf{Setup:} Toy wordlist (8 words, indices 0-7). Mnemonic: $w_1 = 3$, $w_2 = 5$, $w_3 = 7$. Checksum: $c = (3+5+7) \bmod 13 = 2$. Scheme: 2-of-3. For each secret, define degree-1 polynomial $f(x) = a_0 + a_1 x \pmod{13}$:
+\begin{itemize}[noitemsep]
+    \item $w_1 = 3$: $a_1 = 4 \Rightarrow f_1(x) = 3 + 4x$
+    \item $w_2 = 5$: $a_1 = 6 \Rightarrow f_2(x) = 5 + 6x$
+    \item $w_3 = 7$: $a_1 = 1 \Rightarrow f_3(x) = 7 + x$
+    \item $c = 2$: derived by summing word coefficients: $(4+6+1) \bmod 13 = 11 \bmod 13 = 11$ for $a_1$, giving $f_c(x) = 2 + 11x$
+    \item $GIC$: derived from checksum polynomial and includes the share number: $f_{GIC}(x) = f_c(x) = 2 + 11x$, then $GIC(x) = f_{GIC}(x) + x = 2 + 12x$
+\end{itemize}
+
+\textbf{Share generation:} Evaluate at $x \in \{1, 2, 3\}$:
+\begin{center}
+\small
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+\textbf{Share} & $w_1$ & $w_2$ & $w_3$ & $c$ & $GIC$ \\ \midrule
+$x=1$ & 7 & 11 & 8 & 0 & 1 \\
+$x=2$ & 11 & 4 & 9 & 11 & 0 \\
+$x=3$ & 2 & 10 & 10 & 9 & 12 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Recovery from shares 1 and 3:} Lagrange coefficients for $\{1, 3\}$ in $GF(13)$: $(\gamma_1, \gamma_3) = (8, 6)$.
+
+\textbf{Pre-recovery validation:}
+\begin{itemize}[noitemsep]
+    \item Share 1: $(c + x) \bmod 13 = (0 + 1) \bmod 13 = 1 = GIC(1)$ \quad \checkmark
+    \item Share 3: $(c + x) \bmod 13 = (9 + 3) \bmod 13 = 12 = GIC(3)$ \quad \checkmark
+    \item Lagrange sanity: $(8 \cdot 1 + 6 \cdot 3) \bmod 13 = 26 \bmod 13 = 0$ \quad \checkmark
+\end{itemize}
+
+\textbf{Secret recovery:}
+\begin{align*}
+w_1 &= 8 \cdot 7 + 6 \cdot 2 = 68 \bmod 13 = 3 \quad \checkmark \\
+w_2 &= 8 \cdot 11 + 6 \cdot 10 = 148 \bmod 13 = 5 \quad \checkmark \\
+w_3 &= 8 \cdot 8 + 6 \cdot 10 = 124 \bmod 13 = 7 \quad \checkmark \\
+c &= 8 \cdot 0 + 6 \cdot 9 = 54 \bmod 13 = 2 \quad \checkmark \\
+GIC(0) &= 8 \cdot 1 + 6 \cdot 12 = 80 \bmod 13 = 2 \quad \checkmark
+\end{align*}
+
+\textbf{Post-recovery verification:} $(3 + 5 + 7) \bmod 13 = 15 \bmod 13 = 2 = c = GIC(0)$ \quad \checkmark
+
+\section{Security Analysis}
+\label{sec:security}
+
+\subsection{Threat Model and Assumptions}
+
+Schiavinato Sharing instantiates standard Shamir Secret Sharing~\cite{shamir1979} over $GF(2053)$. Information-theoretic security properties follow directly from Shamir's original construction. This section addresses threat model aspects specific to dual-mode operation.
+
+\paragraph{Trust assumptions.} The scheme operates under two setup models with distinct trust assumptions:
+
+\textit{Self-directed setup:} User generates own shares using reference implementations. Dealer and user are identical; trust assumptions are trivial. User controls entire process from entropy generation through share materialization.
+
+\textit{Assisted setup:} Professional advisor (lawyer, accountant, family office consultant) provides guidance, tools, and documentation while user maintains exclusive control of entropy generation and share handling. Advisor observes no secret material. This model enables professional support for non-technical users without compromising self-custody principles.
+
+Both models assume: (1) setup device not compromised during execution, (2) cryptographically secure random number generation for polynomial coefficients, (3) user (or advisor if present) follows documented procedures accurately, and (4) shares stored securely according to user's threat model.
+
+\textit{Recovery environment assumptions:} Computational recovery requires trusted device with integrity-verified implementation. Manual recovery requires private environment free from surveillance with proper waste management. Dual-mode flexibility enables users to select recovery mode based on operational threat model and available resources.
+
+\paragraph{Adversary capabilities.} Standard Shamir adversary~\cite{shamir1979} may obtain fewer than $k$ shares and attempts secret reconstruction or entropy leakage. Schiavinato inherits information-theoretic guarantees: any $t < k$ shares reveal zero information about the secret beyond its domain.
+
+Dual-mode operation introduces mode-specific adversaries:
+
+\textit{Computational mode:} Standard software adversaries targeting side-channels (timing variations, cache behavior, memory access patterns), memory safety (insufficient zeroing of sensitive data), supply chain (compromised dependencies, malicious code injection), and execution environment (browser fingerprinting, JavaScript JIT optimization leaks).
+
+\textit{Manual mode:} Physical adversaries targeting observation (shoulder surfing, camera surveillance), document access (impression attacks on paper pads, waste recovery from improper disposal), and temporal exposure (2--5 hours sharing or 30--60 minutes recovery window provides extended observation opportunity).
+
+\textit{Both modes:} Adversaries may attempt single-share tampering (checksums provide strong detection of accidental corruption under a random error model, but are not an authentication mechanism against a malicious adversary; see Section~\ref{sec:integrity-question}) or pre-computed coefficient corruption (affects usability, not security—Section~\ref{sec:lagrange} proves coefficients contain zero secret information).
+
+\paragraph{Explicitly out of scope.} The following scenarios are outside the threat model and do not represent construction weaknesses:
+
+\begin{itemize}[noitemsep]
+    \item Adversary compromises $k$ or more shares (scheme breaks by design—information-theoretic threshold)
+    \item Physical coercion of participants or theft from multiple storage locations simultaneously
+    \item Compromised setup or recovery devices (device trust is explicit assumption)
+    \item Social engineering attacks against users, executors, or professional advisors
+    \item Standard Shamir attacks well-documented in cryptographic literature~\cite{shamir1979,stinson2006}
+    \item Attacks on underlying BIP39 ecosystem (weak wallet RNGs, key-derivation vulnerabilities, downstream protocol flaws)
+\end{itemize}
+
+\subsection{Established Properties vs Open Questions}
+\label{sec:standard-vs-open}
+
+\paragraph{Established (standard theory).} Three security properties follow from well-established cryptographic results and require no novel proof:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Confidentiality:} Information-theoretic secrecy from standard Shamir SSS~\cite{shamir1979}. For $t < k$ shares, adversary learns zero information about the secret (Proposition~\ref{prop:confidentiality}).
+    
+    \item \textbf{Linear constraint security:} Public linear relationships among shared secrets do not compromise security by standard LSSS theory~\cite{beimel2011,cramer2000} (Proposition~\ref{prop:linear}).
+    
+    \item \textbf{Entropy preservation:} Effective keyspace remains $\approx 2^{256}$ for 24-word mnemonics, determined by BIP39 entropy generation. Sharing over $GF(2053)$ introduces no compression.
+\end{enumerate}
+
+\paragraph{Novel aspects requiring peer review.} Two questions address integrity and operational bounds, not confidentiality:
+
+\begin{enumerate}[noitemsep]
+    \item \textbf{Integrity under coupled constraints (Major):} Can adversaries with tampering capability engineer alternate BIP39-valid mnemonics satisfying all 9 Schiavinato checksums? This addresses denial-of-inheritance under active tampering, not secrecy (Section~\ref{sec:integrity-question}).
+    
+    \item \textbf{Adversarial error patterns (Medium):} Current analysis assumes random arithmetic/transcription errors (Proposition~\ref{prop:checksum}). Can sophisticated adversaries construct targeted corruptions preserving checksum relationships?
+\end{enumerate}
+
+\subsection{Core Security Properties}
+
+\begin{proposition}[Confidentiality]
+\label{prop:confidentiality}
+For any $t < k$ and any two BIP39-valid mnemonics $M_0, M_1$, the distribution of $t$ shares is identical whether the underlying secret is $M_0$ or $M_1$. Effective keyspace remains $\approx 2^{256}$ for 24-word mnemonics.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Only the $\ell$ word indices are protected by independent degree-$(k-1)$ Shamir polynomials with coefficients sampled uniformly at random from $GF(2053)$. By standard Shamir SSS theory~\cite{shamir1979}, for each word polynomial and any $t < k$ share values, the distribution is identical for all possible constant terms in the field. This information-theoretic property holds regardless of adversary computational resources.
+
+The remaining integrity fields (row checksums and $GIC(x)$) are deterministic linear combinations of the word shares (and the public share index $x$) and therefore do not add information to the adversary's view. Effective keyspace is determined by BIP39 entropy generation ($\approx 2^{256}$ for 24 words), and sharing over $GF(2053)$ maps word indices into a larger ambient field without compression.
+\end{proof}
+
+\begin{proposition}[Security of linear constraints]
+\label{prop:linear}
+The 9 public linear integrity constraints over $GF(2053)$ (8 row checksums + 1 Global Integrity Check) do not compromise information-theoretic security. Any $t < k$ shares reveal zero information about the secret vector.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+By general LSSS theory~\cite{beimel2011,cramer2000}, linear relationships among shared secrets do not compromise information-theoretic security. The conditional distribution of $t < k$ shares given the linear constraints is independent of the particular secret satisfying those constraints. This property holds for arbitrary probability distributions on the secret space—no uniformity assumption required. Multi-secret sharing with linear relations is well-studied~\cite{blundo1993}.
+
+Our checksum approach follows established frameworks: robust and verifiable secret sharing schemes~\cite{tompa1988,feldman1987} augment standard Shamir sharing with auxiliary verification structure without compromising information-theoretic security. In Schiavinato, the integrity fields are linear functions of the shared word secrets, so they preserve Shamir's confidentiality guarantees while enabling error detection.
+\end{proof}
+
+\begin{proposition}[Checksum detection probability]
+\label{prop:checksum}
+Under a random arithmetic error model, incorrect recovery passing all integrity validations is negligible. For a 24-word mnemonic ($r=8$) recovered from $k$ shares, an upper bound is $(1/2053)^{r+k}$, corresponding to passing all $r$ row checksum validations and all $k$ per-share GIC validations.
+\end{proposition}
+
+\begin{proof}[Proof sketch]
+Recovery requires (1) validating each of the $k$ input shares against its GIC, and (2) validating each of the $r$ recovered rows against its row checksum. Under random error assumptions, each such equality over $GF(2053)$ holds with probability $1/2053$, yielding an overall upper bound of $(1/2053)^{r+k}$.
+\end{proof}
+
+\subsection{Integrity Under Coupled Constraints: Open Question}
+\label{sec:integrity-question}
+
+\subsubsection{Architectural Choice: Sharing Word Indices vs. Entropy}
+
+Schiavinato Sharing operates on BIP39 word indices rather than raw entropy, in contrast to schemes like SLIP39~\cite{slip39} and SSKR~\cite{sskr}. This architectural difference has implications for both usability and security analysis.
+
+\paragraph{Comparison of approaches.}
+
+\textit{SLIP39/SSKR approach:}
+\begin{enumerate}[noitemsep]
+    \item Generate 256 bits of entropy uniformly at random
+    \item Apply Shamir Secret Sharing to the entropy (operating over $GF(2^n)$)
+    \item At recovery: reconstruct entropy, then encode to BIP39 mnemonic
+\end{enumerate}
+
+\textit{Schiavinato approach:}
+\begin{enumerate}[noitemsep]
+    \item Generate 256 bits of entropy, encode to 24-word BIP39 mnemonic (includes BIP39 checksum)
+    \item Apply Shamir Secret Sharing to the 24 word indices (operating over $GF(2053)$)
+    \item At recovery: reconstruct word indices directly to BIP39 mnemonic
+\end{enumerate}
+
+\paragraph{Design rationale.} Operating on word indices enables two critical properties:
+\begin{itemize}[noitemsep]
+    \item \textbf{BIP39 indistinguishability}: Recovered mnemonics are standard BIP39 phrases, ensuring universal wallet compatibility without requiring custom implementations
+    \item \textbf{Manual capability}: Word indices (1--2048) map naturally to $GF(2053)$, enabling manual arithmetic with calculator. Operating on binary entropy would require bit-level manipulation impractical for manual execution
+\end{itemize}
+
+\paragraph{Security preservation.} While the 24 word indices are constrained by BIP39's SHA-256 checksum to $2^{256}$ valid combinations out of $2048^{24} \approx 2^{264}$ possible sequences, Schiavinato preserves the full $2^{256}$ bits of security. We are not sharing 24 independent 11-bit values (which would be 264 bits of information), but rather 24 word indices that jointly encode 256 bits of entropy from a uniform distribution over valid BIP39 mnemonics.
+
+Shamir's security guarantee applies to the $2^{256}$ valid mnemonic space: an adversary with $t < k$ shares of the $\ell$ word polynomials gains zero information about which of the $2^{256}$ valid mnemonics is correct. The additional integrity fields (row checksums and the GIC) are deterministic linear functions of the word shares and do not change this confidentiality guarantee. The field $GF(2053)$ is large enough to accommodate all word indices (1--2048) with headroom, introducing no additional constraints or entropy compression.
+
+\paragraph{Trade-off acknowledgment.} Operating on post-BIP39-encoded data introduces a non-linear constraint (SHA-256 checksum) that pre-entropy schemes avoid. This leads to the one genuine open question requiring peer review, discussed next.
+
+\subsubsection{The Integrity Question}
+
+Propositions~\ref{prop:confidentiality} and~\ref{prop:linear} establish that Schiavinato preserves $2^{256}$-level \textit{confidentiality}: for $t < k$ shares, an adversary learns zero information about which BIP39-valid mnemonic is protected, by standard Shamir/LSSS theory. This confidentiality property is not in question.
+
+The novel aspect requiring formal verification concerns \textit{integrity under active tampering}: Schiavinato operates on BIP39-valid mnemonics (constrained by SHA-256 checksum) and adds 9 integrity checks over $GF(2053)$ (8 row checksums plus the GIC, which includes the share number). Can an adversary with tampering capability engineer an alternate BIP39-valid mnemonic and corresponding share data that passes all integrity checks, thereby causing heirs to accept a wrong (but valid-looking) seed without the attacker ever learning the true secret? This would constitute denial-of-inheritance, not theft.
+
+\paragraph{Formal setting for confidentiality.} We first formalize the confidentiality claim to clarify what is \textit{not} at issue. Standard definitions of perfect secret sharing~\cite{stinson2006,beimel2011} require that for any two secrets $s_0, s_1$ in the domain, the distribution of $t < k$ shares is identical. Here, the domain is BIP39-valid mnemonics: word sequences satisfying SHA-256 checksum constraints, representing $2^{256}$ valid combinations out of $2048^{24} \approx 2^{264}$ possible sequences.
+
+Schiavinato operates on this already-constrained space. The question is not whether Shamir SSS over $GF(2053)$ is secure in isolation—that is established~\cite{shamir1979}—nor whether LSSS with linear structure is secure—that is established~\cite{beimel2011,cramer2000}. By standard theory, operating on post-BIP39 encoded data with our additional linear integrity fields should preserve perfect secrecy. We formalize this as a concrete conjecture inviting confirmation.
+
+\paragraph{Formal setting.}
+Let $(w_1,\ldots,w_{24}) \in GF(2053)^{24}$ denote the 24 word indices. Let $B \subseteq GF(2053)^{24}$ be the set of word-index vectors corresponding to BIP39-valid mnemonics (i.e., satisfying BIP39's SHA-256 checksum).
+
+Schiavinato Sharing samples an independent degree-$(k-1)$ Shamir polynomial over $GF(2053)$ for each $w_i$ and publishes $n$ shares per polynomial. For each share index $x$, the published share also includes integrity fields (row checksums and $GIC(x)$) computed deterministically as linear functions of the word share values (and the public $x$).
+
+For an adversary holding $t < k$ shares at indices $\{i_1,\ldots,i_t\}$ (plus all public parameters), let $V_t(w)$ denote the random variable representing the adversary's full view (including derived integrity fields) when the underlying mnemonic is $w \in B$.
+
+\paragraph{Security conjecture (coupled linear--nonlinear constraints).}
+For any fixed $(k,n)$ and any $t < k$, and for all $w^{(0)}, w^{(1)} \in B$,
+\[
+V_t(w^{(0)}) \overset{d}{=} V_t(w^{(1)}).
+\]
+Equivalently, given fewer than $k$ shares of the word polynomials, the presence of the derived linear integrity fields and the BIP39 SHA-256 checksum does not permit any adversary (information-theoretic or computational) to reduce the effective search space for the underlying BIP39 mnemonic below the $2^{256}$ brute-force baseline.
+
+\paragraph{Proof sketch (informal).}
+Intuitively, this conjecture should hold for three reasons. First, over the full field space $GF(2053)^{24}$, Shamir sharing with independent polynomials provides perfect secrecy for $t < k$. Second, the integrity fields are deterministic linear functions of the word shares, so they do not add information to the adversary's view beyond the $t$ word share values already provided by Shamir. Third, restricting the secret domain from $GF(2053)^{24}$ to the BIP39-valid subset $B$ of size $2^{256}$ does not change the Shamir argument: perfect secrecy is distribution-agnostic and holds for any prior on the secret space, including the non-uniform distribution induced by BIP39.
+
+Formally proving this conjecture would require showing that, for any $t < k$ and any (even unbounded) adversary, the conditional distribution of $V_t(w)$ given $w \in B$ is independent of the particular $w$, or equivalently that the combined algebraic structure induced by BIP39 validity and the published integrity fields cannot be exploited to reduce the effective keyspace below $2^{256}$.
+
+\paragraph{Operational mitigations.} Pre-agreed on-chain marker UTXOs at known derivation paths~\cite{bip44} provide heirs with independent confirmation that recovered seed is correct, detecting substitution attempts.
+
+\paragraph{Invitation for formal verification.} No existing literature addresses this specific configuration: Shamir Secret Sharing over $GF(2053)$ applied to post-BIP39 word indices with additional linear integrity fields derived from the word shares. We explicitly invite cryptographic peer review to:
+\begin{enumerate}[noitemsep]
+    \item Formalize the confidentiality conjecture and proof sketch outlined above, confirming that $2^{256}$-level secrecy is preserved;
+    \item Analyze the \textit{integrity} question: can an adversary with tampering capability construct alternate BIP39-valid mnemonics satisfying all 9 Schiavinato checksums, enabling denial-of-inheritance attacks;
+    \item Establish bounds on the difficulty of such substitution attacks and their practical relevance given operational mitigations (e.g., pre-agreed on-chain marker UTXOs).
+\end{enumerate}
+
+This represents the highest priority for peer review. A negative answer to item (1) would contradict standard LSSS theory and require major revision; a positive answer to item (2) would clarify integrity limitations under strong active adversaries but would not affect the core $2^{256}$ confidentiality property.
+
+\subsection{Computational Security Validation}
+
+To complement theoretical analysis, we performed computational checks intended to increase confidence in implementation correctness for the Shamir + linear checksum subsystem. Two independent approaches: (1) entropy conservation testing checking that $k-1$ shares remain consistent with all valid BIP39 mnemonics (an algebraically guaranteed property), and (2) Gröbner basis analysis indicating the polynomial constraint system maintains exactly 24 degrees of freedom with no exploitable structure in the tested instances.
+
+\textbf{Scope and limitations:} These validations test the Shamir + linear checksum construction in isolation. They do \textbf{not} address the primary integrity question (Section~\ref{sec:integrity-question}): whether coupling these constraints with BIP39's SHA-256 checksum creates exploitable structure under active tampering.
+
+\paragraph{Validation 1: Entropy conservation test.} For randomly generated source mnemonics across multiple configurations (2-of-3, 3-of-5, 4-of-7), we simulate an adversary possessing $k-1$ shares and test whether random valid BIP39 mnemonics remain consistent with those shares through polynomial interpolation feasibility checking.
+
+Mathematically, this consistency is \textit{guaranteed} by the Shamir construction: with $k-1$ share points and any chosen constant term, there exists a unique degree-$(k-1)$ polynomial passing through all $k$ points. The experiment therefore tests implementation correctness.
+
+Results: across all tested configurations and thousands of random trials, every sampled valid BIP39 mnemonic remained consistent with every adversary's $k-1$ share set (100\% consistency as expected under Shamir, and no entropy reduction observed in these trials). No inconsistencies were observed in the tested implementations.
+
+\paragraph{Validation 2: Algebraic constraint system analysis.} We modeled an adversary possessing $k-1$ shares attempting to recover secrets through algebraic constraint solving using Gröbner basis methods (1,000 trials for 2-of-3; additional trials for 3-of-5 and 4-of-7 using genuine shares from the reference implementation).
+
+For each configuration $(k, n)$, the adversary's constraint system comprises:
+\begin{itemize}[noitemsep]
+    \item \textbf{Unknowns}: 24 word indices $w_1, \ldots, w_{24}$ and $24(k-1)$ polynomial coefficients (the non-constant coefficients of the 24 degree-$(k-1)$ Shamir polynomials)
+    \item \textbf{Polynomial evaluation constraints}: $24(k-1)$ equations from evaluating the 24 word polynomials at the $(k-1)$ known share points
+    \item \textbf{Integrity constraints}: row checksums and the per-share GIC are deterministic linear functions of the word shares; including these equations does not reduce degrees of freedom beyond the word polynomial constraints
+\end{itemize}
+
+We applied Gröbner basis computation—a standard technique in computational algebraic geometry and cryptanalysis—using SageMath 10.7. Gröbner basis methods can reveal algebraic structure enabling efficient solution finding if such structure exists.
+
+\paragraph{Results.} For all tested configurations (2-of-3, 3-of-5, 4-of-7), the constraint system remains algebraically underdetermined with exactly 24 degrees of freedom, corresponding to the 24 unknown word values:
+
+\begin{center}
+\begin{tabular}{lccc}
+\toprule
+Configuration & Total Unknowns & Total Constraints & Degrees of Freedom \\
+\midrule
+2-of-3 (1 share) & 48 & 24 & 24 \\
+3-of-5 (2 shares) & 72 & 48 & 24 \\
+4-of-7 (3 shares) & 96 & 72 & 24 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Across all tested instances, Gröbner basis computation completed in under 0.1 seconds per case, indicating underdeterminacy in every trial. The polynomial system remains consistently underdetermined (24 degrees of freedom) with no algebraic shortcuts discovered. The rapid Gröbner basis completion suggests the derived integrity structure does not accidentally create solvable structure when combined with Shamir's polynomial constraints over $GF(2053)$, in the tested instances. This is consistent with the LSSS theoretical prediction for this subsystem, though it does not address potential interactions with BIP39's nonlinear SHA-256 constraint.
+
+\paragraph{Interpretation.} Validation 1 is consistent with the algebraically guaranteed property that all valid BIP39 mnemonics remain consistent with $k-1$ shares, and provides additional confidence in implementation correctness. Validation 2 shows that, in the tested instances, the polynomial system maintains exactly 24 degrees of freedom with no exploitable structure discovered via Gröbner basis methods.
+
+Together, these support LSSS theory's prediction that adding linear integrity structure derived from shared secrets preserves information-theoretic confidentiality. They serve as implementation sanity checks for the \textit{Shamir + linear integrity subsystem}, but not for the integrity question under BIP39 coupling (Section~\ref{sec:integrity-question}).
+
+\paragraph{Availability and reproducibility.} These computational validations serve as implementation sanity checks, not cryptographic security proofs. Full experimental methodology, source code, and results are available in the project repository for independent verification and reproduction.
+
+\subsection{Dual-Mode Security Trade-offs}
+
+Schiavinato's defining property is operational flexibility: users select sharing and recovery mode based on threat model. This section analyzes security trade-offs between computational convenience and manual capability, demonstrating that mode selection affects operational risk profile without weakening cryptographic guarantees.
+
+\paragraph{Computational mode security.} Reference implementations (JavaScript/TypeScript library, HTML tool) provide sub-5-minute operation for routine use when trusted devices available.
+
+\textit{Standard implementation risks:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Side-channel attacks}~\cite{kocher1996}: Timing variations, cache behavior, memory access patterns
+    \item \textbf{Memory safety}: Insufficient zeroing of sensitive data after operations
+    \item \textbf{Supply chain}: Compromised dependencies, malicious code injection
+    \item \textbf{Execution environment}: Browser fingerprinting, JavaScript JIT optimization leaks
+\end{itemize}
+
+\textit{Mitigations implemented:}
+\begin{itemize}[noitemsep]
+    \item Constant-time comparison for checksum validation (side-channel resistance)
+    \item Explicit memory cleanup for polynomial coefficients and intermediate values
+    \item Minimal dependency chain (HTML reference tool: no third-party runtime deps; JS/TS: \texttt{@noble/hashes}; Python: \texttt{mnemonic} for BIP39 wordlist/checksum)
+    \item Comprehensive test coverage (100\%) with reproducible test vectors
+    \item MIT License enabling independent audit and verification
+\end{itemize}
+
+\paragraph{Manual mode security.} Manual sharing and recovery enables operation when electronic devices are unavailable, obsolete, or untrusted. Expected time: 2--5 hours for sharing and 30--60 minutes for recovery (see Appendix~\ref{app:validation} and Supplementary Material referenced in Section~\ref{sec:implementation}).
+
+\textit{Unique risks:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Extended exposure window}: 2--5 hours vs. 5 minutes creates larger observation opportunity
+    \item \textbf{Physical artifacts}: Scratch paper, calculator history contain intermediate values
+    \item \textbf{Human error}: Arithmetic mistakes, transcription errors (mitigated by checksums under a random error model; Proposition~\ref{prop:checksum})
+    \item \textbf{Procedural complexity}: First-time users require clear documentation (Appendix~\ref{app:validation} discusses cold-start re-learnability in an informal pilot)
+\end{itemize}
+
+\textit{Unique advantages:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Zero device trust}: No software, no firmware, no supply chain risk
+    \item \textbf{Complete auditability}: Every operation user-verifiable with basic tools
+    \item \textbf{Electronics-optional}: Functions in scenarios where computational tools forbidden or compromised
+    \item \textbf{Long-term viability}: Designed to resist obsolescence due to vendor discontinuation
+\end{itemize}
+
+\paragraph{Dual-mode trade-off analysis.} Mode selection represents security-usability trade-off informed by threat model:
+
+\textit{Computational mode preferred when:}
+\begin{itemize}[noitemsep]
+    \item Trusted devices available with verified implementations
+    \item Time-sensitive recovery (emergency scenarios)
+    \item Users comfortable with software tools
+    \item Physical observation risk low (private, controlled environment)
+\end{itemize}
+
+\textit{Manual mode preferred when:}
+\begin{itemize}[noitemsep]
+    \item Device trust uncertain (50+ year custody horizons, technological obsolescence)
+    \item Electronics unavailable (disaster scenarios, regulatory restrictions)
+    \item Maximum paranoia required (nation-state adversaries, sophisticated surveillance)
+    \item Users require independent verification of every operation
+\end{itemize}
+
+Both modes execute identical mathematics over $GF(2053)$. Mode choice affects operational security, not cryptographic properties. Detailed physical security considerations (impression attacks, waste management, visual surveillance, share materialization) in Appendix~\ref{app:physical}.
+
+\section{Implementation and Verification}
+\label{sec:implementation}
+
+\paragraph{Usability evidence (scope).} This paper includes (i) an informal, early-stage manual usability pilot (Appendix~\ref{app:validation}) documenting re-learnability and documentation-driven performance, and (ii) supplementary demonstration material for the current manual workflow hosted in the project specification repository (see the ``Supplementary Material'' section in the repository README).\footnote{\url{https://github.com/GRIFORTIS/schiavinato-sharing}} These artifacts support clarity and reproducibility, but they are not controlled usability studies and should not be treated as population-level evidence.
+
+\paragraph{Implementation status.} Multiple MIT-licensed reference implementations enable independent verification: JavaScript/TypeScript library (\texttt{@grifortis/schiavinato-sharing} v0.2.0), offline HTML tool, and Python library. All are experimental, unaudited, and \textbf{must not} be used for significant real-world holdings.
+
+\paragraph{Test vectors.} Complete test vectors in \texttt{TEST\_VECTORS.md} enable cross-implementation compatibility validation. Includes 12-word 2-of-3 scheme with polynomial coefficients, share values, and expected checksums.
+
+\paragraph{Repositories:}
+\begin{itemize}[noitemsep]
+    \item JS/TS: \url{https://github.com/GRIFORTIS/schiavinato-sharing-js}
+    \item Python: \url{https://github.com/GRIFORTIS/schiavinato-sharing-py}
+    \item Spec: \url{https://github.com/GRIFORTIS/schiavinato-sharing}
+\end{itemize}
+
+\paragraph{Supplementary material (demo).} A recorded end-to-end \textbf{fully manual} demonstration of a 12-word 2-of-3 scheme (using pre-computed Lagrange coefficients and the row-checksum + $GIC(x)$ validation workflow, without software or printed templates) is linked from the specification repository (see the ``Supplementary Material'' section referenced above). This is a demonstration artifact, not a controlled usability study.
+
+\section{Discussion and Open Questions}
+\label{sec:discussion}
+
+\subsection{Research Context and Limitations}
+
+This work presents a construction for peer review, not production deployment recommendation. While individual components (Shamir SSS, BIP39) are well-understood, system integration requires independent verification.
+
+Reference implementations provide cross-implementation test vectors and an extensive automated test suite; coverage metrics are reported in the project repositories. However, these remain experimental software without professional security audit. An informal early-stage usability pilot (Appendix~\ref{app:validation}) suggests cold-start re-learnability from self-documenting materials, and supplementary material (Section~\ref{sec:implementation}) demonstrates the current manual workflow, but formal controlled studies are required for statistical confidence. Usability of cryptographic tools is well-known to be critical~\cite{whitten1999}: security guarantees are irrelevant if users cannot successfully execute procedures.
+
+Construction has not undergone: independent security audit, formal verification, peer review for publication, or large-scale validation. Conservative approach justified.
+
+\subsection{Open Questions Requiring Peer Review}
+
+While core $2^{256}$ confidentiality is established by standard Shamir/LSSS theory (Section~\ref{sec:standard-vs-open}), several questions merit focused analysis. These address integrity bounds, operational security, and quantitative optimizations—none threatens the foundational information-theoretic confidentiality property.
+
+\paragraph{Open Question 1: Integrity under substitution attacks (Major).} \textit{Nature:} Can an adversary with tampering capability engineer alternate BIP39-valid mnemonics that satisfy all 9 Schiavinato checksum equations? \textit{Impact:} Denial-of-inheritance under active tampering (attacker still cannot learn the true secret from $t < k$ shares). \textit{Analysis needed:} Formal bounds on attack difficulty; interaction between BIP39's SHA-256 constraint and Schiavinato's linear checksums (mod 2053). \textit{Operational mitigations:} Pre-agreed on-chain marker UTXOs at known derivation paths provide heirs with independent confirmation signal. This is formalized in Section~\ref{sec:integrity-question} and represents the highest-priority novel aspect.
+
+\paragraph{Open Question 2: Adversarial error patterns vs. checksums (Medium).} \textit{Nature:} Current analysis assumes random arithmetic errors ($< 10^{-30}$ false positive rate). Can sophisticated adversaries construct targeted arithmetic corruptions that preserve checksum relationships? \textit{Impact:} Integrity/error-detection strength during manual recovery; does not affect confidentiality. \textit{Analysis needed:} Bounds on adversarial vs. random error detection rates; whether the 9 independent linear equations over $GF(2053)$ resist structured corruption attempts. \textit{Mitigation:} Group recovery with peer review (Appendix~\ref{app:validation} discusses peer review dynamics in an informal pilot); BIP39 checksum provides an additional independent validation layer.
+
+\paragraph{Open Question 3: Field size optimization and metadata leakage (Lower priority).} Two related questions: (a) Does larger field ($GF(4099)$, $GF(8191)$) meaningfully increase adversarial search complexity beyond the $2^{256}$ BIP39 baseline for an attacker holding $k-1$ shares? (b) Can statistical analysis distinguish Schiavinato-recovered mnemonics from wallet-generated phrases (word frequency, correlations), creating metadata leakage? \textit{Impact:} (a) affects field size optimization; (b) affects operational security if custody method fingerprinting is a concern. Neither threatens information-theoretic confidentiality, which holds for any field $p > 2048$ by LSSS theory~\cite{beimel2011}.
+
+\subsection{What Would Falsify This Construction}
+
+\textbf{F1 (Confidentiality):} Formal analysis demonstrates coupled constraints enable adversaries with $t < k$ shares to narrow search space below $2^{256}$ baseline. Would contradict LSSS theory as applied to BIP39-constrained domains.
+
+\textbf{F2 (Manual feasibility):} Controlled study ($n \geq 20$) shows $< 50\%$ success rate for manual recovery, contradicting dual-mode value proposition.
+
+\textbf{F3 (BIP39 compatibility):} Recovered mnemonics fail validation or produce incorrect addresses in major BIP39 implementations, violating universal compatibility claim.
+
+\textbf{F4 (Checksum detection):} Error detection falls below $1 - 10^{-15}$ under realistic manual error models, undermining confidence guarantees.
+
+\textbf{F5 (Implementation vulnerability):} Security audit identifies vulnerability enabling attack with complexity $< 2^{128}$.
+
+\subsection{Path Toward Production Readiness (Non-binding)}
+
+\textbf{Phase 1 (Cryptographic review):} Seek peer review focused on the open questions (especially Section~\ref{sec:integrity-question}) and independently reproduce the published test vectors across implementations. Any claims of readiness are contingent on this external review.
+
+\textbf{Phase 2 (Usability evidence):} Gather usability evidence for the current manual workflow (e.g., success rates, time distributions, and common failure modes). This may range from informal replication by third parties to controlled studies, depending on available resources.
+
+\textbf{Phase 3 (Implementation assurance):} Pursue increasing levels of implementation assurance (independent code review, targeted security testing, and/or professional audits) as appropriate to the intended risk level and deployment context.
+
+Experimental status maintained until all phases complete.
+
+\subsection{Community Engagement}
+
+We invite engagement from cryptographers, Bitcoin developers, usability researchers, and security auditors. Primary channels: Bitcoin-dev mailing list, GitHub Discussions (\url{https://github.com/GRIFORTIS/schiavinato-sharing/discussions}), and GitHub Security advisory for coordinated vulnerability reporting.
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+Schiavinato Sharing shows that threshold security, native BIP39 input/output compatibility, and dual-mode operation can be combined using prime-field $GF(2053)$ arithmetic with a linear integrity layer designed for manual error localization. Information-theoretic confidentiality for $t<k$ follows from standard Shamir SSS and LSSS theory; the main open technical question is integrity under active tampering when these linear checks interact with BIP39's nonlinear checksum constraint (Section~\ref{sec:integrity-question}).
+
+This document is presented for peer review rather than as a production recommendation. Reference implementations and test vectors are provided to enable independent replication, and the appendices include (i) an informal early-stage usability pilot focused on re-learnability and documentation quality (Appendix~\ref{app:validation}), and (ii) physical security considerations for manual workflows (Appendix~\ref{app:physical}). Supplementary material linked from the project repository provides an end-to-end demonstration of the current fully manual workflow (Section~\ref{sec:implementation}).
+
+Whether this approach is suitable for long-horizon self-custody depends on both cryptographic review and operational practice. We invite critical analysis, replication, and falsification along the explicit criteria stated in Section~\ref{sec:discussion}.
+
+\section*{Acknowledgments}
+
+The author acknowledges Adi Shamir's foundational 1979 secret sharing scheme~\cite{shamir1979}, the BIP39 standard~\cite{bip39}, and analysis of existing schemes (SLIP39, SSKR, Codex32, SeedXOR) that informed this design. Special recognition to four anonymous family members who participated in an early-stage usability pilot described in Appendix~\ref{app:validation}. This work was developed independently by GRIFORTIS without external funding. All errors remain the author's responsibility.
+
+\begin{thebibliography}{99}
+
+\bibitem{anderson2008}
+R. Anderson,
+\textit{Security Engineering: A Guide to Building Dependable Distributed Systems}, 2nd ed.
+Wiley, 2008.
+
+\bibitem{beimel2011}
+A. Beimel,
+``Secret-Sharing Schemes: A Survey,''
+\textit{Coding and Cryptology, IWCC 2011}, Springer LNCS, vol. 6639, pp. 11--46, 2011.
+
+\bibitem{bip32}
+P. Wuille,
+``BIP-32: Hierarchical Deterministic Wallets,''
+\textit{Bitcoin Improvement Proposals}, 2012.
+
+\bibitem{bip39}
+M. Palatinus, P. Rusnak, A. Voisine, S. Bowe,
+``BIP-39: Mnemonic code for generating deterministic keys,''
+\textit{Bitcoin Improvement Proposals}, 2013.
+
+\bibitem{bip44}
+M. Palatinus and P. Rusnak,
+``BIP-44: Multi-Account Hierarchy for Deterministic Wallets,''
+\textit{Bitcoin Improvement Proposals}, 2014.
+
+\bibitem{bip350}
+P. Wuille,
+``BIP-350: Bech32m format for v1+ witness addresses,''
+\textit{Bitcoin Improvement Proposals}, 2020.
+
+\bibitem{blundo1993}
+G. R. Blundo, A. De Santis, D. R. Stinson, and U. Vaccaro,
+``Graph decompositions and secret sharing schemes,''
+\textit{EUROCRYPT '92}, Springer LNCS, vol. 658, pp. 1--24, 1993.
+
+\bibitem{buterin}
+V. Buterin,
+``Why we need wide adoption of social recovery wallets,''
+Blog post, Jan. 2021. \url{https://vitalik.ca/general/2021/01/11/recovery.html}.
+
+\bibitem{codex32}
+A. Poelstra, L. O'Connor, S. Corallo,
+``BIP-93: Codex32: Checksummed SSSS-aware BIP32 seeds,'' 2023.
+
+\bibitem{cramer2000}
+R. Cramer, I. Damgård, and U. Maurer,
+``General secure multi-party computation from any linear secret-sharing scheme,''
+\textit{EUROCRYPT 2000}, Springer LNCS, vol. 1807, pp. 316--334, 2000.
+
+\bibitem{eskandari2015}
+S. Eskandari, D. Barrera, E. Stobert, J. Clark,
+``A First Look at the Usability of Bitcoin Key Management,'' 2015.
+
+\bibitem{feldman1987}
+P. Feldman,
+``A practical scheme for non-interactive verifiable secret sharing,''
+\textit{Proceedings of the 28th Annual Symposium on Foundations of Computer Science}, pp. 427--438, 1987.
+
+\bibitem{fips1804}
+National Institute of Standards and Technology (NIST),
+\textit{FIPS PUB 180-4: Secure Hash Standard (SHS)}, Aug. 2015.
+
+\bibitem{kocher1996}
+P. C. Kocher,
+``Timing Attacks on Implementations of Diffie-Hellman, RSA, DSS, and Other Systems,''
+\textit{Advances in Cryptology—CRYPTO '96}, pp. 104--113, 1996.
+
+\bibitem{seedxor}
+Coinkite,
+``SeedXOR: XOR-based secret sharing for BIP39 mnemonics,'' 2021.
+
+\bibitem{rfc2104}
+H. Krawczyk, M. Bellare, and R. Canetti,
+``HMAC: Keyed-Hashing for Message Authentication,''
+RFC 2104, Feb. 1997. \url{https://www.rfc-editor.org/rfc/rfc2104}.
+
+\bibitem{rfc4086}
+D. Eastlake 3rd, J. Schiller, and S. Crocker,
+``Randomness Requirements for Security,''
+RFC 4086, June 2005. \url{https://www.rfc-editor.org/rfc/rfc4086}.
+
+\bibitem{shamir1979}
+A. Shamir,
+``How to share a secret,''
+\textit{Communications of the ACM}, vol. 22, no. 11, pp. 612--613, Nov. 1979.
+
+\bibitem{slip39}
+SatoshiLabs,
+``SLIP-0039: Shamir's Secret-Sharing for Mnemonic Codes,'' 2019.
+
+\bibitem{sskr}
+Blockchain Commons,
+``SSKR: Sharded Secret Key Reconstruction,'' 2020.
+
+\bibitem{stinson2006}
+D. R. Stinson,
+\textit{Cryptography: Theory and Practice}, 3rd ed.
+Chapman and Hall/CRC, 2006.
+
+\bibitem{tompa1988}
+M. Tompa and H. Woll,
+``How to share a secret with cheaters,''
+\textit{Journal of Cryptology}, vol. 1, no. 2, pp. 133--138, 1988.
+
+\bibitem{whitten1999}
+A. Whitten and J. D. Tygar,
+``Why Johnny Can't Encrypt: A Usability Evaluation of PGP 5.0,''
+\textit{Proceedings of the 8th USENIX Security Symposium}, 1999.
+
+\end{thebibliography}
+
+\appendix
+
+\section{Reference Encoding for the Digital Envelope}
+\label{app:encoding}
+
+This appendix specifies a \textit{reference encoding} for the optional Digital Envelope used in computational mode (QR bytes and Bech32m strings). It is included to enable interoperable implementations without bloating the main paper. Manual generation and recovery do not depend on any byte encoding.
+
+\subsection{Encodings}
+
+\paragraph{Bech32m string.} Encode the Core Payload bytes using Bech32m (BIP-350)~\cite{bip350} with HRP \texttt{schiavinato}. The Bech32m string is a transport representation only; cryptographic correctness is determined by the Transport Lock and the Arithmetic Lock.
+
+\paragraph{QR bytes.} QR codes SHOULD encode raw bytes. For user-visible self-identification, implementations MAY prefix the QR byte stream with the 4-byte ASCII sequence \texttt{SCHI}. Decoders MUST accept both forms: if the scanned bytes begin with \texttt{SCHI}, strip the prefix before further processing.
+
+\subsection{Core Payload and Transport Hash}
+
+The Core Payload is the concatenation:
+\[
+\text{CorePayload} = \text{HeaderBytes} \parallel B \parallel I \parallel \text{ShareDataBytes} \parallel H
+\]
+where:
+\begin{itemize}[noitemsep]
+    \item \textbf{HeaderBytes} is a non-secret header encoded as:
+    \begin{itemize}[noitemsep]
+        \item Protocol version: 1 byte (0x01)
+        \item Flags: 1 byte (reference layout):
+        \begin{itemize}[noitemsep]
+            \item Bits 0--2: word count code (0=12, 1=15, 2=18, 3=21, 4=24)
+            \item Bits 3--4: nesting depth (0--3, representing up to four layers)
+            \item Bits 5--7: optional wallet/derivation hint class (implementation-defined; 0 if unknown)
+        \end{itemize}
+        \item Threshold $k$: 2 bytes unsigned big-endian (current implementations typically use the low byte and set the high byte to 0)
+        \item Share index $x$: 2 bytes unsigned big-endian (same convention)
+    \end{itemize}
+    \item \textbf{Batch ID} $B$: 8 bytes (random session identifier)
+    \item \textbf{Blinded Identity} $I$: 8 bytes
+    \item \textbf{ShareDataBytes}: packing of the field elements stored on the share (words, row checksums, and the per-share GIC value) as 12-bit unsigned integers, concatenated MSB-first and padded with zero bits to the next full byte.\footnote{The number of packed elements is $\ell + \ell/3 + 1$ for $\ell \in \{12,15,18,21,24\}$.}
+    \item \textbf{Transport Hash} $H$: 16 bytes, defined as the first 16 bytes of $\text{SHA-256}(\text{HeaderBytes}\parallel B\parallel I\parallel \text{ShareDataBytes})$~\cite{fips1804}.
+\end{itemize}
+
+\paragraph{Consistency rule (when both are present).} If an implementation accepts both a QR byte stream and a Bech32m string for the same share, it MUST decode both to CorePayload bytes and require them to be identical; otherwise it MUST stop (transport corruption or transcription error).
+
+\section{Manual Entropy Generation (Schiavinato RNG)}
+\label{app:manual-rng}
+
+Manual share generation requires sampling polynomial coefficients uniformly at random in $GF(2053)$. When a cryptographically secure pseudo-random number generator (CSPRNG) is available on a trusted device, implementations should use it~\cite{rfc4086}; however, for fully manual operation, a practical entropy procedure must be time- and fatigue-feasible to avoid turning manual generation into an error-prone bottleneck.
+
+\paragraph{Core sampler (7$\times$7$\times$7$\times$6 rejection sampling).} Sample a tuple $(a,b,c,d)$ uniformly with $a,b,c\in\{0,\ldots,6\}$ and $d\in\{0,\ldots,5\}$. Map it to:
+\[
+t = (((a\cdot 7 + b)\cdot 7 + c)\cdot 6 + d)\in\{0,\ldots,2057\}.
+\]
+If $t \ge 2053$, reject and redraw; otherwise output $t$ as a uniform element of $\{0,\ldots,2052\}\equiv GF(2053)$.\footnote{Because $7\cdot 7\cdot 7\cdot 6 = 2058$, this rejects only 5 outcomes, yielding a rejection probability of $5/2058\approx 0.24\%$ for coefficients in $0..2052$.}
+
+\paragraph{Usage rules.} For coefficients that may be zero (powers $x^1$ through $x^{k-2}$), accept $t\in\{0,\ldots,2052\}$. For the highest-degree coefficient (power $x^{k-1}$), additionally reject $t=0$ to preserve the intended polynomial degree (and therefore the threshold); accept $t\in\{1,\ldots,2052\}$.\footnote{This rejects 6 outcomes (0 and 2053--2057), i.e., $6/2058\approx 0.29\%$.}
+
+\paragraph{BIP39 index generation (optional).} The same sampler can generate unbiased BIP39 word indices by rejecting $t=0$ and $t>2048$, and then using $t\in\{1,\ldots,2048\}$ as a 1-indexed wordlist lookup. This does not replace the BIP39 checksum construction, which remains a separate step.
+
+\paragraph{Physical realization and early rejection (brief).} The tuple $(a,b,c,d)$ can be realized with any unbiased physical source that yields the required uniform draws (e.g., four independent draws from appropriately constructed pools). One practical approach is to pre-mark the small set of combinations that are always rejected (overflow or all-zero cases) so that invalid draws can be detected visually before writing values or doing arithmetic.
+
+\paragraph{Feasibility note (timed observation).} For a 24-word, 3-of-5 sharing ($k=3$), manual generation requires $24\cdot(k-1)=48$ random coefficients; in a timed run using this method, the average generation time was approximately 45 seconds per coefficient (roughly 36--38 minutes total), making the overall manual workflow practical without relying on electronics.
+
+\section{Detailed Validation Study}
+\label{app:validation}
+
+\subsection{Study Design and Motivation}
+
+We conducted an informal pilot to test manual feasibility and time requirements under deliberately harder-than-production conditions. Two trials, 13 months apart (September 2024, October 2025), took place in a home environment prior to formal usability study planning.
+
+\paragraph{Participants.} Four family members (ages 28, 36, 70, 72) with zero self-custody experience and non-cryptographic professional backgrounds. This approximates intended inheritance scenario: beneficiaries with heterogeneous skills but no prior wallet-recovery experience.
+
+\paragraph{Test configuration.} Participants recovered test secret using 4-of-16 threshold scheme—significantly more complex than expected production deployments (2-of-3, 3-of-5). Shares 1, 3, 5, and 10 used.
+\textbf{Protocol maturity note:} This pilot was conducted at an early stage of the project and is not representative of the current workflow. In particular, it pre-dated (i) the publication of pre-computed Lagrange coefficient tables and (ii) the integration of the row-checksum and $GIC(x)$ architecture used for error localization and per-share consistency checks. As a result, error detection in this pilot relied primarily on group peer review and repeated manual cross-checking.
+At this stage, Lagrange coefficients were not pre-computed; participants computed coefficients manually using modular inverse tables, making the task strictly harder (and slower) than the current design.
+
+\subsection{Trial 1: Initial Feasibility (September 2024)}
+
+\paragraph{Materials and procedure.} Trial 1 used lookup tables for BIP39 words and modular inverses, single process-flow slide, and blank paper. Participants self-organized into collaborative group, working individually then comparing results. Combined Lagrange+recovery flow caused confusion, requiring light supervision.
+
+\paragraph{Results.} Sequential phase timing:
+\begin{itemize}[noitemsep]
+    \item Lagrange computation: 60 min (with supervision)
+    \item First word: 15 min; second word: 5-7 min; subsequent: 3-5 min each
+    \item Total words completed: 5 (study ended after timing consistency)
+\end{itemize}
+
+All arithmetic errors caught through group peer review. Study confirmed feasibility but identified documentation improvements needed.
+
+\subsection{Trial 2: Cold-Start Relearning (October 2025)}
+
+\paragraph{Critical context: Zero retention.} 13-month gap produced no procedural memory: participants recalled "the math game" but none of the steps. Trial 2 measures cold-start relearning from documentation alone, matching inheritance scenario where heirs encounter shares years later without access to experts.
+
+\paragraph{Materials and procedure.} Reused lookup tables but replaced slide with self-documenting colored worksheets: separate pages for Lagrange coefficients and per-word recovery, with instructions embedded directly in color-coded boxes. No demonstrations or verbal explanations given.
+
+\paragraph{Results.} Performance compared to Trial 1:
+\begin{itemize}[noitemsep]
+    \item Lagrange computation: 45 min (zero supervision, 25\% faster)
+    \item First word: 15 min; second: 5-7 min; subsequent: 2-3 min (40\% faster)
+\end{itemize}
+
+Despite zero retention, improvements arose from better documentation, not participant practice.
+
+\subsection{Critical Findings}
+
+\paragraph{Zero retention and re-learnability.} Complete procedural amnesia after 13 months shows process is learnable from written materials without verbal instruction, matching inheritance scenarios where heirs have no prior training.
+
+\paragraph{Documentation quality vs. experience.} Better materials reduced times by 25-40\% despite participants having less experience, indicating documentation quality dominates prior exposure.
+
+\paragraph{Group dynamics and age range.} Self-organized peer review caught all errors. Oldest participants (70, 72) completed all operations, indicating feasibility across inheritance age ranges with adequate documentation.
+
+\subsection{Lessons Learned and Protocol Changes (Prototype to Current)}
+
+The pilot directly motivated several protocol and UX changes that are now part of the current Schiavinato workflow:
+\begin{itemize}[noitemsep]
+    \item \textbf{Manual Lagrange computation is a bottleneck and an error source} $\rightarrow$ publish pre-computed, non-secret Lagrange coefficient tables for common schemes (Section~\ref{sec:lagrange}).
+    \item \textbf{Users need early, localized error feedback} $\rightarrow$ add linear row checksums and a per-share $GIC(x)$ to detect and localize arithmetic/transcription errors (Section~\ref{sec:checksums}).
+    \item \textbf{Procedural retention is near-zero over long gaps} $\rightarrow$ prioritize self-documenting materials and repetitive, checkpointed workflows that can be re-learned without verbal instruction (manual-mode design throughout Section~\ref{sec:constraints}).
+\end{itemize}
+
+\subsection{Empirically Grounded Time Estimates}
+
+Based on Trial 2 performance (early prototype): Lagrange 45 min (eliminated via pre-computation), first secret 15 min, second 6 min, subsequent 2.5 min average. These pilot timings pre-date the current workflow (notably pre-computed coefficients and integrated checksum checkpoints) and were collected on a harder 4-of-16 configuration; they should be treated as conservative historical context rather than current benchmarks. Under the current workflow, a 24-word, 3-of-5 recovery is typically about 60 minutes and a 12-word, 2-of-3 recovery about 30 minutes (Section~\ref{sec:background}).
+
+\subsection{Limitations}
+
+Small sample ($n=4$), single family group, uncontrolled setting, informal timing, non-blinded methodology. Insufficient for population-level estimates, demographic generalizations, or statistical comparison. Threats to validity: related participants, non-random sample, potential learning effects, limited demographic diversity. Classification: \textbf{informal pilot with promising results requiring formal validation}.
+
+\subsection{Next Steps: Usability Evidence (Optional)}
+
+This pilot is insufficient for population-level conclusions. Additional usability evidence may be gathered through third-party replication and/or controlled studies, depending on available resources and community interest. A reasonable study design would test the \textit{current} workflow (pre-computed tables, integrated checksums, and finalized materials) and report outcomes such as success rate, time distribution, error rates, subjective difficulty, and common points of confusion.
+
+\section{Physical Security Considerations}
+\label{app:physical}
+
+Manual cryptographic operations face well-documented physical side-channels~\cite{anderson2008}: impression attacks, visual surveillance, insecure waste disposal. Schiavinato's dual-mode architecture presents distinct considerations.
+
+\subsection{Share Materialization}
+
+Computational share generation produces digital output requiring physical conversion. Three approaches: (1) screen transcription by hand (no printer, but transcription errors possible), (2) printing to dedicated USB printer (fast but requires trusted printer with no network/storage), (3) QR code display for manual grid filling or printing (machine-readable, compact). Each achieves same cryptographic security; choice affects operational convenience versus privacy profile. Standard physical security practices apply~\cite{anderson2008}.
+
+\subsection{Impression Attacks}
+
+\textit{Threat:} Writing on paper pad leaves indentations on underlying sheets. Adversary reconstructs intermediate values from discarded pages.
+
+\textit{Dual-mode analysis:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Computational:} Paper use during materialization only. No calculations.
+    \item \textbf{Manual:} Extensive paper use (66+ calculations for 2-of-3, 24-word). Each potentially leaves impression.
+\end{itemize}
+
+\textit{Mitigation:} Hard surface (glass, wood, clipboard) rather than pad; single-use worksheets (destroy after); metal surface eliminates impressions entirely.
+
+\subsection{Waste Management}
+
+\textit{Threat:} Scratch paper contains intermediate values. Improper disposal enables reconstruction.
+
+\textit{Dual-mode analysis:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Computational:} Electronic waste (device memory) requires secure deletion. Minimal physical waste.
+    \item \textbf{Manual:} Physical scratch accumulates throughout a manual session (typically 2--5 hours for sharing or 30--60 minutes for recovery).
+\end{itemize}
+
+\textit{Mitigation:} Retain all scratch work in controlled environment until successful recovery. After success: immediate destruction via burning or cross-cut shredding. For partial/failed recovery: secure materials, retry, destroy simultaneously.
+
+\subsection{Visual Surveillance}
+
+\textit{Threat:} Manual recovery requires spreading documents for extended period. Line-of-sight adversaries (cameras, shoulder surfing, window observation) capture values.
+
+\textit{Dual-mode analysis:}
+\begin{itemize}[noitemsep]
+    \item \textbf{Computational:} Brief exposure during transcription (seconds). Screen privacy filters effective.
+    \item \textbf{Manual:} Extended exposure (typically 2--5 hours for sharing or 30--60 minutes for recovery). Multiple documents increase surface area.
+\end{itemize}
+
+\textit{Mitigation:} Private room, locked door, drawn blinds. Disable/cover all cameras (laptop, phones, smart devices). Trusted co-participants only. Complete in single uninterrupted session. For maximum paranoia: Faraday cage or electronics-free room.
+
+\subsection{Pre-Computed Coefficient Integrity}
+
+\textit{Threat:} Adversary distributes malicious Lagrange coefficient tables. Users obtain incorrect mnemonic.
+
+\textit{Analysis:} Section~\ref{sec:lagrange} proves coefficients contain zero secret information. Compromised tables affect \textbf{usability, not security}. Wrong coefficients yield wrong mnemonic, which fails BIP39 validation or shows zero balance. Scheme cannot be backdoored through malicious coefficients.
+
+\textit{Mitigation:} Verify tables against multiple sources; compute on-demand using any device (even untrusted); cross-check recovered mnemonic against known wallet balance.
+
+\end{document}
+

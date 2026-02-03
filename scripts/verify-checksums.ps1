@@ -12,7 +12,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Repo = "GRIFORTIS/schiavinato-sharing-spec"
+$Repo = "GRIFORTIS/schiavinato-sharing"
 
 Write-Host "🔐 Verifying checksums for Schiavinato Sharing Specification" -ForegroundColor Cyan
 Write-Host ""
@@ -46,13 +46,6 @@ Get-Content "CHECKSUMS.txt"
 Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 Write-Host ""
 
-# Check if reference-implementation directory exists
-if (-not (Test-Path "reference-implementation")) {
-    Write-Host "⚠  reference-implementation/ directory not found" -ForegroundColor Yellow
-    Write-Host "   Run this script from the repository root"
-    exit 1
-}
-
 # Verify checksums
 Write-Host "🔍 Verifying checksums..." -ForegroundColor Cyan
 Write-Host ""
@@ -85,12 +78,7 @@ Get-Content "CHECKSUMS.txt" | ForEach-Object {
     # Skip if no filename
     if ([string]::IsNullOrWhiteSpace($Filename)) { return }
     
-    # Construct full path
-    if ($Filename -match "^reference-implementation") {
-        $ActualFile = $Filename
-    } else {
-        $ActualFile = Join-Path "reference-implementation" $Filename
-    }
+    $ActualFile = $Filename
     
     if (Test-Path $ActualFile) {
         $ActualHash = (Get-FileHash -Path $ActualFile -Algorithm SHA256).Hash.ToLower()

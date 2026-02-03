@@ -11,7 +11,7 @@ on:
 
 jobs:
   analyze:
-    name: Analyze JavaScript
+    name: Analyze Python
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -25,10 +25,10 @@ jobs:
       - name: Initialize CodeQL
         uses: github/codeql-action/init@2b983b380ce715a6c836c917154509c332c19b3a # v3
         with:
-          languages: javascript
+          languages: python
           queries: security-extended
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@2b983b380ce715a6c836c917154509c332c19b3a # v3
         with:
-          category: "/language:javascript"
+          category: "/language:python"

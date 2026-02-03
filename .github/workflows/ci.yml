@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  spec-sanity:
+    name: Spec sanity checks
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JSON files parse
+        run: |
+          python -m json.tool test_vectors/schema.json >/dev/null
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          
+          schema = Path("test_vectors/schema.json")
+          json.loads(schema.read_text(encoding="utf-8"))
+          
+          vectors = sorted(Path("test_vectors").glob("v*/vectors.json"))
+          if not vectors:
+            raise SystemExit("No vectors found under test_vectors/v*/vectors.json")
+          
+          for p in vectors:
+            json.loads(p.read_text(encoding="utf-8"))
+            print("OK:", p)
+          PY
+
+      - name: Validate vectors JSON has required keys
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          required = ("version", "generated", "vectors")
+          
+          vectors = sorted(Path("test_vectors").glob("v*/vectors.json"))
+          if not vectors:
+            raise SystemExit("No vectors found under test_vectors/v*/vectors.json")
+          
+          for p in vectors:
+            data = json.loads(p.read_text(encoding="utf-8"))
+            for k in required:
+              if k not in data:
+                raise SystemExit(f"Missing key {k!r} in {p}")
+            if not isinstance(data["vectors"], list):
+              raise SystemExit(f"'vectors' must be a list in {p}")
+            print("OK keys:", p)
+          PY
+

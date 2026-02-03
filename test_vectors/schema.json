@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Schiavinato Sharing test vectors",
+  "type": "object",
+  "required": ["version", "generated", "vectors"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Spec version these vectors target (e.g., v0.4.0)."
+    },
+    "generated": {
+      "type": "string",
+      "description": "ISO-8601 UTC timestamp for when this file was generated."
+    },
+    "vectors": {
+      "type": "array",
+      "items": { "type": "object" },
+      "description": "Vector objects (schema to be refined as the format stabilizes)."
+    }
+  },
+  "additionalProperties": false
+}
+

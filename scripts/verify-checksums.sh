@@ -12,7 +12,7 @@
 set -e
 
 VERSION="${1:-latest}"
-REPO="GRIFORTIS/schiavinato-sharing-spec"
+REPO="GRIFORTIS/schiavinato-sharing"
 
 echo "🔐 Verifying checksums for Schiavinato Sharing Specification"
 echo ""
@@ -50,13 +50,6 @@ cat CHECKSUMS.txt
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
-# Check if reference-implementation directory exists
-if [ ! -d "reference-implementation" ]; then
-  echo -e "${YELLOW}⚠${NC}  reference-implementation/ directory not found"
-  echo "   Run this script from the repository root"
-  exit 1
-fi
-
 # Verify checksums
 echo "🔍 Verifying checksums..."
 echo ""
@@ -75,12 +68,7 @@ while IFS= read -r line; do
   # Skip if no filename
   [[ -z "$FILENAME" ]] && continue
   
-  # Construct full path
-  if [[ "$FILENAME" == reference-implementation/* ]]; then
-    ACTUAL_FILE="$FILENAME"
-  else
-    ACTUAL_FILE="reference-implementation/$FILENAME"
-  fi
+  ACTUAL_FILE="$FILENAME"
   
   if [ -f "$ACTUAL_FILE" ]; then
     ACTUAL_HASH=$(sha256sum "$ACTUAL_FILE" | awk '{print $1}')
