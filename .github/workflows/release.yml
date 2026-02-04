@@ -158,13 +158,16 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
+          # Build *from the release tag* for deterministic, auditable artifacts.
+          ref: ${{ github.event.release.tag_name }}
 
       - name: Resolve tag and verify version alignment (strict)
         id: meta
         shell: bash
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
         run: |
           set -euo pipefail
-          TAG_NAME="${{ github.event.release.tag_name }}"
           if ! python3 - <<'PY'
           import os, re
           from pathlib import Path
@@ -295,13 +298,16 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
+          # Build *from the provided tag* for deterministic, auditable artifacts.
+          ref: ${{ inputs.tag }}
 
       - name: Verify tag/version alignment (strict)
         id: meta
         shell: bash
+        env:
+          TAG_NAME: ${{ inputs.tag }}
         run: |
           set -euo pipefail
-          TAG_NAME="${{ inputs.tag }}"
           python3 - <<'PY'
           import os, re
           from pathlib import Path
