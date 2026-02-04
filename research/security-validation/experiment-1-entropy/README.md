@@ -220,6 +220,6 @@ Key functions:
 ## Contact
 
 Questions about this experiment:
-- GitHub Issues: https://github.com/GRIFORTIS/schiavinato-sharing/issues
-- Discussion: https://github.com/GRIFORTIS/schiavinato-sharing/discussions
+- GitHub Issues: [schiavinato-sharing/issues](https://github.com/GRIFORTIS/schiavinato-sharing/issues)
+- Discussion: [schiavinato-sharing/discussions](https://github.com/GRIFORTIS/schiavinato-sharing/discussions)
 

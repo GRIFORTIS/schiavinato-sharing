@@ -17,12 +17,12 @@
 **Dual-mode threshold secret sharing for BIP39 mnemonics over \(GF(2053)\)** — designed to be executable both by software and by hand (pencil & paper), with validation checkpoints to prevent silent mistakes.
 
 ## Canonical documents
-- **Manual protocol (stable, heirs-first)**: [`manual_spec/README.md`](manual_spec/README.md)
-- **Digital envelope (evolvable)**: [`software_spec/README.md`](software_spec/README.md)
-- **Proposals (decision record)**: [`proposals/`](proposals/)
-- **Test vectors (canonical)**: [`test_vectors/README.md`](test_vectors/README.md)
-- **Whitepaper (LaTeX source)**: [`whitepaper/WHITEPAPER.tex`](whitepaper/WHITEPAPER.tex)
-- **Security policy**: [`.github/SECURITY.md`](.github/SECURITY.md)
+- **Manual protocol specifications**: [`manual_spec/README`](manual_spec/README.md)
+- **Software (Digital envelope) specificatons**: [`software_spec/README`](software_spec/README.md)
+- **Proposals**: [`proposals/`](proposals/)
+- **Test vectors**: [`test_vectors/README`](test_vectors/README.md)
+- **Whitepaper**: [PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](whitepaper/WHITEPAPER.tex)
+- **Security policy**: [SECURITY](.github/SECURITY.md)
 
 ## Implementations
 These implementations aim to be compatible with the canonical spec documents above:
@@ -32,7 +32,7 @@ These implementations aim to be compatible with the canonical spec documents abo
 
 ## What reviewers should look at
 Start here:
-- [`docs/review.md`](docs/review.md)
+- [`docs/review`](docs/review.md)
 
 High-value review targets:
 - Correctness and clarity of manual validation checkpoints (row checksum + GIC)

@@ -75,8 +75,7 @@ The scheme includes error detection checksums but **NOT cryptographic authentica
 **Implication**: Checksums detect accidental errors but cannot prevent intentional tampering by adversaries with access to shares.
 
 See the Whitepaper (Section 6.4) for detailed discussion:
-- PDF: https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf
-- LaTeX source: https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/whitepaper/WHITEPAPER.tex
+- [PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](../whitepaper/WHITEPAPER.tex)
 
 ### 2. Share Distribution Security
 
@@ -206,19 +205,19 @@ We welcome:
 
 ## Related Security Policies
 
-- **JS implementation**: [schiavinato-sharing-js/.github/SECURITY.md](https://github.com/GRIFORTIS/schiavinato-sharing-js/blob/main/.github/SECURITY.md)
-- **Python implementation**: [schiavinato-sharing-py/.github/SECURITY.md](https://github.com/GRIFORTIS/schiavinato-sharing-py/blob/main/.github/SECURITY.md)
-- **HTML implementation**: [schiavinato-sharing-html/.github/SECURITY.md](https://github.com/GRIFORTIS/schiavinato-sharing-html/blob/main/.github/SECURITY.md)
-- **Code of Conduct**: [`CODE_OF_CONDUCT.md`](./CODE_OF_CONDUCT.md)
-- **Contributing Guidelines**: [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- **JS implementation**: [schiavinato-sharing-js/.github/SECURITY](https://github.com/GRIFORTIS/schiavinato-sharing-js/blob/main/.github/SECURITY.md)
+- **Python implementation**: [schiavinato-sharing-py/.github/SECURITY](https://github.com/GRIFORTIS/schiavinato-sharing-py/blob/main/.github/SECURITY.md)
+- **HTML implementation**: [schiavinato-sharing-html/.github/SECURITY](https://github.com/GRIFORTIS/schiavinato-sharing-html/blob/main/.github/SECURITY.md)
+- **Code of Conduct**: [CODE_OF_CONDUCT](./CODE_OF_CONDUCT.md)
+- **Contributing Guidelines**: [CONTRIBUTING](./CONTRIBUTING.md)
 
 ---
 
 ## References
 
-- **Whitepaper**: [PDF](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) ([LaTeX](../whitepaper/WHITEPAPER.tex)) - Full security analysis
-- **Review entry point**: [`docs/review.md`](../docs/review.md)
-- **Validation study**: [`docs/validation-study.md`](../docs/validation-study.md)
+- **Whitepaper**: [PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](../whitepaper/WHITEPAPER.tex) - Full security analysis
+- **Review entry point**: [`docs/review`](../docs/review.md)
+- **Validation study**: [`docs/validation-study`](../docs/validation-study.md)
 - **Test vectors**: [`test_vectors/`](../test_vectors/)
 
 ---

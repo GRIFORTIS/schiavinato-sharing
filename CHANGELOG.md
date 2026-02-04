@@ -78,11 +78,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vectors: `test_vectors/`
 
 ## Links
-- **Repository**: https://github.com/GRIFORTIS/schiavinato-sharing
-- **HTML implementation**: https://github.com/GRIFORTIS/schiavinato-sharing-html
-- **JavaScript/TypeScript implementation**: https://github.com/GRIFORTIS/schiavinato-sharing-js
-- **Python implementation**: https://github.com/GRIFORTIS/schiavinato-sharing-py
-- **Organization**: https://github.com/GRIFORTIS
+- **Repository**: [schiavinato-sharing](https://github.com/GRIFORTIS/schiavinato-sharing)
+- **HTML implementation**: [schiavinato-sharing-html](https://github.com/GRIFORTIS/schiavinato-sharing-html)
+- **JavaScript/TypeScript implementation**: [schiavinato-sharing-js](https://github.com/GRIFORTIS/schiavinato-sharing-js)
+- **Python implementation**: [schiavinato-sharing-py](https://github.com/GRIFORTIS/schiavinato-sharing-py)
+- **Organization**: [GRIFORTIS](https://github.com/GRIFORTIS)
 
 [Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.0...HEAD
 [0.4.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.3.0...v0.4.0

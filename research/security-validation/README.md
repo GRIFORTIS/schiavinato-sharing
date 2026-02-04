@@ -1,6 +1,6 @@
 # Security Validation Experiments
 
-This directory contains cryptographic security validation experiments for Schiavinato Sharing as described in the Whitepaper ([PDF](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf), [LaTeX](../../whitepaper/WHITEPAPER.tex)).
+This directory contains cryptographic security validation experiments for Schiavinato Sharing as described in the Whitepaper ([PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](../../whitepaper/WHITEPAPER.tex)).
 
 ## Purpose
 
@@ -107,7 +107,7 @@ All experiments are designed for complete reproducibility:
 
 ### Reproducing Paper Results
 
-The results cited in the Whitepaper ([PDF](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf), [LaTeX](../../whitepaper/WHITEPAPER.tex)) were generated with:
+The results cited in the Whitepaper ([PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](../../whitepaper/WHITEPAPER.tex)) were generated with:
 
 ```bash
 ./run_all_experiments.sh --seed 42 --trials 1000 --configs "2-3,3-5,4-7"
@@ -129,9 +129,9 @@ https://github.com/GRIFORTIS/schiavinato-sharing
 
 Found an issue or have suggestions for additional validation experiments?
 
-1. Open an issue: https://github.com/GRIFORTIS/schiavinato-sharing/issues
+1. Open an issue: [GitHub Issues](https://github.com/GRIFORTIS/schiavinato-sharing/issues)
 2. Propose changes via pull request
-3. Follow guidelines in `.github/CONTRIBUTING.md`
+3. Follow guidelines in [CONTRIBUTING](../../.github/CONTRIBUTING.md)
 
 ## License
 
@@ -143,5 +143,5 @@ See `LICENSE` in repository root for details.
 
 **Status**: Active development (December 2024)  
 **Maintainer**: GRIFORTIS  
-**Contact**: https://github.com/GRIFORTIS/schiavinato-sharing/discussions
+**Contact**: [schiavinato-sharing/discussions](https://github.com/GRIFORTIS/schiavinato-sharing/discussions)
 

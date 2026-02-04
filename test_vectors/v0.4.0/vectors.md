@@ -981,7 +981,7 @@ These security features do not affect:
 
 The features work automatically without configuration and enhance security against advanced attack vectors (timing analysis, memory dumps) while maintaining full compatibility with the mathematical specification.
 
-For security implementation details, see [SECURITY.md](./SECURITY.md).
+For security implementation details, see [SECURITY](./SECURITY.md).
 
 ---
 

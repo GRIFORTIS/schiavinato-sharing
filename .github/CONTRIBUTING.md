@@ -7,7 +7,7 @@ This document is the **canonical** contributing policy for the Schiavinato Shari
 This project is **EXPERIMENTAL** and **NOT audited**. Do not use it for real funds.
 
 Security policy / vulnerability reporting:
-- https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/.github/SECURITY.md
+- [SECURITY](./SECURITY.md)
 
 ## Repository map (where changes belong)
 
@@ -20,9 +20,9 @@ Schiavinato Sharing is split across repositories. **Protocol/spec truth lives in
   - Canonical vectors entry point (choose version there): `test_vectors/README.md`
 
 Implementations (no protocol duplication; link to the canonical repo instead):
-- HTML: https://github.com/GRIFORTIS/schiavinato-sharing-html
-- JavaScript/TypeScript: https://github.com/GRIFORTIS/schiavinato-sharing-js
-- Python: https://github.com/GRIFORTIS/schiavinato-sharing-py
+- HTML: [schiavinato-sharing-html](https://github.com/GRIFORTIS/schiavinato-sharing-html)
+- JavaScript/TypeScript: [schiavinato-sharing-js](https://github.com/GRIFORTIS/schiavinato-sharing-js)
+- Python: [schiavinato-sharing-py](https://github.com/GRIFORTIS/schiavinato-sharing-py)
 
 ## High-leverage ways to contribute
 
@@ -33,7 +33,7 @@ Good first contributions:
 - Review validation checkpoints (row checksum + GIC semantics) for “no silent failure” properties.
 - Review `software_spec/` for backwards decoding/version negotiation clarity.
 - Validate implementations against canonical vectors:
-  - https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/test_vectors/README.md
+  - [TEST_VECTORS](../test_vectors/README.md)
 
 ## Substantial contributions only (protect reviewer time)
 

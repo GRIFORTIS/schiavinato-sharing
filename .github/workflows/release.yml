@@ -1,0 +1,409 @@
+name: Release (whitepaper, signed)
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Why are you running a dry-run? (for audit trail)'
+        required: true
+        type: string
+      mode:
+        description: 'Mode: dry-run (no upload) or upload-to-release (attach signed assets to an existing tag)'
+        required: true
+        type: choice
+        options:
+          - dry-run
+          - upload-to-release
+      tag:
+        description: 'Required only for upload-to-release (e.g., v0.4.0)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  dry-run:
+    name: Dry-run (no upload)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    if: github.event_name != 'release' && inputs.mode == 'dry-run'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag (from LaTeX version macro)
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG_NAME="$(python3 - <<'PY'
+          import re
+          from pathlib import Path
+          tex = Path("whitepaper/WHITEPAPER.tex").read_text(encoding="utf-8")
+          m = re.search(r"\\newcommand\{\\SchiavinatoSharingVersion\}\{([^}]+)\}", tex)
+          if not m:
+              raise SystemExit("Missing \\SchiavinatoSharingVersion macro in whitepaper/WHITEPAPER.tex")
+          version = m.group(1).strip()
+          if not re.fullmatch(r"v\d+\.\d+\.\d+", version):
+              raise SystemExit(f"Invalid whitepaper version macro: {version!r} (expected vX.Y.Z)")
+          print(m.group(1).strip())
+          PY
+          )"
+          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure GPG secrets are configured (strict)
+        run: |
+          set -euo pipefail
+          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ] || [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
+            echo "Missing GPG secrets. Configure GPG_PRIVATE_KEY and GPG_PASSPHRASE to produce signed release artifacts." >&2
+            exit 1
+          fi
+
+      - name: Install LaTeX toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science
+
+      - name: Build whitepaper PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error -cd whitepaper/WHITEPAPER.tex
+
+      - name: Prepare versioned + stable PDF assets
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          cp whitepaper/WHITEPAPER.pdf "WHITEPAPER-${TAG_NAME}.pdf"
+          cp whitepaper/WHITEPAPER.pdf "WHITEPAPER.pdf"
+
+      - name: Generate checksums (CHECKSUMS.txt)
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          GENERATED_UTC="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          {
+            echo "# SHA256 Checksums - Schiavinato Sharing (Specification)"
+            echo ""
+            echo "Version: ${TAG_NAME}"
+            echo "Generated: ${GENERATED_UTC}"
+            echo ""
+            echo "## Whitepaper PDFs"
+            echo ""
+            sha256sum "WHITEPAPER.pdf" "WHITEPAPER-${TAG_NAME}.pdf"
+            echo ""
+            echo "## Verification"
+            echo ""
+            echo "sha256sum -c CHECKSUMS.txt"
+          } > CHECKSUMS.txt
+
+      - name: Import GPG key
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+
+      - name: Sign artifacts (strict)
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for f in "CHECKSUMS.txt" "WHITEPAPER.pdf" "WHITEPAPER-${TAG_NAME}.pdf"; do
+            echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes \
+              --passphrase-fd 0 --pinentry-mode loopback \
+              --armor --detach-sign "$f"
+            gpg --verify "${f}.asc" "$f"
+          done
+
+      - name: Upload artifacts (dry-run)
+        uses: actions/upload-artifact@4c0ff1c489dca52fedb26375d7d8fe7bd9233f19 # v4.4.0
+        with:
+          name: whitepaper-release-dry-run-${{ steps.meta.outputs.tag }}
+          path: |
+            WHITEPAPER.pdf
+            WHITEPAPER-${{ steps.meta.outputs.tag }}.pdf
+            CHECKSUMS.txt
+            CHECKSUMS.txt.asc
+            WHITEPAPER.pdf.asc
+            WHITEPAPER-${{ steps.meta.outputs.tag }}.pdf.asc
+          retention-days: 14
+
+  release:
+    name: Release (upload signed assets)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve tag and verify version alignment (strict)
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG_NAME="${{ github.event.release.tag_name }}"
+          if ! python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          tag = os.environ["TAG_NAME"]
+          if not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
+              raise SystemExit(f"Invalid tag format: {tag!r} (expected vX.Y.Z)")
+          tex = Path("whitepaper/WHITEPAPER.tex").read_text(encoding="utf-8")
+          m = re.search(r"\\newcommand\{\\SchiavinatoSharingVersion\}\{([^}]+)\}", tex)
+          if not m:
+              raise SystemExit("Missing \\SchiavinatoSharingVersion macro in whitepaper/WHITEPAPER.tex")
+          version = m.group(1).strip()
+          if version != tag:
+              raise SystemExit(f"Tag/whitepaper mismatch: tag={tag!r} whitepaper={version!r}")
+          print(f"OK: tag={tag} whitepaper={version}")
+          PY
+          then
+            exit 1
+          fi
+          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure GPG secrets are configured (strict)
+        run: |
+          set -euo pipefail
+          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ] || [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
+            echo "Missing GPG secrets. Configure GPG_PRIVATE_KEY and GPG_PASSPHRASE to produce signed release artifacts." >&2
+            exit 1
+          fi
+
+      - name: Install LaTeX toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science
+
+      - name: Build whitepaper PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error -cd whitepaper/WHITEPAPER.tex
+
+      - name: Prepare versioned + stable PDF assets
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          cp whitepaper/WHITEPAPER.pdf "WHITEPAPER-${TAG_NAME}.pdf"
+          cp whitepaper/WHITEPAPER.pdf "WHITEPAPER.pdf"
+
+      - name: Generate checksums (CHECKSUMS.txt)
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          GENERATED_UTC="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          {
+            echo "# SHA256 Checksums - Schiavinato Sharing (Specification)"
+            echo ""
+            echo "Version: ${TAG_NAME}"
+            echo "Generated: ${GENERATED_UTC}"
+            echo ""
+            echo "## Whitepaper PDFs"
+            echo ""
+            sha256sum "WHITEPAPER.pdf" "WHITEPAPER-${TAG_NAME}.pdf"
+            echo ""
+            echo "## Verification"
+            echo ""
+            echo "sha256sum -c CHECKSUMS.txt"
+          } > CHECKSUMS.txt
+
+      - name: Import GPG key
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+
+      - name: Sign artifacts (strict)
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for f in "CHECKSUMS.txt" "WHITEPAPER.pdf" "WHITEPAPER-${TAG_NAME}.pdf"; do
+            echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes \
+              --passphrase-fd 0 --pinentry-mode loopback \
+              --armor --detach-sign "$f"
+            gpg --verify "${f}.asc" "$f"
+          done
+
+      - name: Upload signed artifacts to release
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          files: |
+            WHITEPAPER.pdf
+            WHITEPAPER.pdf.asc
+            WHITEPAPER-${{ steps.meta.outputs.tag }}.pdf
+            WHITEPAPER-${{ steps.meta.outputs.tag }}.pdf.asc
+            CHECKSUMS.txt
+            CHECKSUMS.txt.asc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  upload-to-release:
+    name: Upload signed assets to existing release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    if: github.event_name != 'release' && inputs.mode == 'upload-to-release'
+
+    steps:
+      - name: Validate tag input
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${{ inputs.tag }}" ]; then
+            echo "Missing required input: tag (e.g., v0.4.0)" >&2
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag/version alignment (strict)
+        id: meta
+        shell: bash
+        run: |
+          set -euo pipefail
+          TAG_NAME="${{ inputs.tag }}"
+          python3 - <<'PY'
+          import os, re
+          from pathlib import Path
+          tag = os.environ["TAG_NAME"]
+          if not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
+              raise SystemExit(f"Invalid tag format: {tag!r} (expected vX.Y.Z)")
+          tex = Path("whitepaper/WHITEPAPER.tex").read_text(encoding="utf-8")
+          m = re.search(r"\\newcommand\{\\SchiavinatoSharingVersion\}\{([^}]+)\}", tex)
+          if not m:
+              raise SystemExit("Missing \\SchiavinatoSharingVersion macro in whitepaper/WHITEPAPER.tex")
+          version = m.group(1).strip()
+          if version != tag:
+              raise SystemExit(f"Tag/whitepaper mismatch: tag={tag!r} whitepaper={version!r}")
+          print(f"OK: tag={tag} whitepaper={version}")
+          PY
+          echo "tag=${TAG_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure GPG secrets are configured (strict)
+        run: |
+          set -euo pipefail
+          if [ -z "${{ secrets.GPG_PRIVATE_KEY }}" ] || [ -z "${{ secrets.GPG_PASSPHRASE }}" ]; then
+            echo "Missing GPG secrets. Configure GPG_PRIVATE_KEY and GPG_PASSPHRASE to produce signed release artifacts." >&2
+            exit 1
+          fi
+
+      - name: Install LaTeX toolchain
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            latexmk \
+            texlive-latex-extra \
+            texlive-fonts-recommended \
+            texlive-science
+
+      - name: Build whitepaper PDF
+        shell: bash
+        run: |
+          set -euo pipefail
+          latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error -cd whitepaper/WHITEPAPER.tex
+
+      - name: Prepare versioned + stable PDF assets
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          cp whitepaper/WHITEPAPER.pdf "WHITEPAPER-${TAG_NAME}.pdf"
+          cp whitepaper/WHITEPAPER.pdf "WHITEPAPER.pdf"
+
+      - name: Generate checksums (CHECKSUMS.txt)
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          GENERATED_UTC="$(date -u +"%Y-%m-%d %H:%M:%S UTC")"
+          {
+            echo "# SHA256 Checksums - Schiavinato Sharing (Specification)"
+            echo ""
+            echo "Version: ${TAG_NAME}"
+            echo "Generated: ${GENERATED_UTC}"
+            echo ""
+            echo "## Whitepaper PDFs"
+            echo ""
+            sha256sum "WHITEPAPER.pdf" "WHITEPAPER-${TAG_NAME}.pdf"
+            echo ""
+            echo "## Verification"
+            echo ""
+            echo "sha256sum -c CHECKSUMS.txt"
+          } > CHECKSUMS.txt
+
+      - name: Import GPG key
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+          gpg --list-secret-keys --keyid-format LONG
+
+      - name: Sign artifacts (strict)
+        shell: bash
+        env:
+          TAG_NAME: ${{ steps.meta.outputs.tag }}
+        run: |
+          set -euo pipefail
+          for f in "CHECKSUMS.txt" "WHITEPAPER.pdf" "WHITEPAPER-${TAG_NAME}.pdf"; do
+            echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes \
+              --passphrase-fd 0 --pinentry-mode loopback \
+              --armor --detach-sign "$f"
+            gpg --verify "${f}.asc" "$f"
+          done
+
+      - name: Upload signed artifacts to release
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
+        with:
+          tag_name: ${{ steps.meta.outputs.tag }}
+          files: |
+            WHITEPAPER.pdf
+            WHITEPAPER.pdf.asc
+            WHITEPAPER-${{ steps.meta.outputs.tag }}.pdf
+            WHITEPAPER-${{ steps.meta.outputs.tag }}.pdf.asc
+            CHECKSUMS.txt
+            CHECKSUMS.txt.asc
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

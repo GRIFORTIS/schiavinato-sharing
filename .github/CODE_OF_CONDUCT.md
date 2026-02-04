@@ -130,8 +130,8 @@ https://www.contributor-covenant.org/translations.
 
 ## Contact
 
-- **General conduct issues**: conduct@grifortis.com
-- **Security vulnerabilities**: security@grifortis.com (see [SECURITY.md](.github/SECURITY.md))
+- **General conduct issues**: contact@grifortis.com
+- **Security vulnerabilities**: security@grifortis.com (see [SECURITY](./SECURITY.md))
 - **Project questions**: Open an issue or discussion on GitHub
 
 ---
