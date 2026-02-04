@@ -14,7 +14,7 @@
 \usepackage{graphicx}
 
 % --- Version ---
-\newcommand{\SchiavinatoSharingVersion}{v0.4.0}
+\newcommand{\SchiavinatoSharingVersion}{v0.4.1}
 
 % --- Theorem Environments ---
 \newtheorem{proposition}{Proposition}[section]
@@ -49,11 +49,11 @@
 % --- Title Data ---
 \title{\textbf{Schiavinato Sharing: Dual-Mode Threshold Secret Sharing for BIP39 Mnemonics}}
 \author{
-    \textbf{Renato Schiavinato Lopez} \\
+    \textbf{Renato Schiavinato Lopez}\thanks{\textbf{WARNING: EXPERIMENTAL SOFTWARE.} \textbf{DO NOT USE IT FOR REAL FUNDS!} Schiavinato Sharing specification and implementations have \textbf{NOT} been audited. Use for testing, learning, and experimentation only. Responsible disclosure: \texttt{security@grifortis.com}. Canonical specification and reference implementations: \url{https://github.com/GRIFORTIS/schiavinato-sharing}. Licensed under CC BY 4.0.} \\
     GRIFORTIS \\
     \texttt{https://grifortis.com}
 }
-\date{\today}
+\date{\today\\\SchiavinatoSharingVersion}
 
 \begin{document}
 
@@ -779,7 +779,7 @@ Schiavinato's defining property is operational flexibility: users select sharing
     \item Constant-time comparison for checksum validation (side-channel resistance)
     \item Explicit memory cleanup for polynomial coefficients and intermediate values
     \item Minimal dependency chain (HTML reference tool: no third-party runtime deps; JS/TS: \texttt{@noble/hashes}; Python: \texttt{mnemonic} for BIP39 wordlist/checksum)
-    \item Comprehensive test coverage (100\%) with reproducible test vectors
+    \item Extensive automated tests with reproducible test vectors
     \item MIT License enabling independent audit and verification
 \end{itemize}
 
@@ -826,12 +826,24 @@ Both modes execute identical mathematics over $GF(2053)$. Mode choice affects op
 
 \paragraph{Usability evidence (scope).} This paper includes (i) an informal, early-stage manual usability pilot (Appendix~\ref{app:validation}) documenting re-learnability and documentation-driven performance, and (ii) supplementary demonstration material for the current manual workflow hosted in the project specification repository (see the ``Supplementary Material'' section in the repository README).\footnote{\url{https://github.com/GRIFORTIS/schiavinato-sharing}} These artifacts support clarity and reproducibility, but they are not controlled usability studies and should not be treated as population-level evidence.
 
-\paragraph{Implementation status.} Multiple MIT-licensed reference implementations enable independent verification: JavaScript/TypeScript library (\texttt{@grifortis/schiavinato-sharing} v0.2.0), offline HTML tool, and Python library. All are experimental, unaudited, and \textbf{must not} be used for significant real-world holdings.
+\paragraph{Implementation status.} Multiple MIT-licensed reference implementations enable independent verification:
+\begin{itemize}[noitemsep]
+    \item JavaScript/TypeScript: npm package \texttt{@grifortis/\allowbreak schiavinato-sharing}
+    \item HTML: offline single-file tool
+    \item Python: library implementation
+\end{itemize}
+All are experimental, unaudited, and \textbf{must not} be used for significant real-world holdings.
 
-\paragraph{Test vectors.} Complete test vectors in \texttt{TEST\_VECTORS.md} enable cross-implementation compatibility validation. Includes 12-word 2-of-3 scheme with polynomial coefficients, share values, and expected checksums.
+\paragraph{Test vectors.} Version-scoped test vectors in \texttt{test\_vectors/} enable cross-implementation compatibility validation:
+\begin{itemize}[noitemsep]
+    \item \href{https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/test_vectors/README.md}{\texttt{github.com/\allowbreak GRIFORTIS/\allowbreak schiavinato-sharing/\allowbreak blob/\allowbreak main/\allowbreak test\_vectors/\allowbreak README.md}}
+    \item Released vectors under \texttt{test\_vectors/\allowbreak vX.Y.Z/}
+\end{itemize}
+Includes a 12-word 2-of-3 scheme with polynomial coefficients, share values, and expected checksums.
 
 \paragraph{Repositories:}
 \begin{itemize}[noitemsep]
+    \item HTML: \url{https://github.com/GRIFORTIS/schiavinato-sharing-html}
     \item JS/TS: \url{https://github.com/GRIFORTIS/schiavinato-sharing-js}
     \item Python: \url{https://github.com/GRIFORTIS/schiavinato-sharing-py}
     \item Spec: \url{https://github.com/GRIFORTIS/schiavinato-sharing}
@@ -884,7 +896,7 @@ Experimental status maintained until all phases complete.
 
 \subsection{Community Engagement}
 
-We invite engagement from cryptographers, Bitcoin developers, usability researchers, and security auditors. Primary channels: Bitcoin-dev mailing list, GitHub Discussions (\url{https://github.com/GRIFORTIS/schiavinato-sharing/discussions}), and GitHub Security advisory for coordinated vulnerability reporting.
+We invite engagement from cryptographers, Bitcoin developers, usability researchers, and security auditors. Primary channels: Bitcoin-dev mailing list, GitHub Discussions (\url{https://github.com/GRIFORTIS/schiavinato-sharing/discussions}), and responsible disclosure via \texttt{security@grifortis.com} (see \url{https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/.github/SECURITY.md}).
 
 \section{Conclusion}
 \label{sec:conclusion}
@@ -894,6 +906,12 @@ Schiavinato Sharing shows that threshold security, native BIP39 input/output com
 This document is presented for peer review rather than as a production recommendation. Reference implementations and test vectors are provided to enable independent replication, and the appendices include (i) an informal early-stage usability pilot focused on re-learnability and documentation quality (Appendix~\ref{app:validation}), and (ii) physical security considerations for manual workflows (Appendix~\ref{app:physical}). Supplementary material linked from the project repository provides an end-to-end demonstration of the current fully manual workflow (Section~\ref{sec:implementation}).
 
 Whether this approach is suitable for long-horizon self-custody depends on both cryptographic review and operational practice. We invite critical analysis, replication, and falsification along the explicit criteria stated in Section~\ref{sec:discussion}.
+
+\section*{How to cite}
+
+If you reference this work, cite:
+
+Renato Schiavinato Lopez, \textit{Schiavinato Sharing: Dual-Mode Threshold Secret Sharing for BIP39 Mnemonics}, GRIFORTIS, \SchiavinatoSharingVersion, \today. Available at \url{https://github.com/GRIFORTIS/schiavinato-sharing}.
 
 \section*{Acknowledgments}
 
@@ -1081,7 +1099,7 @@ We conducted an informal pilot to test manual feasibility and time requirements 
 
 \paragraph{Participants.} Four family members (ages 28, 36, 70, 72) with zero self-custody experience and non-cryptographic professional backgrounds. This approximates intended inheritance scenario: beneficiaries with heterogeneous skills but no prior wallet-recovery experience.
 
-\paragraph{Test configuration.} Participants recovered test secret using 4-of-16 threshold scheme—significantly more complex than expected production deployments (2-of-3, 3-of-5). Shares 1, 3, 5, and 10 used.
+\paragraph{Test configuration.} Participants recovered a test secret using a 4-of-\allowbreak 16 threshold scheme, significantly more complex than expected production deployments (e.g., 2-of-3, 3-of-5). Shares 1, 3, 5, and 10 used.
 \textbf{Protocol maturity note:} This pilot was conducted at an early stage of the project and is not representative of the current workflow. In particular, it pre-dated (i) the publication of pre-computed Lagrange coefficient tables and (ii) the integration of the row-checksum and $GIC(x)$ architecture used for error localization and per-share consistency checks. As a result, error detection in this pilot relied primarily on group peer review and repeated manual cross-checking.
 At this stage, Lagrange coefficients were not pre-computed; participants computed coefficients manually using modular inverse tables, making the task strictly harder (and slower) than the current design.
 

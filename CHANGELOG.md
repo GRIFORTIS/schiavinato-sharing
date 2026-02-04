@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-02-03
+
+### Added
+- Strict whitepaper release automation: build LaTeX → PDF and publish both a stable `WHITEPAPER.pdf` and a versioned `WHITEPAPER-vX.Y.Z.pdf` (with checksums + GPG signatures).
+- CI hardening: secret scanning, workflow linting, relative-link checks, and LaTeX build verification.
+
+### Changed
+- Content alignment across docs and links (whitepaper links now include both latest and versioned releases).
+
 ## [0.4.0] - 2026-01-27
 
 ### Added
@@ -84,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Python implementation**: [schiavinato-sharing-py](https://github.com/GRIFORTIS/schiavinato-sharing-py)
 - **Organization**: [GRIFORTIS](https://github.com/GRIFORTIS)
 
-[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.1.0...v0.2.0
