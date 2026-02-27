@@ -1,49 +1,55 @@
 ---
-name: Bug Report
-about: Report a bug in the reference implementation
-title: '[BUG] '
-labels: 'bug'
-assignees: ''
+name: Bug report (spec / vectors / docs)
+about: Report a correctness issue, inconsistency, or documentation bug in the canonical specification repository
+title: "[BUG] "
+labels: ["bug"]
+assignees: ""
 ---
 
-## Bug Description
-<!-- A clear and concise description of what the bug is -->
+## Summary
+<!-- 1-2 sentences. -->
 
-## Location
-<!-- Where did you encounter this bug? -->
-- [ ] Reference Implementation (HTML tool)
-- [ ] Test suite
-- [ ] Documentation
-- [ ] Other: _______________
+## Where is the problem?
+<!-- Check all that apply. -->
+- [ ] `manual_spec`
+- [ ] `software_spec`
+- [ ] `test_vectors`
+- [ ] `whitepaper`
+- [ ] `docs/` (review entry point, diagrams, etc.)
+- [ ] `research/` (experiments)
+- [ ] Other (describe):
 
-## Steps to Reproduce
-<!-- Steps to reproduce the behavior -->
-1. 
-2. 
-3. 
+Links (file + section, if possible):
 
-## Expected Behavior
-<!-- What you expected to happen -->
+## What happened (actual)
 
-## Actual Behavior
-<!-- What actually happened -->
+## What you expected
 
-## Screenshots/Logs
-<!-- If applicable, add screenshots or paste relevant console logs -->
-
-## Environment
-<!-- Please complete the following information -->
-- **Browser**: [e.g., Chrome 119, Firefox 120, Safari 17]
-- **OS**: [e.g., Windows 11, macOS 14, Ubuntu 22.04]
-- **Reference Implementation Version**: [if versioned]
-
-## Additional Context
-<!-- Any other context about the problem -->
+## Evidence / reproduction
+<!-- Minimal reproducible example. Examples: mismatched vector, contradicting requirement, ambiguous wording. -->
+- Steps (if applicable):
+  1.
+  2.
+  3.
+- Test vector reference (if applicable):
+- Version/tag/commit:
 
 ## Impact
-<!-- How severe is this bug? -->
-- [ ] Critical (causes data loss or security issue)
-- [ ] High (blocks normal use)
+- [ ] Critical (security issue, data loss, silent corruption)
+- [ ] High (blocks review/implementation)
 - [ ] Medium (workaround exists)
-- [ ] Low (cosmetic or minor inconvenience)
+- [ ] Low (minor / cosmetic)
+
+## Security note (read first)
+If this could be a vulnerability or would help an attacker:
+- Do **not** post exploit details publicly
+- Report privately via `security@grifortis.com` (security policy: https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
+
+Never include real seeds/mnemonics, private keys, or real shares in issues, logs, screenshots, or attachments.
+
+## If this is an implementation bug
+If the issue is specific to an implementation (HTML / JS / Python), please open it in the appropriate repository:
+- HTML: https://github.com/GRIFORTIS/schiavinato-sharing-html/issues
+- JS/TS: https://github.com/GRIFORTIS/schiavinato-sharing-js/issues
+- Python: https://github.com/GRIFORTIS/schiavinato-sharing-py/issues
 

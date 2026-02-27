@@ -25,3 +25,6 @@ If you have proposed wording or structure, paste it here.
 ## Backwards compatibility notes
 Does this change any MUST/SHOULD behavior?
 
+## If this is editorial-only
+If this is a typo/formatting/clarity-only change with no behavioral impact, say so explicitly.
+

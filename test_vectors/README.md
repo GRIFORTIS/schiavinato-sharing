@@ -15,6 +15,8 @@ This directory contains the canonical test vectors for Schiavinato Sharing.
 ## Notes
 - Vectors MUST be version-scoped and immutable once released.
 - Implementations MUST declare which spec versions they support and MUST validate against these vectors before release.
+- Security policy (private disclosures): https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md
+- Some human-readable companion docs inside version folders may reference `SECURITY.md`; treat that as a reference to the org-wide security policy link above.
 
 ## Quick test mnemonics (FOR TESTING ONLY)
 

@@ -1,115 +1,150 @@
 # Schiavinato Sharing — Manual Specification (`manual_spec`)
 
-This document defines the **stable, heirs-first** manual protocol for Schiavinato Sharing.
+[Jump to Manual recovery](#manual-recovery)
+
+> ## ⚠️ WARNING: EXPERIMENTAL SOFTWARE ⚠️
+> 
+>DO NOT USE IT FOR REAL FUNDS!
+>
+> Schiavinato Sharing specification and implementations have NOT been audited. Use for testing, learning, and experimentation only. See [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md) for details.
+>
+>We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
+
+This document defines the manual execution protocol for Schiavinato Sharing.
 
 Normative keywords **MUST**, **MUST NOT**, **SHOULD**, **MAY** are used as requirements.
 
+For ease of reference in time-critical scenarios, the recovery procedure appears first.
+
 ## Scope
-This spec covers the parts that must remain boring and stable:
+This spec defines:
 - Field math requirements and representations
-- Share layout semantics (rows, checksums, Global Integrity Check)
-- Manual split and manual recovery procedures
+- Paper share semantics (rows, row checksums, Global Integrity Check (GIC), and required header fields)
+- Manual share generation and manual recovery procedures
 - Validation + failure semantics (**STOP / WARN / INFO**) to prevent silent mistakes
 
 Everything related to digital envelopes (QR / Bech32m / metadata bytes) is specified in `software_spec/`.
 
 ## Non-negotiable constraints
-- **1-based BIP39 indexing** MUST be used throughout: `abandon = 1`, `zoo = 2048`. No internal re-indexing.
+- **1-based BIP39 word indexing** MUST be used throughout: `abandon = 1`, `zoo = 2048`.
+- The input and final recovered mnemonic indices MUST be in \(\{1,\dots,2048\}\).
 - The scheme operates in the prime field **\(GF(2053)\)** (modulus \(p = 2053\)).
-- The **BIP39 passphrase** (“25th word”) is **NOT** stored or recovered. It MUST be backed up separately and re-entered at wallet restore.
-- Shares are computed in \(GF(2053)\), so intermediate share values MAY be in \(\{0,2049,2050,2051,2052\}\) (~0.24% of values). These MUST be represented explicitly (numeric placeholders) rather than mapped to BIP39 words.
-- Per layer, share indices \(x\) MUST be non-zero and MUST be distinct within the set used for recovery.
+- The **BIP39 passphrase** (“25th word”) is **NOT** stored or recovered. It MUST be backed up separately and re-entered at wallet restore, if necessary.
+- Share payload values are computed in \(GF(2053)\), so intermediate/share values MAY be in \(\{0,2049,2050,2051,2052\}\). These MUST be represented as indices (not mapped to BIP39 words).
+- Share indices \(x\) used for recovery MUST be non-zero and MUST be distinct.
+- Supported BIP39 word counts are \(\ell \in \{12,15,18,21,24\}\).
+- Nested sharing is possible, but out of scope for this document.
 
-## Data model (manual layer)
-### Word indices
-- A mnemonic is treated as a list of BIP39 word indices \(w_i \in \{1,\dots,2048\}\).
+## Conventions (human-readable encoding)
+### Indices-first rule
+- The canonical value representation is its **index** (a decimal integer).
+- A word label MAY be appended as an annotation (for usability), in any language.
 
-### Row structure
-- Words are grouped in rows of 3.
-- Each row has a **row checksum** \(c_r\) defined as:
+Examples:
+- In-range: `699-firm` (recommended), `699` (allowed)
+- Out-of-range: `2052-2052` (strongly recommended), `2052` (allowed)
+
+### Padding, spacing, and hyphen normalization
+Implementations and operators MAY use padding and spacing without changing meaning (e.g., `699-firm`, `0699 - firm`, or mixed styles).
+
+Normative parsing rule:
+- When a value is written as text, the **leading decimal integer** is the value in \(GF(2053)\). Any suffix is an annotation.
+
+### Paper share layout
+- A share is a single page.
+- The share table values appear in a fixed implicit order:
+  - word values, grouped as visual rows of 3 words
+  - After each group of 3 words, one row checksum value
+  - A 4 columns table layout is recomended
+
+## Paper header (shares)
+
+### Required fields
+- Protocol name and version: MUST clearly identify the protocol and version.
+- Threshold \(k\): MUST be present.
+- Share number: share index \(x\) MUST be present. The “\(x\) of \(n\)” form is recommended; \(n\) MAY be omitted.
+- GIC: MUST be present.
+
+### Recommended fields (non-secret)
+- Seed name (label)
+- Creation date
+- Wallet/device hint (e.g., Ledger)
+- Address hint (e.g., `bc1q...`)
+- Asset hint (e.g., BTC, ETH)
+- Passphrase indicator/hint: MAY indicate whether a passphrase is required and where to find it; MUST NOT include the passphrase itself
+
+## Optional share manifest (non-secret, sensitive)
+A manifest is optional. Its purpose is operational: track where shares are stored and reduce recovery uncertainty.
+
+### Required fields (if present)
+- Protocol name and version (clear identification)
+- Scheme \(k\)-of-\(n\)
+
+### Recommended fields (if present)
+Same non-secret context fields as shares (seed name, date, wallet/device, address, assets, passphrase hint), plus an optional share list (e.g., mapping share number to GIC and a custodian/location note).
+
+### Co-storage prohibition
+If a manifest exists, it MUST NOT be stored with any share.
+
+## Data model and notation
+- Field operations are modulo \(p=2053\).
+- Mnemonic word indices: \(w_1,\ldots,w_\ell \in \{1,\ldots,2048\}\).
+- Row count: \(r=\ell/3\).
+- Row checksum (secret-level definition):
 
 \[
-c_r = (w_{3r} + w_{3r+1} + w_{3r+2}) \bmod 2053
+c_j = (w_{3j-2} + w_{3j-1} + w_{3j}) \bmod 2053 \quad \text{for } j=1,\ldots,r
+\]
+
+To avoid ambiguity between share-state and recovered values, this spec uses:
+- \(\alpha[x]\): value \(\alpha\) as written on the share with index \(x\)
+- \(\alpha\): recovered value at \(x=0\)
+
+Share-state row checksum consistency (per share \(x\)):
+
+\[
+c_j[x] = (w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x]) \bmod 2053
 \]
 
 ### Global Integrity Check (GIC)
-There are two related concepts:
-- **Unbound GIC** \(g\): the global check value recovered by interpolation, used for global validation.
-- **Printed GIC** \(g_{print}\): the value written on each share header, bound to the share index \(x\).
+Each share stores one GIC value. The GIC includes the share index binding.
 
-Let the set of row checksums be \(\{c_0, c_1, \dots, c_{R-1}\}\). Define:
+Per share \(x\), the GIC MUST satisfy both equivalent checks:
 
 \[
-g = \left(\sum_{r=0}^{R-1} c_r\right) \bmod 2053
+GIC[x] = \left(\sum_{j=1}^{r} c_j[x] + x\right)\bmod 2053
 \]
-
-The **Printed GIC** on a specific share with index \(x\) MUST be:
 
 \[
-g_{print} = (g + x) \bmod 2053
+GIC[x] = \left(\sum_{i=1}^{\ell} w_i[x] + x\right)\bmod 2053
 \]
-
-This binding enables share-number validation during manual recovery.
 
 ## Failure semantics (STOP / WARN / INFO)
-Manual processes MUST follow these severities:
+- **STOP**: Must not proceed. Correct inputs and redo the step.
+- **WARN**: Strong warning; proceed only with explicit acknowledgement.
+- **INFO**: Informational.
 
-- **STOP**: Must not proceed. Inputs must be corrected and the step re-done.
-- **WARN**: Show a strong warning; proceed only after explicit user acknowledgement.
-- **INFO**: Informational only.
+Minimum **STOP** conditions for manual execution:
+- Any per-share row checksum mismatch.
+- Any per-share GIC mismatch (either of the two equivalent GIC checks).
+- Duplicate share indices \(x\) in the recovery set, or any \(x=0\).
+- Lagrange coefficient sanity check failure.
+- Any recovered mnemonic index outside \(\{1,\ldots,2048\}\).
 
-### STOP conditions (manual)
-At minimum, these conditions are **STOP**:
-- Any **row checksum validation failure**.
-- Any **Printed GIC binding failure** (see validation below).
-- Any **Lagrange coefficient sanity check failure** (see recovery step).
-- Any recovered mnemonic index outside \(\{1,\dots,2048\}\) (**final mnemonic MUST always be BIP39-range**).
-
-### WARN conditions (manual)
-At minimum, these conditions are **WARN**:
-- A recovered mnemonic fails BIP39 checksum validation (usually indicates error, but see Electrum note below).
-
-## Manual sharing (split) procedure
-This section specifies the human-executable sharing process.
-
+## Manual recovery
 ### Inputs
-- A valid BIP39 mnemonic (12/15/18/21/24 words)
-- Threshold scheme \(k\)-of-\(n\)
-- A method to generate true randomness for polynomial coefficients
-
-### High-level steps
-1) Convert each BIP39 word to its **1-based** index.
-2) For each word index, construct a Shamir polynomial over \(GF(2053)\):
-
-\[
-f(x) = a_0 + a_1 x + \dots + a_{k-1} x^{k-1} \bmod 2053
-\]
-
-- \(a_0\) is the secret (the word index).
-- The highest coefficient \(a_{k-1}\) MUST be uniform in \(\{1,\dots,2052\}\) (non-zero to keep polynomial degree).
-- Other coefficients MUST be uniform in \(\{0,\dots,2052\}\).
-
-3) For each share index \(x\) (commonly \(1..n\)), evaluate every word polynomial to produce the share’s word values.
-4) For each row of 3 words on each share, compute and write the row checksum, then validate it immediately:
-- **Row validation**: \((w_1 + w_2 + w_3) \bmod 2053 = c_r\) (STOP if not).
-5) Compute the **unbound GIC** \(g\) as the sum of row checksums mod 2053.
-6) For each share, compute the **Printed GIC** \(g_{print} = (g + x) \bmod 2053\) and write it in the share header.
-7) Final validation after transcription (recommended): on each share, confirm both paths match the Printed GIC:
-- \(\left(\sum_{r} c_r + x\right)\bmod 2053 = g_{print}\)
-- \(\left(\sum_{i} w_i + x\right)\bmod 2053 = g_{print}\)
-
-## Manual recovery procedure
-### Inputs
-- Any \(k\) shares from the same layer
-- BIP39 wordlist (1-based indexing)
-- Lagrange coefficients for the chosen share indices (precomputed table or computed on any device)
+- Any \(k\) shares from the same scheme
+- BIP39 word list (1-based indexing)
+- Lagrange coefficients for the chosen share indices \(x\) (precomputed table or computed on any device)
 
 ### Step 1: Validate each share (STOP on failure)
 For each share used in recovery:
-- Read \(x\) (share index).
-- Validate Printed GIC using **both** equivalent checks:
-  - \(\left(\sum_{r} c_r + x\right)\bmod 2053 = g_{print}\)
-  - \(\left(\sum_{i} w_i + x\right)\bmod 2053 = g_{print}\)
+- Read the share index \(x\) from the header.
+- Validate every row on that share:
+  - For each row \(j\): \((w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x]) \bmod 2053 \stackrel{?}{=} c_j[x]\)
+- Validate the GIC using both equivalent checks:
+  - \(\left(\sum_{j=1}^{r} c_j[x] + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
+  - \(\left(\sum_{i=1}^{\ell} w_i[x] + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
 
 ### Step 2: Validate the Lagrange coefficients (sanity check, STOP on failure)
 For share indices \(x_1,\dots,x_k\) and corresponding coefficients \(\gamma_1,\dots,\gamma_k\), check:
@@ -121,31 +156,83 @@ For share indices \(x_1,\dots,x_k\) and corresponding coefficients \(\gamma_1,\d
 If not, the coefficients or arithmetic are wrong. STOP and fix before proceeding.
 
 ### Step 3: Recover values by interpolation
-To recover any element (word, row checksum, or GIC), interpolate at \(x=0\):
+For any value position \(\alpha\) (a word position or a row checksum position), recover at \(x=0\):
 
 \[
-v = (\gamma_1 v_1 + \gamma_2 v_2 + \dots + \gamma_k v_k)\bmod 2053
+\alpha = (\gamma_1 \alpha[x_1] + \gamma_2 \alpha[x_2] + \dots + \gamma_k \alpha[x_k])\bmod 2053
 \]
 
-Recover and validate row-by-row:
-- Recover the 3 words of a row and its checksum.
-- Validate: \((w_1 + w_2 + w_3)\bmod 2053 = c_r\) (STOP if not).
+Recover row-by-row:
+- Recover \(w_{3j-2}, w_{3j-1}, w_{3j}\) and \(c_j\).
+- Validate the recovered row checksum:
+  - \((w_{3j-2} + w_{3j-1} + w_{3j})\bmod 2053 \stackrel{?}{=} c_j\) (STOP if not).
 
-### Step 4: Global validation
-After all rows validate:
-- Compute \(g = \left(\sum_r c_r\right)\bmod 2053\) and verify it matches the recovered global check value.
+### Step 4: Global validation (recommended)
+Recover the global sum from the stored GIC values:
 
-Note: the Printed GIC’s “\(+x\)” cancels during interpolation because \(\sum \gamma_i x_i = 0\).
+\[
+S = (\gamma_1 GIC[x_1] + \gamma_2 GIC[x_2] + \dots + \gamma_k GIC[x_k])\bmod 2053
+\]
 
-### Step 5: Convert indices to BIP39 words + final checksum
-- Convert recovered indices using the **1-based** BIP39 wordlist.
-- Validate the standard BIP39 checksum.
-  - If BIP39 checksum fails: **WARN** (usually indicates error).
+Then verify:
+- \(S \stackrel{?}{=} \left(\sum_{j=1}^{r} c_j\right)\bmod 2053\) (equivalently, \(S \stackrel{?}{=} \left(\sum_{i=1}^{\ell} w_i\right)\bmod 2053\))
 
-#### Electrum note (WARN handling)
-Some wallets use seed formats that resemble BIP39 (2048-word list, 12/24-word UX) but are **not BIP39** (e.g., Electrum-native seeds). In such cases BIP39 checksum validation is inapplicable. Implementations and manuals MAY treat BIP39 checksum failure as WARN (not STOP) when the user explicitly knows they are not using BIP39.
+Note: the share-index binding (“\(+x\)”) cancels during interpolation due to the sanity-check identity \(\sum \gamma_i x_i = 0\).
+
+### Step 5: Convert indices to BIP39 words and restore
+- Convert recovered indices \(w_i\) using the 1-based BIP39 word list.
+- Restore in the target wallet.
+  - If restoring into a **BIP39** wallet and it rejects the mnemonic, **STOP**: redo recovery arithmetic/transcription and verify passphrase/derivation details.
+  - If restoring into a wallet that uses a **non-BIP39 mnemonic standard**, BIP39 checksum validation is **not applicable** (out of scope for this manual spec); validate using that wallet’s rules.
+
+## Manual share generation
+### Inputs
+- A valid BIP39 mnemonic (12/15/18/21/24 words)
+- Threshold scheme \(k\)-of-\(n\) (if \(k=1\), the share values are copies of the secret)
+- A method to generate uniform randomness for polynomial coefficients
+
+### Per-word polynomials
+For each word index \(w_i\), construct a Shamir polynomial over \(GF(2053)\):
+
+\[
+f_{w_i}(x) = a_0 + a_1 x + \dots + a_{k-1} x^{k-1} \bmod 2053
+\]
+
+- \(a_0 = w_i\)
+- \(a_{k-1}\) MUST be uniform in \(\{1,\dots,2052\}\) (non-zero to keep polynomial degree).
+- Other coefficients MUST be uniform in \(\{0,\dots,2052\}\).
+
+For share indices \(x \in \{1,\ldots,n\}\), compute and write:
+- \(w_i[x] = f_{w_i}(x)\bmod 2053\)
+
+### Row checksums (linear derivation)
+For each row \(j\), define the checksum polynomial by summing word polynomials:
+
+\[
+f_{c_j}(x) = (f_{w_{3j-2}}(x) + f_{w_{3j-1}}(x) + f_{w_{3j}}(x)) \bmod 2053
+\]
+
+Then compute:
+- \(c_j[x] = f_{c_j}(x)\bmod 2053\)
+
+Per share \(x\), validate immediately (STOP on mismatch):
+- \((w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x]) \bmod 2053 \stackrel{?}{=} c_j[x]\)
+
+### GIC construction and validation
+For each share \(x\), compute:
+
+\[
+GIC[x] = \left(\sum_{j=1}^{r} c_j[x] + x\right)\bmod 2053
+\]
+
+Then validate (STOP on mismatch), using both equivalent checks:
+- \(\left(\sum_{j=1}^{r} c_j[x] + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
+- \(\left(\sum_{i=1}^{\ell} w_i[x] + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
+
+### Transcription validation (MUST)
+After transcribing a share, the following checks MUST pass (STOP on mismatch):
+- \(\left(\sum_{i=1}^{\ell} w_i[x] + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
+- \(\left(\sum_{j=1}^{r} c_j[x] + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
 
 ## Conformance
 Canonical vectors are in `test_vectors/`. Implementations MUST validate against them.
-
-

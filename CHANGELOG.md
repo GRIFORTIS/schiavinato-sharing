@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Version-scoped canonical vectors set: `test_vectors/v0.4.1/`.
+- Issue template contact links via `.github/ISSUE_TEMPLATE/config.yml` (Discussions + private security reporting).
+
+### Changed
+- Centralize community health references (SECURITY / CONTRIBUTING) to the org-wide defaults in `GRIFORTIS/.github`.
+- Issue templates and research docs updated to link to the org-wide SECURITY / CONTRIBUTING policies.
+- Spec clarifications and alignment for implementers:
+  - `manual_spec/README.md`: expanded recovery-first manual procedure, normalized human-readable index conventions, and clarified constraints and validation semantics.
+  - `software_spec/README.md`: clarified core payload byte layout, share-data 12-bit packing, and decode/validation pipeline for the v0.4.1 baseline.
+  - `docs/security-model.md`: clarified transport-hash truncation, STOP/WARN semantics, and encoding/validation steps.
+- Whitepaper links updated to reference the org-wide security policy.
+
+### Removed
+- Repo-local community health duplicates under `.github/` (CODE_OF_CONDUCT, CONTRIBUTING, SECURITY, PR template) in favor of the org-wide defaults.
+
 ## [0.4.1] - 2026-02-03
 
 ### Added

@@ -131,7 +131,7 @@ Found an issue or have suggestions for additional validation experiments?
 
 1. Open an issue: [GitHub Issues](https://github.com/GRIFORTIS/schiavinato-sharing/issues)
 2. Propose changes via pull request
-3. Follow guidelines in [CONTRIBUTING](../../.github/CONTRIBUTING.md)
+3. Follow guidelines in [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md)
 
 ## License
 

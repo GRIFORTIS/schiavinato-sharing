@@ -22,7 +22,7 @@ This document defines the security model for Schiavinato Sharing's digital envel
 - ✅ QR code damage (scratches, fading, printing errors)
 - ✅ Scanning errors or device malfunctions
 - ✅ Bit flips during storage or transmission
-- **Protection:** Transport hash (SHA-256) detects any corruption with 2^128 collision resistance
+- **Protection:** Transport hash (truncated SHA-256, 16 bytes) detects any corruption; undetected corruption requires finding a 128-bit hash collision (≈ \(2^{64}\) work by the birthday bound).
 
 **Accidental Share Mixing:**
 - ✅ Shares from different sessions accidentally combined
@@ -53,7 +53,7 @@ This document defines the security model for Schiavinato Sharing's digital envel
 - ❌ Power analysis of recovery device
 - ❌ Electromagnetic emanations
 - **Why:** Requires physical proximity to recovery device; air-gapped usage reduces exposure
-- **Mitigation:** Constant-time implementations recommended but not required for spec compliance
+- **Mitigation:** Use constant-time comparisons for hash/HMAC checks to reduce timing leakage. Note: `software_spec/` requires constant-time comparison for Transport Hash verification.
 
 **Compromised Recovery Device:**
 - ❌ Malware on QR scanner
@@ -90,11 +90,11 @@ This document defines the security model for Schiavinato Sharing's digital envel
 
 **Validation:**
 ```
-1. Decode QR to 62-byte payload
-2. Extract fields 1-7 (bytes 0-45)
-3. Compute SHA-256 over fields 1-7
-4. Compare first 16 bytes with transport hash field (bytes 46-61)
-5. If mismatch: ABORT, corruption detected
+1. Decode QR to core payload bytes (length = 38 + share_data_len)
+2. Extract header || batch_id || blinded_identity || share_data (bytes 0..(21 + share_data_len))
+3. Compute SHA-256 over those bytes
+4. Compare first 16 bytes with transport hash field (bytes (22 + share_data_len)..(37 + share_data_len))
+5. If mismatch: STOP (abort), corruption detected
 ```
 
 ### 2.2 Consistency (Strong)
@@ -115,7 +115,7 @@ This document defines the security model for Schiavinato Sharing's digital envel
 1. Scan all shares
 2. Verify all batch IDs are identical
 3. Verify all blinded identities are identical
-4. If any mismatch: ABORT, shares are from different sessions/wallets
+4. If any mismatch: STOP (abort), shares are from different sessions/wallets
 ```
 
 ### 2.3 Authenticity (Moderate)
@@ -152,7 +152,7 @@ Where:
 2. Derive fingerprint from recovered mnemonic (BIP32)
 3. Recompute expected = HMAC(fingerprint, batch_id)
 4. Compare expected with blinded_identity from shares
-5. If mismatch: ABORT, shares are for wrong wallet
+5. If mismatch: WARN (hard warning), possible share mixing/corruption/tampering (implementations may block export by default and require explicit override)
 ```
 
 ### 2.4 Arithmetic Correctness (Strong)
@@ -169,7 +169,7 @@ Where:
 1. Unpack 17 values from share data (12 words + 4 row checksums + 1 GIC)
 2. For each row: verify checksum = sum(words) mod 2053
 3. Verify GIC = (sum(row_checksums) + share_index) mod 2053
-4. If any mismatch: ABORT, mathematical inconsistency
+4. If any mismatch: STOP (abort), mathematical inconsistency
 ```
 
 ---
@@ -277,7 +277,7 @@ Where:
 - 128-bit collision resistance = 2^64 operations (birthday bound)
 - Offline backup scenario: No practical attack vector
 - Smaller QR code enables manual replication (human-first design)
-- QR Version 5 (37×37) is practical limit for hand-painting
+- QR Version 6 (41×41) is the baseline for the full payload (human-first design still applies)
 
 **Math:**
 - To find collision: ~10^19 hash computations
@@ -285,7 +285,7 @@ Where:
 - Attacker with all shares can steal mnemonic directly (no need for collision attack)
 
 **Alternatives considered:**
-- ❌ Full 32-byte SHA-256: Requires QR Version 6 (41×41), too dense for manual replication
+- ❌ Full 32-byte SHA-256: Requires a larger QR version than the baseline, too dense for manual replication
 - ❌ 64-bit hash: Marginal (2^32 security), possibly brute-forceable
 - ✅ 128-bit: Sweet spot for security vs. usability
 
@@ -318,15 +318,16 @@ Implementations MUST perform these checks:
 3. Compute blinded identity = HMAC(fingerprint, batch_id)
 4. Pack share data (12-bit values)
 5. Compute transport hash = SHA-256(header || batch || identity || data)[0:16]
-6. Assemble 62-byte payload
-7. Encode to Base64URL, prepend "sch:" prefix
+6. Assemble core payload bytes (length = 38 + share_data_len)
+7. Encode as QR bytes (optional `SCHI` prefix) and/or Bech32m string
 
 **At Share Scanning:**
-1. Decode Base64URL, verify 62-byte length
-2. Extract and verify transport hash
-3. Extract session batch ID and blinded identity
-4. Compare with previously scanned shares (must match)
-5. Store for recovery
+1. Decode QR bytes or Bech32m into core payload bytes
+2. Verify core payload length (38 + share_data_len)
+3. Extract and verify transport hash
+4. Extract session batch ID and blinded identity
+5. Compare with previously scanned shares (must match)
+6. Store for recovery
 
 **At Recovery:**
 1. Verify all shares have matching batch IDs and blinded identities
@@ -431,7 +432,7 @@ Attacker can create valid transport hash for forged shares. This is intentional:
 **Why not use signatures:**
 - Requires public key management
 - Larger signatures (64+ bytes for ECDSA)
-- QR becomes Version 6+ (impractical for manual replication)
+- QR becomes larger than the baseline (V6+), impractical for manual replication
 - Public key reveals wallet identity (privacy loss)
 
 **Trade-offs:**
@@ -441,7 +442,7 @@ Attacker can create valid transport hash for forged shares. This is intentional:
 ### 7.3 vs. Full 256-bit Hashes
 
 **Why truncate to 128 bits:**
-- Human-first design: Keeps QR at Version 5 (practical limit for hand-painting)
+- Human-first design: Keeps QR at Version 6 baseline (practical limit for hand-painting)
 - Security: 2^64 collision resistance is overkill for offline backup
 - 43% QR spare capacity allows maximum error correction tolerance
 

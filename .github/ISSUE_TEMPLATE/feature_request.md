@@ -1,43 +1,60 @@
 ---
-name: Feature Request
-about: Suggest an enhancement to the specification or reference implementation
-title: '[FEATURE] '
-labels: 'enhancement'
-assignees: ''
+name: Feature request (spec / envelope / vectors)
+about: Propose an enhancement or new capability that impacts the canonical specification repository
+title: "[FEATURE] "
+labels: ["enhancement"]
+assignees: ""
 ---
 
-## Feature Description
-<!-- A clear and concise description of what you want to happen -->
+## Summary
+<!-- 1-2 sentences. -->
 
-## Problem or Use Case
-<!-- What problem does this solve? What use case does it enable? -->
+## Problem / use case
+<!-- What problem does this solve? For whom? -->
 
-## Proposed Solution
-<!-- How would you like to see this implemented? -->
+## Proposed change
+<!-- What should change in the spec/whitepaper/vectors? -->
 
-## Alternatives Considered
-<!-- What other approaches have you thought about? -->
+## Alternatives considered
 
-## Impact on Specification
-<!-- Does this require changes to the whitepaper or spec? -->
-- [ ] No changes to spec needed
-- [ ] Minor clarification in spec
-- [ ] Significant spec addition/change
+## Scope
+<!-- Check all that apply. -->
+- [ ] `manual_spec`
+- [ ] `software_spec`
+- [ ] `test_vectors`
+- [ ] `whitepaper`
+- [ ] `docs/` (review entry point, diagrams, etc.)
+- [ ] Other (describe):
 
-## Implementation Scope
-<!-- Where should this be implemented? -->
-- [ ] Reference Implementation (HTML tool)
-- [ ] Whitepaper/documentation
-- [ ] Test vectors
-- [ ] Library implementations (JS/Python)
-- [ ] Other: _______________
+## Backwards compatibility / migration
+- Backwards compatibility:
+  - [ ] Fully backwards compatible
+  - [ ] Requires version bump
+  - [ ] Breaking change
+- Migration notes (if any):
 
-## Backwards Compatibility
-<!-- Would this break existing implementations? -->
-- [ ] Fully backwards compatible
-- [ ] Requires version bump
-- [ ] Breaking change
+## Security / safety impact
+<!-- Check anything that applies, then explain. -->
+- [ ] Affects protocol/spec/manual procedures
+- [ ] Affects share generation/recovery/validation
+- [ ] Changes encoding/transport (QR / Bech32m / payload format)
+- [ ] Changes cryptographic assumptions/parameters
+- [ ] Could affect heirs/manual recoverability
 
-## Additional Context
-<!-- Add any other context, mockups, or examples -->
+Details:
+
+## Test vectors / conformance impact
+- [ ] No vectors impact
+- [ ] Vectors should be added/updated
+- [ ] Cross-implementation behavior must be validated
+
+## Implementation impact
+<!-- Check all implementations that would need changes. -->
+- [ ] HTML implementation
+- [ ] JS/TS implementation
+- [ ] Python implementation
+- [ ] Other tooling
+
+## Additional context
+<!-- Links, mockups, prior art, references. -->
 

@@ -1,6 +1,6 @@
 # Schiavinato Sharing (Specification)
 
-[![Security: Experimental](https://img.shields.io/badge/Security-⚠️%20EXPERIMENTAL%20⚠️-red)](https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/.github/SECURITY.md)
+[![Security: Experimental](https://img.shields.io/badge/Security-⚠️%20EXPERIMENTAL%20⚠️-red)](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
 [![CI](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/codeql.yml)
 [![Whitepaper: CC BY 4.0](https://img.shields.io/badge/Whitepaper-CC%20BY%204.0-green.svg)](LICENSE-WHITEPAPER.md)
@@ -10,19 +10,19 @@
 > 
 >DO NOT USE IT FOR REAL FUNDS!
 >
-> Schiavinato Sharing specification and implementations have NOT been audited. Use for testing, learning, and experimentation only. See [SECURITY](https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/.github/SECURITY.md) for details.
+> Schiavinato Sharing specification and implementations have NOT been audited. Use for testing, learning, and experimentation only. See [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md) for details.
 >
->We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/schiavinato-sharing/blob/main/.github/CONTRIBUTING.md) to know more.
+>We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
 
 **Dual-mode threshold secret sharing for BIP39 mnemonics over \(GF(2053)\)** — designed to be executable both by software and by hand (pencil & paper), with validation checkpoints to prevent silent mistakes.
 
 ## Canonical documents
-- **Manual protocol specifications**: [`manual_spec/README`](manual_spec/README.md)
-- **Software (Digital envelope) specificatons**: [`software_spec/README`](software_spec/README.md)
+- **Manual execution specification**: [`manual_spec/README`](manual_spec/README.md)
+- **Software (digital envelope) specification**: [`software_spec/README`](software_spec/README.md)
 - **Proposals**: [`proposals/`](proposals/)
 - **Test vectors**: [`test_vectors/README`](test_vectors/README.md)
 - **Whitepaper**: [PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](whitepaper/WHITEPAPER.tex)
-- **Security policy**: [SECURITY](.github/SECURITY.md)
+- **Security policy**: [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
 
 ## Implementations
 These implementations aim to be compatible with the canonical spec documents above:

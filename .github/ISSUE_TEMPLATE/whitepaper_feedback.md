@@ -2,8 +2,8 @@
 name: Whitepaper Feedback
 about: Provide feedback on the Schiavinato Sharing whitepaper
 title: '[WHITEPAPER] '
-labels: 'whitepaper, documentation'
-assignees: ''
+labels: ["whitepaper", "documentation"]
+assignees: ""
 ---
 
 ## Section Reference
@@ -40,5 +40,5 @@ assignees: ''
 
 ---
 
-**Note**: For bugs in the reference implementation, please use the "Bug Report" template instead.
+**Note**: For implementation bugs, open an issue in the implementation repository. For spec/vectors/docs correctness issues, use the “Bug report (spec / vectors / docs)” template.
 
