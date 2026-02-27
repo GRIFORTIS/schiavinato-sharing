@@ -1,0 +1,12 @@
+title = "gitleaks config"
+
+[allowlist]
+description = "Allow known false-positives in public test-vector markdown"
+regexTarget = "line"
+paths = [
+  '''^test_vectors/v[0-9]+\.[0-9]+\.[0-9]+/vectors\.md$''',
+]
+regexes = [
+  '''Compressed (public key|pubkey)''',
+]
+
