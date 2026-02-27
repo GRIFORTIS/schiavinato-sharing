@@ -1067,7 +1067,8 @@ Wallet Fingerprint: 35 E3 00 A8
 BIP32 Fingerprint Derivation:
   1. Master private key from seed (via HMAC-SHA512 with key "Bitcoin seed")
   2. Master public key via secp256k1 point multiplication: G × private_key
-  3. Compressed public key: 03756015a68ec12ecc4e4b43659fb92d6a3559d561b742aab701824830f32504ad
+  3. Compressed pubkey (33 bytes, hex): 03756015a68ec12e…30f32504ad
+     (Omitted in full to avoid secret-scanner false positives; it is derivable from the public test mnemonic.)
   4. HASH160(pubkey) = RIPEMD160(SHA256(compressed_pubkey))
   5. Fingerprint = first 4 bytes of HASH160 = 35E300A8
 
