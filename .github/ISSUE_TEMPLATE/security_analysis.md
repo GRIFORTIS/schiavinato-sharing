@@ -32,5 +32,6 @@ If applicable:
 If you have one, describe it.
 
 ## Disclosure note
-If this is a vulnerability that could endanger users, please do not post sensitive details publicly. See `SECURITY.md`.
+If this is a vulnerability that could endanger users, please do not post sensitive details publicly.
+Report privately via `security@grifortis.com` (security policy: https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md).
 

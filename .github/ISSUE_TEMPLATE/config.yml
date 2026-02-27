@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+contact_links:
+  - name: General questions / support (public)
+    url: https://github.com/GRIFORTIS/schiavinato-sharing/discussions
+    about: Ask usage and integration questions. No sensitive data.
+  - name: Security vulnerability report (private)
+    url: https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md
+    about: Please report vulnerabilities privately (do not open a public issue).
+  - name: Email security@grifortis.com
+    url: mailto:security@grifortis.com
+    about: Private security reports and sensitive disclosures.
+
