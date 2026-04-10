@@ -72,7 +72,7 @@ jobs:
             "CHECKSUMS.txt.asc"
           )
           for f in "${expected[@]}"; do
-            gh release view "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --json assets --jq ".assets[] | select(.name == \"${f}\") | .name" | rg "^${f}$" >/dev/null
+            gh release view "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name' | grep -Fx -- "${f}" >/dev/null
           done
 
   verify-existing-release:
@@ -138,5 +138,5 @@ jobs:
             "CHECKSUMS.txt.asc"
           )
           for f in "${expected[@]}"; do
-            gh release view "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --json assets --jq ".assets[] | select(.name == \"${f}\") | .name" | rg "^${f}$" >/dev/null
+            gh release view "${TAG_NAME}" --repo "${GITHUB_REPOSITORY}" --json assets --jq '.assets[].name' | grep -Fx -- "${f}" >/dev/null
           done
