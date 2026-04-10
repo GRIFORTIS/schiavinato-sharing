@@ -14,14 +14,15 @@
 >
 >We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
 
-**Dual-mode threshold secret sharing for BIP39 mnemonics over \(GF(2053)\)** — designed to be executable both by software and by hand (pencil & paper), with validation checkpoints to prevent silent mistakes.
+**Manual and Computational Threshold Secret Sharing for BIP39 Mnemonics over \(GF(2053)\)** — designed to be executable both by software and by hand (pencil & paper), with validation checkpoints to prevent silent mistakes.
 
 ## Canonical documents
-- **Manual execution specification**: [`manual_spec/README`](manual_spec/README.md)
-- **Software (digital envelope) specification**: [`software_spec/README`](software_spec/README.md)
+- **Current manual execution specification**: [`manual_spec/README`](manual_spec/README.md)
+- **Current software (digital envelope) specification**: [`software_spec/README`](software_spec/README.md)
 - **Proposals**: [`proposals/`](proposals/)
 - **Test vectors**: [`test_vectors/README`](test_vectors/README.md)
 - **Whitepaper**: [PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](whitepaper/WHITEPAPER.tex)
+- **Previous version archives**: [`previous_versions/README`](previous_versions/README.md)
 - **Security policy**: [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
 
 ## Implementations
@@ -35,7 +36,7 @@ Start here:
 - [`docs/review`](docs/review.md)
 
 High-value review targets:
-- Correctness and clarity of manual validation checkpoints (row checksum + GIC)
+- Correctness and clarity of manual validation checkpoints (row checksums, column checksums, and GIC)
 - Security analysis and threat model assumptions (see `whitepaper/WHITEPAPER.tex`)
 - Backwards decode/versioning rules for the envelope (`software_spec/`)
 - Conformance vectors (`test_vectors/`)
@@ -43,6 +44,11 @@ High-value review targets:
 ## Licenses
 - **Code**: [MIT License](LICENSE)
 - **Whitepaper**: [CC BY 4.0](LICENSE-WHITEPAPER.md)
+
+## Release authenticity
+- Release source state is anchored on signed git tags.
+- Release assets such as `WHITEPAPER.pdf` and `CHECKSUMS.txt` are intended to be signed locally and published with detached `.asc` signatures.
+- Use [`RELEASE.md`](RELEASE.md) for the maintainer workflow and `gpg` plus the published public key to verify released assets.
 
 ---
 

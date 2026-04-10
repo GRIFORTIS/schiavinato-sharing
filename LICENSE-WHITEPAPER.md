@@ -2,7 +2,7 @@
 
 The whitepaper:
 
-> **“Schiavinato Sharing: Human-Executable Secret Sharing for BIP39 Mnemonics”**  
+> **“Schiavinato Sharing: Manual and Computational Threshold Secret Sharing for BIP39 Mnemonics over GF(2053)”**
 > (`WHITEPAPER.tex` and its compiled PDF `WHITEPAPER.pdf`)
 
 is licensed under the **Creative Commons Attribution 4.0 International License (CC BY 4.0)**.
@@ -21,6 +21,6 @@ For the full legal text of the license, see:
 
 When attributing this work, a recommended form is:
 
-> “Schiavinato Sharing: Human-Executable Secret Sharing for BIP39 Mnemonics” by the Schiavinato Sharing authors (GRIFORTIS), used under CC BY 4.0.
+> “Schiavinato Sharing: Manual and Computational Threshold Secret Sharing for BIP39 Mnemonics over GF(2053)” by the Schiavinato Sharing authors (GRIFORTIS), used under CC BY 4.0.
 
 

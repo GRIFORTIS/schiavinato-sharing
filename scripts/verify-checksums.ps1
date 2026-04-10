@@ -16,6 +16,9 @@ $Repo = "GRIFORTIS/schiavinato-sharing"
 
 Write-Host "🔐 Verifying checksums for Schiavinato Sharing Specification" -ForegroundColor Cyan
 Write-Host ""
+Write-Host "Note: checksum validation confirms file integrity only." -ForegroundColor Yellow
+Write-Host "For authenticity, also verify the signed git tag and any detached .asc signatures." -ForegroundColor Yellow
+Write-Host ""
 
 # Download checksums from GitHub release
 Write-Host "📥 Downloading checksums for version: $Version" -ForegroundColor Yellow
@@ -113,7 +116,8 @@ if ($Failed -gt 0) {
 } else {
     Write-Host ""
     Write-Host "✓ All checksums verified successfully!" -ForegroundColor Green
-    Write-Host "  The files are authentic and have not been modified."
+    Write-Host "  The files match the published checksums."
+    Write-Host "  This alone does not prove authenticity; also verify the signed tag and detached signatures."
     exit 0
 }
 

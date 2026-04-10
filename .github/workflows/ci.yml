@@ -61,12 +61,17 @@ jobs:
           import json
           from pathlib import Path
           
-          schema = Path("test_vectors/schema.json")
-          json.loads(schema.read_text(encoding="utf-8"))
+          schema_files = [Path("test_vectors/schema.json")]
+          schema_files.extend(sorted(Path("previous_versions").glob("v*/test_vectors/schema.json")))
+          for schema in schema_files:
+            json.loads(schema.read_text(encoding="utf-8"))
+            print("OK schema:", schema)
           
-          vectors = sorted(Path("test_vectors").glob("v*/vectors.json"))
-          if not vectors:
-            raise SystemExit("No vectors found under test_vectors/v*/vectors.json")
+          vectors = [Path("test_vectors/vectors.json")]
+          vectors.extend(sorted(Path("previous_versions").glob("v*/test_vectors/vectors.json")))
+          missing = [p.as_posix() for p in vectors if not p.exists()]
+          if missing:
+            raise SystemExit("Missing required vectors JSON files: " + ", ".join(missing))
           
           for p in vectors:
             json.loads(p.read_text(encoding="utf-8"))
@@ -81,9 +86,11 @@ jobs:
 
           required = ("version", "generated", "vectors")
           
-          vectors = sorted(Path("test_vectors").glob("v*/vectors.json"))
-          if not vectors:
-            raise SystemExit("No vectors found under test_vectors/v*/vectors.json")
+          vectors = [Path("test_vectors/vectors.json")]
+          vectors.extend(sorted(Path("previous_versions").glob("v*/test_vectors/vectors.json")))
+          missing = [p.as_posix() for p in vectors if not p.exists()]
+          if missing:
+            raise SystemExit("Missing required vectors JSON files: " + ", ".join(missing))
           
           for p in vectors:
             data = json.loads(p.read_text(encoding="utf-8"))
@@ -93,6 +100,87 @@ jobs:
             if not isinstance(data["vectors"], list):
               raise SystemExit(f"'vectors' must be a list in {p}")
             print("OK keys:", p)
+          PY
+
+      - name: Release preflight version alignment
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          changelog = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          whitepaper = Path("whitepaper/WHITEPAPER.tex").read_text(encoding="utf-8")
+          vectors = json.loads(Path("test_vectors/vectors.json").read_text(encoding="utf-8"))
+
+          release_sections = re.findall(r"^## \[(\d+\.\d+\.\d+)\] - ", changelog, flags=re.M)
+          if not release_sections:
+              raise SystemExit("CHANGELOG.md is missing a dated release section")
+          latest_release = release_sections[0]
+          expected_version = f"v{latest_release}"
+
+          m = re.search(r"\\newcommand\{\\SchiavinatoSharingVersion\}\{([^}]+)\}", whitepaper)
+          if not m:
+              raise SystemExit("Missing \\SchiavinatoSharingVersion macro in whitepaper/WHITEPAPER.tex")
+          whitepaper_version = m.group(1).strip()
+          vectors_version = vectors.get("version")
+
+          if whitepaper_version != expected_version:
+              raise SystemExit(
+                  f"Whitepaper version mismatch: expected {expected_version!r} from CHANGELOG.md, got {whitepaper_version!r}"
+              )
+          if vectors_version != expected_version:
+              raise SystemExit(
+                  f"test_vectors/vectors.json version mismatch: expected {expected_version!r} from CHANGELOG.md, got {vectors_version!r}"
+              )
+
+          print(f"OK: release versions aligned at {expected_version}")
+          PY
+
+      - name: Enforce archive layout policy
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          previous_versions = Path("previous_versions")
+          legacy_live_vector_dirs = sorted(
+              p.as_posix()
+              for p in Path("test_vectors").glob("v*")
+              if p.is_dir()
+          )
+
+          if legacy_live_vector_dirs:
+              raise SystemExit(
+                  "Live test_vectors layout is flat inside test_vectors/; remove legacy versioned directories: "
+                  + ", ".join(legacy_live_vector_dirs)
+              )
+
+          disallowed_whitepaper_files = sorted(
+              p.as_posix()
+              for p in Path("whitepaper").glob("WHITEPAPER_v*")
+              if p.suffix in {".tex", ".pdf"}
+          )
+          if disallowed_whitepaper_files:
+              raise SystemExit(
+                  "Version-suffixed whitepaper files are not allowed in the root whitepaper/ directory: "
+                  + ", ".join(disallowed_whitepaper_files)
+              )
+
+          if not Path("whitepaper/WHITEPAPER.tex").exists():
+              raise SystemExit("Missing canonical latest whitepaper source at whitepaper/WHITEPAPER.tex")
+
+          nested_archived_vector_dirs = sorted(
+              p.as_posix()
+              for p in previous_versions.glob("v*/test_vectors/v*")
+              if p.is_dir()
+          )
+          if nested_archived_vector_dirs:
+              raise SystemExit(
+                  "Archived test_vectors directories must be flat; remove nested version folders: "
+                  + ", ".join(nested_archived_vector_dirs)
+              )
+
+          print("OK: archive layout policy")
           PY
 
       - name: Python syntax check (research code)
@@ -222,4 +310,9 @@ jobs:
         run: |
           set -euo pipefail
           latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error -cd whitepaper/WHITEPAPER.tex
+
+      - name: Verify latest whitepaper output path
+        run: |
+          set -euo pipefail
+          test -f whitepaper/WHITEPAPER.pdf
 
