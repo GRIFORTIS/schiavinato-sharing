@@ -17,13 +17,13 @@
 **Manual and Computational Threshold Secret Sharing for BIP39 Mnemonics over \(GF(2053)\)** — designed to be executable both by software and by hand (pencil & paper), with validation checkpoints to prevent silent mistakes.
 
 ## Canonical documents
+- **Whitepaper**: [PDF](whitepaper/WHITEPAPER.pdf) | [LaTeX](whitepaper/WHITEPAPER.tex)
 - **Current manual execution specification**: [`manual_spec/README`](manual_spec/README.md)
 - **Current software (digital envelope) specification**: [`software_spec/README`](software_spec/README.md)
-- **Proposals**: [`proposals/`](proposals/)
 - **Test vectors**: [`test_vectors/README`](test_vectors/README.md)
-- **Whitepaper**: [PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](whitepaper/WHITEPAPER.tex)
 - **Previous version archives**: [`previous_versions/README`](previous_versions/README.md)
 - **Security policy**: [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
+- **Proposals**: [`proposals/`](proposals/)
 
 ## Implementations
 These implementations aim to be compatible with the canonical spec documents above:
