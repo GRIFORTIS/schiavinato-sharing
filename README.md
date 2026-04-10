@@ -48,7 +48,7 @@ High-value review targets:
 ## Release authenticity
 - Release source state is anchored on signed git tags.
 - Release assets such as `WHITEPAPER.pdf` and `CHECKSUMS.txt` are intended to be signed locally and published with detached `.asc` signatures.
-- Use [`RELEASE.md`](RELEASE.md) for the maintainer workflow and `gpg` plus the published public key to verify released assets.
+- Use [`RELEASE.md`](RELEASE.md) for the maintainer workflow and [`docs/release-verification.md`](docs/release-verification.md) for public verification guidance.
 
 ---
 

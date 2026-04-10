@@ -83,6 +83,8 @@ After publishing:
 3. Verify `CHECKSUMS.txt`.
 4. Verify the signed git tag with `git tag -v`.
 
+See [`docs/release-verification.md`](docs/release-verification.md) for the public-facing verification walkthrough.
+
 ## Notes
 - If CI fails, fix the commit and rerun CI before tagging.
 - If local signing fails, do not push the tag.
