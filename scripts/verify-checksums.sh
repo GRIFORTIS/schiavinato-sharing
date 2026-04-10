@@ -16,6 +16,9 @@ REPO="GRIFORTIS/schiavinato-sharing"
 
 echo "🔐 Verifying checksums for Schiavinato Sharing Specification"
 echo ""
+echo "Note: checksum validation confirms file integrity only."
+echo "For authenticity, also verify the signed git tag and any detached .asc signatures."
+echo ""
 
 # Colors
 RED='\033[0;31m'
@@ -103,7 +106,8 @@ if [ $FAILED -gt 0 ]; then
 else
   echo ""
   echo -e "${GREEN}✓ All checksums verified successfully!${NC}"
-  echo "  The files are authentic and have not been modified."
+  echo "  The files match the published checksums."
+  echo "  This alone does not prove authenticity; also verify the signed tag and detached signatures."
   exit 0
 fi
 

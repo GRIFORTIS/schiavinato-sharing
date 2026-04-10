@@ -7,16 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-09
+
 ### Added
-- Version-scoped canonical vectors set: `test_vectors/v0.4.1/`.
+- Frozen release archive root: `previous_versions/`.
+- Partial vectors-only archive snapshot for `v0.4.0`: `previous_versions/v0.4.0/test_vectors/`.
+- Canonical vectors set for the archived v0.4.1 snapshot: `previous_versions/v0.4.1/test_vectors/`.
+- Live current-protocol vectors at `test_vectors/vectors.json` and `test_vectors/vectors.md`.
+- Canonical `v0.5.0` Full Mode test vector for the public 12-word 2-of-3 mnemonic, including position-bound row checksums, column checksums, printed GIC, and manifest/audit QR artifacts.
 - Issue template contact links via `.github/ISSUE_TEMPLATE/config.yml` (Discussions + private security reporting).
 
 ### Changed
 - Centralize community health references (SECURITY / CONTRIBUTING) to the org-wide defaults in `GRIFORTIS/.github`.
 - Issue templates and research docs updated to link to the org-wide SECURITY / CONTRIBUTING policies.
+- Root `whitepaper/` is now treated as the latest-only location for `WHITEPAPER.tex` and `WHITEPAPER.pdf`; older whitepaper versions belong in archives or release assets.
+- Whitepaper release handling now uses local maintainer signing, signed git tags, and manual GitHub publishing; Actions no longer import private signing keys and now verify published release assets instead.
+- Historical v0.4.1 artifacts now live under `previous_versions/v0.4.1/` instead of mixed root-level versioned file paths.
+- Live `test_vectors/` layout is now flat within `test_vectors/`; archived releases remain flat under `previous_versions/vX.Y.Z/test_vectors/`.
+- CI and gitleaks now validate the root-level live vectors layout instead of the older `test_vectors/vX.Y.Z/` live-folder design.
 - Spec clarifications and alignment for implementers:
   - `manual_spec/README.md`: expanded recovery-first manual procedure, normalized human-readable index conventions, and clarified constraints and validation semantics.
-  - `software_spec/README.md`: clarified core payload byte layout, share-data 12-bit packing, and decode/validation pipeline for the v0.4.1 baseline.
+  - `software_spec/README.md`: clarified the v0.5.0 wire format, core payload byte layout, share-data packing rules, and decode/validation pipeline.
   - `docs/security-model.md`: clarified transport-hash truncation, STOP/WARN semantics, and encoding/validation steps.
 - Whitepaper links updated to reference the org-wide security policy.
 
@@ -109,7 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Python implementation**: [schiavinato-sharing-py](https://github.com/GRIFORTIS/schiavinato-sharing-py)
 - **Organization**: [GRIFORTIS](https://github.com/GRIFORTIS)
 
-[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.2.0...v0.3.0
