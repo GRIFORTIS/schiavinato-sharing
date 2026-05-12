@@ -4,6 +4,24 @@ All notable changes to `software_spec` will be documented here.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-10
+
+### Added
+- Software-assisted ceremony boundary: Air-Gapped App / Companion App trust split and artifact handling rules.
+- Artifact class and metadata placement guidance for arithmetic share content, share-local recovery metadata, and manifest-only/session metadata.
+- Resume mode specification for Digital Resume, Hand Transcribed Table, Hand Transcribed QR, and No Resume.
+- Resume artifact encryption envelope guidance, including Argon2id/scrypt KDF options, XChaCha20-Poly1305/AES-256-GCM encryption options, authenticated context, and STOP semantics on authentication failure.
+- Coefficient sourcing and Reduced Mode rejection rules, including deterministic Single-Entropy HMAC derivation for Hand Transcribed QR.
+- Share rendering, transcription validation, manifest audit drill, printer-tier output rules, cleanup, and best-effort memory handling guidance.
+- Manifest security notes covering operational sensitivity, Audit Hash commitments, and GIC-map leakage bounds.
+- RVA warning-resolution scan and draft-session edit/reset behavior.
+
+### Changed
+- Per-share Audit QR payloads now include the protocol version byte: `SA || version || k || x || hash`.
+- Runtime integrity assertion is now a MUST before print/export/transcription.
+- Software specification header now targets v0.6.0.
+- Coefficient sourcing now uses the full field range `0..2052` without a nonzero highest-power requirement. Reduced Mode applies its compact range rule by rejecting word polynomials whose evaluated word-share values exceed `2047`.
+
 ## [0.5.0] - 2026-04-09
 
 ### Added
@@ -12,14 +30,14 @@ All notable changes to `software_spec` will be documented here.
 - **Manifest QR payloads**: Manifest Header QR (`SM` prefix) and per-share Audit QR (`SA` prefix) with SHA-256 integrity commitment.
 - **Runtime integrity assertion** (Path A vs Path B double-check) as a SHOULD-level recommendation.
 - **Optional text export** noted as intentionally unspecified.
-- Integrity architecture summary (Triple-Lock / Dual-Lock).
+- Verification architecture summary for Full Mode and Reduced Mode.
 - RVA verification step in the decode pipeline.
 
 ### Changed
 - **Master Key Identifier**: now uses the full 20-byte HASH160 of the compressed master public key (was 4-byte BIP32 fingerprint). The 20-byte key ensures the HMAC key space is not the security bottleneck.
 - **Full Mode Blinded Identity**: 12 bytes / 96 bits (was 8 bytes / 64 bits).
 - **Full Mode payload offsets**: BI at offset 14 is now 12 bytes, shifting Share Data to offset 26 (was offset 22). Total core payload is 42 + share_data_len (was 38 + share_data_len).
-- **Share data contents**: now serializes word values + printed GIC only. Row and column checksums are **not** serialized in the digital payload (they are computed from share data for human-readable display). Element count is \(\ell + 1\) (was \(\ell + r + 1\)).
+- **Share data contents**: now serializes word values + printed GIC only. Row and column checksums are **not** serialized in the digital envelope (they are computed from share data for human-readable display). Element count is \(\ell + 1\) (was \(\ell + r + 1\)).
 - **QR prefix decode rule**: now distinguishes `SCHI` (Full Mode) from `SC` (Reduced Mode).
 - **Decode pipeline**: expanded to 10 steps including manifest audit, RVA verification, and mode-aware transport validation.
 

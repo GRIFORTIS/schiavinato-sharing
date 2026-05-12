@@ -1,10 +1,10 @@
 {
-  "version": "v0.5.0",
-  "generated": "2026-04-10T01:29:59Z",
+  "version": "v0.6.0",
+  "generated": "2026-05-10T03:25:00Z",
   "vectors": [
     {
-      "id": "tv-v0.5.0-gf2053-2of3-12w-full",
-      "description": "GF(2053) Full Mode test vector (k=2,n=3) for a 12-word BIP39 mnemonic using v0.5.0 position-bound row checksums, column checksums, and printed GIC.",
+      "id": "tv-v0.6.0-gf2053-2of3-12w-full",
+      "description": "GF(2053) Full Mode test vector (k=2,n=3) for a 12-word BIP39 mnemonic using v0.6.0 position-bound row checksums, column checksums, printed GIC, and versioned Audit QR payloads.",
       "params": {
         "field": {
           "name": "GF(2053)",
@@ -17,9 +17,15 @@
         "word_count": 12,
         "row_count": 4,
         "column_count": 3,
-        "share_indices": [1, 2, 3],
+        "share_indices": [
+          1,
+          2,
+          3
+        ],
         "bip39_indexing": "1-based",
-        "digital_modes_for_this_vector": ["full"]
+        "digital_modes_for_this_vector": [
+          "full"
+        ]
       },
       "mnemonic": {
         "language": "en",
@@ -37,20 +43,67 @@
           "toy",
           "autumn"
         ],
-        "indices": [1680, 1471, 217, 42, 1338, 279, 1907, 324, 468, 682, 1844, 126],
+        "indices": [
+          1680,
+          1471,
+          217,
+          42,
+          1338,
+          279,
+          1907,
+          324,
+          468,
+          682,
+          1844,
+          126
+        ],
         "bip39_checksum_valid": true
       },
       "base": {
         "word_rows": [
-          [1680, 1471, 217],
-          [42, 1338, 279],
-          [1907, 324, 468],
-          [682, 1844, 126]
+          [
+            1680,
+            1471,
+            217
+          ],
+          [
+            42,
+            1338,
+            279
+          ],
+          [
+            1907,
+            324,
+            468
+          ],
+          [
+            682,
+            1844,
+            126
+          ]
         ],
-        "row_tags": [1, 2, 3, 4],
-        "row_checksums": [1316, 1661, 649, 603],
-        "column_tags": [10, 20, 30],
-        "column_checksums": [215, 891, 1120],
+        "row_tags": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "row_checksums": [
+          1316,
+          1661,
+          649,
+          603
+        ],
+        "column_tags": [
+          10,
+          20,
+          30
+        ],
+        "column_checksums": [
+          215,
+          891,
+          1120
+        ],
         "row_total": 10,
         "column_total": 60,
         "unbound_gic": 183,
@@ -60,22 +113,83 @@
         "scheme": "degree-1-per-word",
         "reproducibility_only": true,
         "python_seed": 42,
-        "a1_for_words_w1_to_w12": [1, 2052, 1126, 2012, 710, 571, 146, 1728, 2000, 130, 122, 383]
+        "a1_for_words_w1_to_w12": [
+          1,
+          2052,
+          1126,
+          2012,
+          710,
+          571,
+          146,
+          1728,
+          2000,
+          130,
+          122,
+          383
+        ]
       },
       "polynomials": {
         "word_polynomials": [
-          { "name": "w1", "a0": 1680, "a1": 1 },
-          { "name": "w2", "a0": 1471, "a1": 2052 },
-          { "name": "w3", "a0": 217, "a1": 1126 },
-          { "name": "w4", "a0": 42, "a1": 2012 },
-          { "name": "w5", "a0": 1338, "a1": 710 },
-          { "name": "w6", "a0": 279, "a1": 571 },
-          { "name": "w7", "a0": 1907, "a1": 146 },
-          { "name": "w8", "a0": 324, "a1": 1728 },
-          { "name": "w9", "a0": 468, "a1": 2000 },
-          { "name": "w10", "a0": 682, "a1": 130 },
-          { "name": "w11", "a0": 1844, "a1": 122 },
-          { "name": "w12", "a0": 126, "a1": 383 }
+          {
+            "name": "w1",
+            "a0": 1680,
+            "a1": 1
+          },
+          {
+            "name": "w2",
+            "a0": 1471,
+            "a1": 2052
+          },
+          {
+            "name": "w3",
+            "a0": 217,
+            "a1": 1126
+          },
+          {
+            "name": "w4",
+            "a0": 42,
+            "a1": 2012
+          },
+          {
+            "name": "w5",
+            "a0": 1338,
+            "a1": 710
+          },
+          {
+            "name": "w6",
+            "a0": 279,
+            "a1": 571
+          },
+          {
+            "name": "w7",
+            "a0": 1907,
+            "a1": 146
+          },
+          {
+            "name": "w8",
+            "a0": 324,
+            "a1": 1728
+          },
+          {
+            "name": "w9",
+            "a0": 468,
+            "a1": 2000
+          },
+          {
+            "name": "w10",
+            "a0": 682,
+            "a1": 130
+          },
+          {
+            "name": "w11",
+            "a0": 1844,
+            "a1": 122
+          },
+          {
+            "name": "w12",
+            "a0": 126,
+            "a1": 383
+          }
         ],
         "row_checksum_polynomials": [
           {
@@ -83,28 +197,44 @@
             "a0": 1316,
             "a1": 1126,
             "row_tag": 1,
-            "derived_from_words": ["w1", "w2", "w3"]
+            "derived_from_words": [
+              "w1",
+              "w2",
+              "w3"
+            ]
           },
           {
             "name": "r2",
             "a0": 1661,
             "a1": 1240,
             "row_tag": 2,
-            "derived_from_words": ["w4", "w5", "w6"]
+            "derived_from_words": [
+              "w4",
+              "w5",
+              "w6"
+            ]
           },
           {
             "name": "r3",
             "a0": 649,
             "a1": 1821,
             "row_tag": 3,
-            "derived_from_words": ["w7", "w8", "w9"]
+            "derived_from_words": [
+              "w7",
+              "w8",
+              "w9"
+            ]
           },
           {
             "name": "r4",
             "a0": 603,
             "a1": 635,
             "row_tag": 4,
-            "derived_from_words": ["w10", "w11", "w12"]
+            "derived_from_words": [
+              "w10",
+              "w11",
+              "w12"
+            ]
           }
         ],
         "column_checksum_polynomials": [
@@ -113,21 +243,36 @@
             "a0": 215,
             "a1": 236,
             "column_tag": 10,
-            "derived_from_words": ["w1", "w4", "w7", "w10"]
+            "derived_from_words": [
+              "w1",
+              "w4",
+              "w7",
+              "w10"
+            ]
           },
           {
             "name": "c2",
             "a0": 891,
             "a1": 506,
             "column_tag": 20,
-            "derived_from_words": ["w2", "w5", "w8", "w11"]
+            "derived_from_words": [
+              "w2",
+              "w5",
+              "w8",
+              "w11"
+            ]
           },
           {
             "name": "c3",
             "a0": 1120,
             "a1": 2027,
             "column_tag": 30,
-            "derived_from_words": ["w3", "w6", "w9", "w12"]
+            "derived_from_words": [
+              "w3",
+              "w6",
+              "w9",
+              "w12"
+            ]
           }
         ],
         "unbound_gic_polynomial": {
@@ -157,13 +302,49 @@
         {
           "x": 1,
           "table_rows": [
-            { "row": 1, "values": [1681, 1470, 1343, 389] },
-            { "row": 2, "values": [1, 2048, 850, 848] },
-            { "row": 3, "values": [0, 2052, 415, 417] },
-            { "row": 4, "values": [812, 1966, 509, 1238] }
+            {
+              "row": 1,
+              "values": [
+                1681,
+                1470,
+                1343,
+                389
+              ]
+            },
+            {
+              "row": 2,
+              "values": [
+                1,
+                2048,
+                850,
+                848
+              ]
+            },
+            {
+              "row": 3,
+              "values": [
+                0,
+                2052,
+                415,
+                417
+              ]
+            },
+            {
+              "row": 4,
+              "values": [
+                812,
+                1966,
+                509,
+                1238
+              ]
+            }
           ],
           "footer": {
-            "column_checksums": [451, 1397, 1094],
+            "column_checksums": [
+              451,
+              1397,
+              1094
+            ],
             "printed_gic": 900
           },
           "values_order": [
@@ -210,22 +391,80 @@
             1094,
             900
           ],
-          "words": [1681, 1470, 1343, 1, 2048, 850, 0, 2052, 415, 812, 1966, 509],
-          "row_checksums": [389, 848, 417, 1238],
-          "column_checksums": [451, 1397, 1094],
+          "words": [
+            1681,
+            1470,
+            1343,
+            1,
+            2048,
+            850,
+            0,
+            2052,
+            415,
+            812,
+            1966,
+            509
+          ],
+          "row_checksums": [
+            389,
+            848,
+            417,
+            1238
+          ],
+          "column_checksums": [
+            451,
+            1397,
+            1094
+          ],
           "unbound_gic": 899,
           "printed_gic": 900
         },
         {
           "x": 2,
           "table_rows": [
-            { "row": 1, "values": [1682, 1469, 416, 1515] },
-            { "row": 2, "values": [2013, 705, 1421, 35] },
-            { "row": 3, "values": [146, 1727, 362, 185] },
-            { "row": 4, "values": [942, 35, 892, 1873] }
+            {
+              "row": 1,
+              "values": [
+                1682,
+                1469,
+                416,
+                1515
+              ]
+            },
+            {
+              "row": 2,
+              "values": [
+                2013,
+                705,
+                1421,
+                35
+              ]
+            },
+            {
+              "row": 3,
+              "values": [
+                146,
+                1727,
+                362,
+                185
+              ]
+            },
+            {
+              "row": 4,
+              "values": [
+                942,
+                35,
+                892,
+                1873
+              ]
+            }
           ],
           "footer": {
-            "column_checksums": [687, 1903, 1068],
+            "column_checksums": [
+              687,
+              1903,
+              1068
+            ],
             "printed_gic": 1617
           },
           "values_order": [
@@ -272,22 +511,80 @@
             1068,
             1617
           ],
-          "words": [1682, 1469, 416, 2013, 705, 1421, 146, 1727, 362, 942, 35, 892],
-          "row_checksums": [1515, 35, 185, 1873],
-          "column_checksums": [687, 1903, 1068],
+          "words": [
+            1682,
+            1469,
+            416,
+            2013,
+            705,
+            1421,
+            146,
+            1727,
+            362,
+            942,
+            35,
+            892
+          ],
+          "row_checksums": [
+            1515,
+            35,
+            185,
+            1873
+          ],
+          "column_checksums": [
+            687,
+            1903,
+            1068
+          ],
           "unbound_gic": 1615,
           "printed_gic": 1617
         },
         {
           "x": 3,
           "table_rows": [
-            { "row": 1, "values": [1683, 1468, 1542, 588] },
-            { "row": 2, "values": [1972, 1415, 1992, 1275] },
-            { "row": 3, "values": [292, 1402, 309, 2006] },
-            { "row": 4, "values": [1072, 157, 1275, 455] }
+            {
+              "row": 1,
+              "values": [
+                1683,
+                1468,
+                1542,
+                588
+              ]
+            },
+            {
+              "row": 2,
+              "values": [
+                1972,
+                1415,
+                1992,
+                1275
+              ]
+            },
+            {
+              "row": 3,
+              "values": [
+                292,
+                1402,
+                309,
+                2006
+              ]
+            },
+            {
+              "row": 4,
+              "values": [
+                1072,
+                157,
+                1275,
+                455
+              ]
+            }
           ],
           "footer": {
-            "column_checksums": [923, 356, 1042],
+            "column_checksums": [
+              923,
+              356,
+              1042
+            ],
             "printed_gic": 281
           },
           "values_order": [
@@ -334,26 +631,103 @@
             1042,
             281
           ],
-          "words": [1683, 1468, 1542, 1972, 1415, 1992, 292, 1402, 309, 1072, 157, 1275],
-          "row_checksums": [588, 1275, 2006, 455],
-          "column_checksums": [923, 356, 1042],
+          "words": [
+            1683,
+            1468,
+            1542,
+            1972,
+            1415,
+            1992,
+            292,
+            1402,
+            309,
+            1072,
+            157,
+            1275
+          ],
+          "row_checksums": [
+            588,
+            1275,
+            2006,
+            455
+          ],
+          "column_checksums": [
+            923,
+            356,
+            1042
+          ],
           "unbound_gic": 278,
           "printed_gic": 281
         }
       ],
       "recovery": {
         "lagrange_table": [
-          { "shares_used": [1, 2], "coefficients": [2, 2052] },
-          { "shares_used": [1, 3], "coefficients": [1028, 1026] },
-          { "shares_used": [2, 3], "coefficients": [3, 2051] }
+          {
+            "shares_used": [
+              1,
+              2
+            ],
+            "coefficients": [
+              2,
+              2052
+            ]
+          },
+          {
+            "shares_used": [
+              1,
+              3
+            ],
+            "coefficients": [
+              1028,
+              1026
+            ]
+          },
+          {
+            "shares_used": [
+              2,
+              3
+            ],
+            "coefficients": [
+              3,
+              2051
+            ]
+          }
         ],
         "example": {
-          "shares_used": [1, 2],
-          "coefficients": [2, 2052],
+          "shares_used": [
+            1,
+            2
+          ],
+          "coefficients": [
+            2,
+            2052
+          ],
           "recovered_indices": {
-            "words": [1680, 1471, 217, 42, 1338, 279, 1907, 324, 468, 682, 1844, 126],
-            "row_checksums": [1316, 1661, 649, 603],
-            "column_checksums": [215, 891, 1120],
+            "words": [
+              1680,
+              1471,
+              217,
+              42,
+              1338,
+              279,
+              1907,
+              324,
+              468,
+              682,
+              1844,
+              126
+            ],
+            "row_checksums": [
+              1316,
+              1661,
+              649,
+              603
+            ],
+            "column_checksums": [
+              215,
+              891,
+              1120
+            ],
             "unbound_gic": 183
           },
           "recovered_mnemonic_words": [
@@ -419,21 +793,23 @@
           "header_qr_prefix_ascii": "SM",
           "header_qr_hex": "534D0100A1B2C3D4E5F6070817580ED604F7AF4272657262",
           "audit_qr_prefix_ascii": "SA",
+          "audit_qr_protocol_version": 1,
+          "audit_qr_payload_rule": "SA || protocol_version || k || x || SHA-256(Core Payload)",
           "shares": [
             {
               "x": 1,
               "audit_hash_hex": "7828A895271A1E33BE142D29A2BB01285AF00683F7D38A477F85D68798A9F875",
-              "audit_qr_hex": "5341020001007828A895271A1E33BE142D29A2BB01285AF00683F7D38A477F85D68798A9F875"
+              "audit_qr_hex": "534101020001007828A895271A1E33BE142D29A2BB01285AF00683F7D38A477F85D68798A9F875"
             },
             {
               "x": 2,
               "audit_hash_hex": "0149AFD52D9689E1BF5C9CD8EC245E2FAFFCCA02B17113538CF37002D5DB776A",
-              "audit_qr_hex": "5341020002000149AFD52D9689E1BF5C9CD8EC245E2FAFFCCA02B17113538CF37002D5DB776A"
+              "audit_qr_hex": "534101020002000149AFD52D9689E1BF5C9CD8EC245E2FAFFCCA02B17113538CF37002D5DB776A"
             },
             {
               "x": 3,
               "audit_hash_hex": "C7B42089773BC61C2E8E27FF2CE533E17EF0AB018F6444B8FB603F2845B21660",
-              "audit_qr_hex": "534102000300C7B42089773BC61C2E8E27FF2CE533E17EF0AB018F6444B8FB603F2845B21660"
+              "audit_qr_hex": "53410102000300C7B42089773BC61C2E8E27FF2CE533E17EF0AB018F6444B8FB603F2845B21660"
             }
           ]
         },
@@ -468,11 +844,901 @@
         {
           "type": "reproducibility",
           "comment": "The Session Batch ID is fixed for test reproducibility only. Production implementations MUST generate it with a CSPRNG."
+        }
+      ]
+    },
+    {
+      "id": "tv-v0.6.0-gf2053-2of3-12w-reduced-rejection",
+      "description": "GF(2053) Reduced Mode test vector (k=2,n=3) for the same 12-word BIP39 mnemonic, demonstrating polynomial rejection before 11-bit word-share packing.",
+      "params": {
+        "field": {
+          "name": "GF(2053)",
+          "prime": 2053
+        },
+        "threshold": {
+          "k": 2,
+          "n": 3
+        },
+        "word_count": 12,
+        "row_count": 4,
+        "column_count": 3,
+        "share_indices": [
+          1,
+          2,
+          3
+        ],
+        "bip39_indexing": "1-based",
+        "digital_modes_for_this_vector": [
+          "reduced"
+        ]
+      },
+      "mnemonic": {
+        "language": "en",
+        "words": [
+          "spin",
+          "result",
+          "brand",
+          "ahead",
+          "poet",
+          "carpet",
+          "unusual",
+          "chronic",
+          "denial",
+          "festival",
+          "toy",
+          "autumn"
+        ],
+        "indices": [
+          1680,
+          1471,
+          217,
+          42,
+          1338,
+          279,
+          1907,
+          324,
+          468,
+          682,
+          1844,
+          126
+        ],
+        "bip39_checksum_valid": true
+      },
+      "base": {
+        "word_rows": [
+          [
+            1680,
+            1471,
+            217
+          ],
+          [
+            42,
+            1338,
+            279
+          ],
+          [
+            1907,
+            324,
+            468
+          ],
+          [
+            682,
+            1844,
+            126
+          ]
+        ],
+        "row_tags": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "row_checksums": [
+          1316,
+          1661,
+          649,
+          603
+        ],
+        "column_tags": [
+          10,
+          20,
+          30
+        ],
+        "column_checksums": [
+          215,
+          891,
+          1120
+        ],
+        "row_total": 10,
+        "column_total": 60,
+        "unbound_gic": 183,
+        "printed_gic_rule": "printed_gic(x) = (unbound_gic(x) + x) mod 2053"
+      },
+      "random_coefficients": {
+        "scheme": "degree-1-per-word-with-reduced-mode-rejection",
+        "reproducibility_only": true,
+        "coefficient_domain": "0..2052",
+        "initial_a1_pool_for_words_w1_to_w12": [
+          1,
+          2052,
+          1126,
+          2012,
+          710,
+          571,
+          146,
+          1728,
+          2000,
+          130,
+          122,
+          383
+        ],
+        "accepted_a1_for_words_w1_to_w12": [
+          1,
+          2052,
+          1126,
+          2012,
+          1,
+          571,
+          146,
+          1,
+          2000,
+          130,
+          122,
+          383
+        ],
+        "rejection_trace": [
+          {
+            "word": "w5",
+            "initial_a1": 710,
+            "initial_share_values": [
+              2048,
+              705,
+              1415
+            ],
+            "rejection_reason": "share x=1 is 2048, outside the Reduced Mode 11-bit word-share range 0..2047",
+            "accepted_a1": 1,
+            "accepted_share_values": [
+              1339,
+              1340,
+              1341
+            ]
+          },
+          {
+            "word": "w8",
+            "initial_a1": 1728,
+            "initial_share_values": [
+              2052,
+              1727,
+              1402
+            ],
+            "rejection_reason": "share x=1 is 2052, outside the Reduced Mode 11-bit word-share range 0..2047",
+            "accepted_a1": 1,
+            "accepted_share_values": [
+              325,
+              326,
+              327
+            ]
+          }
+        ]
+      },
+      "polynomials": {
+        "word_polynomials": [
+          {
+            "name": "w1",
+            "a0": 1680,
+            "a1": 1
+          },
+          {
+            "name": "w2",
+            "a0": 1471,
+            "a1": 2052
+          },
+          {
+            "name": "w3",
+            "a0": 217,
+            "a1": 1126
+          },
+          {
+            "name": "w4",
+            "a0": 42,
+            "a1": 2012
+          },
+          {
+            "name": "w5",
+            "a0": 1338,
+            "a1": 1
+          },
+          {
+            "name": "w6",
+            "a0": 279,
+            "a1": 571
+          },
+          {
+            "name": "w7",
+            "a0": 1907,
+            "a1": 146
+          },
+          {
+            "name": "w8",
+            "a0": 324,
+            "a1": 1
+          },
+          {
+            "name": "w9",
+            "a0": 468,
+            "a1": 2000
+          },
+          {
+            "name": "w10",
+            "a0": 682,
+            "a1": 130
+          },
+          {
+            "name": "w11",
+            "a0": 1844,
+            "a1": 122
+          },
+          {
+            "name": "w12",
+            "a0": 126,
+            "a1": 383
+          }
+        ],
+        "row_checksum_polynomials": [
+          {
+            "name": "r1",
+            "a0": 1316,
+            "a1": 1126,
+            "row_tag": 1,
+            "derived_from_words": [
+              "w1",
+              "w2",
+              "w3"
+            ]
+          },
+          {
+            "name": "r2",
+            "a0": 1661,
+            "a1": 531,
+            "row_tag": 2,
+            "derived_from_words": [
+              "w4",
+              "w5",
+              "w6"
+            ]
+          },
+          {
+            "name": "r3",
+            "a0": 649,
+            "a1": 94,
+            "row_tag": 3,
+            "derived_from_words": [
+              "w7",
+              "w8",
+              "w9"
+            ]
+          },
+          {
+            "name": "r4",
+            "a0": 603,
+            "a1": 635,
+            "row_tag": 4,
+            "derived_from_words": [
+              "w10",
+              "w11",
+              "w12"
+            ]
+          }
+        ],
+        "column_checksum_polynomials": [
+          {
+            "name": "c1",
+            "a0": 215,
+            "a1": 236,
+            "column_tag": 10,
+            "derived_from_words": [
+              "w1",
+              "w4",
+              "w7",
+              "w10"
+            ]
+          },
+          {
+            "name": "c2",
+            "a0": 891,
+            "a1": 123,
+            "column_tag": 20,
+            "derived_from_words": [
+              "w2",
+              "w5",
+              "w8",
+              "w11"
+            ]
+          },
+          {
+            "name": "c3",
+            "a0": 1120,
+            "a1": 2027,
+            "column_tag": 30,
+            "derived_from_words": [
+              "w3",
+              "w6",
+              "w9",
+              "w12"
+            ]
+          }
+        ],
+        "unbound_gic_polynomial": {
+          "name": "gic_unbound",
+          "a0": 183,
+          "a1": 333,
+          "derived_from_words": [
+            "w1",
+            "w2",
+            "w3",
+            "w4",
+            "w5",
+            "w6",
+            "w7",
+            "w8",
+            "w9",
+            "w10",
+            "w11",
+            "w12"
+          ],
+          "includes_row_total": 10,
+          "includes_column_total": 60
+        },
+        "printed_gic_rule": "printed_gic(x) = (f_gic_unbound(x) + x) mod 2053"
+      },
+      "shares": [
+        {
+          "x": 1,
+          "table_rows": [
+            {
+              "row": 1,
+              "values": [
+                1681,
+                1470,
+                1343,
+                389
+              ]
+            },
+            {
+              "row": 2,
+              "values": [
+                1,
+                1339,
+                850,
+                139
+              ]
+            },
+            {
+              "row": 3,
+              "values": [
+                0,
+                325,
+                415,
+                743
+              ]
+            },
+            {
+              "row": 4,
+              "values": [
+                812,
+                1966,
+                509,
+                1238
+              ]
+            }
+          ],
+          "footer": {
+            "column_checksums": [
+              451,
+              1014,
+              1094
+            ],
+            "printed_gic": 517
+          },
+          "values_order": [
+            "w1",
+            "w2",
+            "w3",
+            "r1",
+            "w4",
+            "w5",
+            "w6",
+            "r2",
+            "w7",
+            "w8",
+            "w9",
+            "r3",
+            "w10",
+            "w11",
+            "w12",
+            "r4",
+            "c1",
+            "c2",
+            "c3",
+            "printed_gic"
+          ],
+          "values": [
+            1681,
+            1470,
+            1343,
+            389,
+            1,
+            1339,
+            850,
+            139,
+            0,
+            325,
+            415,
+            743,
+            812,
+            1966,
+            509,
+            1238,
+            451,
+            1014,
+            1094,
+            517
+          ],
+          "words": [
+            1681,
+            1470,
+            1343,
+            1,
+            1339,
+            850,
+            0,
+            325,
+            415,
+            812,
+            1966,
+            509
+          ],
+          "row_checksums": [
+            389,
+            139,
+            743,
+            1238
+          ],
+          "column_checksums": [
+            451,
+            1014,
+            1094
+          ],
+          "unbound_gic": 516,
+          "printed_gic": 517
         },
         {
-          "type": "mode-omission",
-          "mode": "reduced",
-          "comment": "Reduced Mode is intentionally omitted for this vector. Keeping the existing mnemonic and per-word coefficients unchanged produces word-share values 2048 and 2052, which violate the v0.5.0 Reduced Mode 11-bit rejection rule."
+          "x": 2,
+          "table_rows": [
+            {
+              "row": 1,
+              "values": [
+                1682,
+                1469,
+                416,
+                1515
+              ]
+            },
+            {
+              "row": 2,
+              "values": [
+                2013,
+                1340,
+                1421,
+                670
+              ]
+            },
+            {
+              "row": 3,
+              "values": [
+                146,
+                326,
+                362,
+                837
+              ]
+            },
+            {
+              "row": 4,
+              "values": [
+                942,
+                35,
+                892,
+                1873
+              ]
+            }
+          ],
+          "footer": {
+            "column_checksums": [
+              687,
+              1137,
+              1068
+            ],
+            "printed_gic": 851
+          },
+          "values_order": [
+            "w1",
+            "w2",
+            "w3",
+            "r1",
+            "w4",
+            "w5",
+            "w6",
+            "r2",
+            "w7",
+            "w8",
+            "w9",
+            "r3",
+            "w10",
+            "w11",
+            "w12",
+            "r4",
+            "c1",
+            "c2",
+            "c3",
+            "printed_gic"
+          ],
+          "values": [
+            1682,
+            1469,
+            416,
+            1515,
+            2013,
+            1340,
+            1421,
+            670,
+            146,
+            326,
+            362,
+            837,
+            942,
+            35,
+            892,
+            1873,
+            687,
+            1137,
+            1068,
+            851
+          ],
+          "words": [
+            1682,
+            1469,
+            416,
+            2013,
+            1340,
+            1421,
+            146,
+            326,
+            362,
+            942,
+            35,
+            892
+          ],
+          "row_checksums": [
+            1515,
+            670,
+            837,
+            1873
+          ],
+          "column_checksums": [
+            687,
+            1137,
+            1068
+          ],
+          "unbound_gic": 849,
+          "printed_gic": 851
+        },
+        {
+          "x": 3,
+          "table_rows": [
+            {
+              "row": 1,
+              "values": [
+                1683,
+                1468,
+                1542,
+                588
+              ]
+            },
+            {
+              "row": 2,
+              "values": [
+                1972,
+                1341,
+                1992,
+                1201
+              ]
+            },
+            {
+              "row": 3,
+              "values": [
+                292,
+                327,
+                309,
+                931
+              ]
+            },
+            {
+              "row": 4,
+              "values": [
+                1072,
+                157,
+                1275,
+                455
+              ]
+            }
+          ],
+          "footer": {
+            "column_checksums": [
+              923,
+              1260,
+              1042
+            ],
+            "printed_gic": 1185
+          },
+          "values_order": [
+            "w1",
+            "w2",
+            "w3",
+            "r1",
+            "w4",
+            "w5",
+            "w6",
+            "r2",
+            "w7",
+            "w8",
+            "w9",
+            "r3",
+            "w10",
+            "w11",
+            "w12",
+            "r4",
+            "c1",
+            "c2",
+            "c3",
+            "printed_gic"
+          ],
+          "values": [
+            1683,
+            1468,
+            1542,
+            588,
+            1972,
+            1341,
+            1992,
+            1201,
+            292,
+            327,
+            309,
+            931,
+            1072,
+            157,
+            1275,
+            455,
+            923,
+            1260,
+            1042,
+            1185
+          ],
+          "words": [
+            1683,
+            1468,
+            1542,
+            1972,
+            1341,
+            1992,
+            292,
+            327,
+            309,
+            1072,
+            157,
+            1275
+          ],
+          "row_checksums": [
+            588,
+            1201,
+            931,
+            455
+          ],
+          "column_checksums": [
+            923,
+            1260,
+            1042
+          ],
+          "unbound_gic": 1182,
+          "printed_gic": 1185
+        }
+      ],
+      "recovery": {
+        "lagrange_table": [
+          {
+            "shares_used": [
+              1,
+              2
+            ],
+            "coefficients": [
+              2,
+              2052
+            ]
+          },
+          {
+            "shares_used": [
+              1,
+              3
+            ],
+            "coefficients": [
+              1028,
+              1026
+            ]
+          },
+          {
+            "shares_used": [
+              2,
+              3
+            ],
+            "coefficients": [
+              3,
+              2051
+            ]
+          }
+        ],
+        "example": {
+          "shares_used": [
+            1,
+            2
+          ],
+          "coefficients": [
+            2,
+            2052
+          ],
+          "recovered_indices": {
+            "words": [
+              1680,
+              1471,
+              217,
+              42,
+              1338,
+              279,
+              1907,
+              324,
+              468,
+              682,
+              1844,
+              126
+            ],
+            "row_checksums": [
+              1316,
+              1661,
+              649,
+              603
+            ],
+            "column_checksums": [
+              215,
+              891,
+              1120
+            ],
+            "unbound_gic": 183
+          },
+          "recovered_mnemonic_words": [
+            "spin",
+            "result",
+            "brand",
+            "ahead",
+            "poet",
+            "carpet",
+            "unusual",
+            "chronic",
+            "denial",
+            "festival",
+            "toy",
+            "autumn"
+          ],
+          "bip39_checksum_valid": true
+        }
+      },
+      "digital_envelope": {
+        "mode": "reduced",
+        "protocol_version": 1,
+        "flags": 0,
+        "flags_meaning": {
+          "word_count": 12,
+          "nesting_layers": 0,
+          "wallet_type": "generic"
+        },
+        "threshold_k_byte_hex": "02",
+        "qr_prefix_ascii": "SC",
+        "qr_prefix_hex": "5343",
+        "session_batch_id_hex": "0A1B2C3D",
+        "mki_hex": "35E300A8CB4F452C2997CAF498B1F59386729B22",
+        "blinded_identity_hex": "2B01DE3127A40576",
+        "share_data_packing": {
+          "bits_per_word_value": 11,
+          "bits_for_printed_gic": 12,
+          "values_order": [
+            "w1",
+            "w2",
+            "w3",
+            "w4",
+            "w5",
+            "w6",
+            "w7",
+            "w8",
+            "w9",
+            "w10",
+            "w11",
+            "w12",
+            "printed_gic"
+          ],
+          "word_count": 12,
+          "row_count": 4,
+          "column_count": 3,
+          "total_values": 13,
+          "payload_bits": 144,
+          "pad_bits": 0,
+          "share_data_len_bytes": 18,
+          "core_payload_len_bytes": 34,
+          "qr_payload_len_bytes": 36
+        },
+        "manifest": {
+          "header_qr_prefix_ascii": "SM",
+          "header_qr_hex": "534D01000A1B2C3D2B01DE3127A40576",
+          "audit_qr_prefix_ascii": "SA",
+          "audit_qr_protocol_version": 1,
+          "audit_qr_payload_rule": "SA || protocol_version || k || x || Trunc128(SHA-256(Core Payload))",
+          "shares": [
+            {
+              "x": 1,
+              "audit_hash_hex": "DBE5923C2392930684A98357789A0B4B",
+              "audit_qr_hex": "5341010201DBE5923C2392930684A98357789A0B4B"
+            },
+            {
+              "x": 2,
+              "audit_hash_hex": "9653B2152D0651028905BED6C146B962",
+              "audit_qr_hex": "53410102029653B2152D0651028905BED6C146B962"
+            },
+            {
+              "x": 3,
+              "audit_hash_hex": "CE3F90B4C8C764241303374897D432B5",
+              "audit_qr_hex": "5341010203CE3F90B4C8C764241303374897D432B5"
+            }
+          ]
+        },
+        "shares": [
+          {
+            "x": 1,
+            "header_hex": "01000201",
+            "share_data_hex": "D236FA9F801A76D480014533ECB3D71FD205",
+            "core_payload_hex": "010002010A1B2C3D2B01DE3127A40576D236FA9F801A76D480014533ECB3D71FD205",
+            "qr_bytes_with_prefix_hex": "5343010002010A1B2C3D2B01DE3127A40576D236FA9F801A76D480014533ECB3D71FD205"
+          },
+          {
+            "x": 2,
+            "header_hex": "01000202",
+            "share_data_hex": "D256F4D07DDA79634491462D4EB811B7C353",
+            "core_payload_hex": "010002020A1B2C3D2B01DE3127A40576D256F4D07DDA79634491462D4EB811B7C353",
+            "qr_bytes_with_prefix_hex": "5343010002020A1B2C3D2B01DE3127A40576D256F4D07DDA79634491462D4EB811B7C353"
+          },
+          {
+            "x": 3,
+            "header_hex": "01000203",
+            "share_data_hex": "D276F3037B4A7BF209214726B0C04ECFB4A1",
+            "core_payload_hex": "010002030A1B2C3D2B01DE3127A40576D276F3037B4A7BF209214726B0C04ECFB4A1",
+            "qr_bytes_with_prefix_hex": "5343010002030A1B2C3D2B01DE3127A40576D276F3037B4A7BF209214726B0C04ECFB4A1"
+          }
+        ]
+      },
+      "notes": [
+        {
+          "type": "reproducibility",
+          "comment": "The Reduced Mode Session Batch ID is fixed for test reproducibility only. Production implementations MUST generate it with a CSPRNG."
+        },
+        {
+          "type": "reduced-mode-rejection",
+          "comment": "This vector samples coefficient candidates in 0..2052, rejects word polynomials whose evaluated shares exceed 2047, and records the accepted replacements used for this deterministic public fixture."
         }
       ]
     }
