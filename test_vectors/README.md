@@ -3,8 +3,8 @@
 This directory contains the canonical test vectors for Schiavinato Sharing.
 
 ## Goals
-- Enable cross-implementation conformance testing (HTML / JS / Py).
-- Provide a stable reference for the protocol semantics.
+- Provide stable, version-scoped references for protocol semantics.
+- Support future cross-implementation conformance testing as the HTML / JS / Python implementations catch up to the current specification.
 
 ## Layout
 - `schema.json`: JSON schema for the machine-readable vectors format.
@@ -18,10 +18,11 @@ This directory contains the canonical test vectors for Schiavinato Sharing.
 ## Notes
 - The live `test_vectors/` pair tracks the current protocol, and its internal `version` field identifies the targeted spec version.
 - Once a version is released, its vectors MUST be copied into `previous_versions/vX.Y.Z/test_vectors/` and treated as immutable there.
-- Implementations MUST declare which spec versions they support and MUST validate against these vectors before release.
+- Implementations are currently work in progress and may lag the current vectors. To claim compatibility with a vectors version, an implementation MUST declare which `manual_spec` and `software_spec` versions it supports and validate against the matching vectors before release.
 - Archived releases currently available:
   - Partial vectors-only snapshot: [`../previous_versions/v0.4.0/`](../previous_versions/v0.4.0/README.md)
   - Full archived snapshot: [`../previous_versions/v0.4.1/`](../previous_versions/v0.4.1/README.md)
+  - Vectors-only snapshot: [`../previous_versions/v0.5.0/`](../previous_versions/v0.5.0/README.md)
 - Security policy (private disclosures): https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md
 - Some human-readable companion docs inside version folders may reference `SECURITY.md`; treat that as a reference to the org-wide security policy link above.
 
@@ -43,7 +44,7 @@ abandon zoo enhance young join maximum fancy call minimum code spider olive alco
 
 ## Conformance requirements
 
-For any implementation (HTML / JS / Py) to claim compatibility with the current protocol vectors, it MUST:
+For any implementation to claim compatibility with the current protocol vectors, it MUST:
 
 - **Declare support**: document which `manual_spec` and `software_spec` versions are supported, and which vectors `version` field is used for conformance.
 - **Validate in CI**: run vector-based conformance tests in CI (or equivalent automation) before publishing a release.

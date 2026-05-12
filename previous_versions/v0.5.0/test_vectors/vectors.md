@@ -1,16 +1,16 @@
-# Schiavinato Sharing - GF(2053) Test Vector (v0.6.0, 2-of-3, 12 Words, Full Mode)
+# Schiavinato Sharing - GF(2053) Test Vector (v0.5.0, 2-of-3, 12 Words, Full Mode)
 
 This is the live root-level test vector set for the current protocol. The machine-readable companion lives in `test_vectors/vectors.json`.
 
-This vector keeps the public test mnemonic and the per-word random coefficients from the archived `v0.4.1` vector for the Full Mode session, then applies the `v0.6.0` arithmetic and digital envelope rules. A second Reduced Mode session demonstrates coefficient rejection and 11-bit word-share packing using the same mnemonic.
+This vector keeps the public test mnemonic and the per-word random coefficients from the archived `v0.4.1` vector, then upgrades the arithmetic and digital envelope to the `v0.5.0` rules from the protocol source of truth.
 
 ## Status
 
-- Current protocol target: `v0.6.0`
+- Current protocol target: `v0.5.0`
 - Threshold scheme: `2-of-3`
 - Word count: `12`
-- Digital modes covered here: `Full Mode` plus a Reduced Mode rejection session
-- Reduced Mode is included as a separate deterministic session at the end. It starts from the same mnemonic and initial coefficient pool, rejects the word polynomials that exceed the 11-bit range, and records accepted replacements.
+- Digital mode covered here: `Full Mode`
+- Reduced Mode is intentionally omitted for this seed because the unchanged word-share values already include `2048` and `2052`, which violate the `v0.5.0` Reduced Mode 11-bit word-share constraint.
 
 ## 1. Base mnemonic
 
@@ -56,11 +56,11 @@ Word polynomials:
 - `w11(x) = 1844 + 122x`
 - `w12(x) = 126 + 383x`
 
-## 3. v0.6.0 arithmetic base values
+## 3. v0.5.0 arithmetic base values
 
 ### 3.1 Position-bound row checksums
 
-In `v0.6.0`, each row checksum adds its row number `r` to the constant term.
+In `v0.5.0`, each row checksum adds its row number `r` to the constant term.
 
 ```text
 r1 = (w1 + w2 + w3 + 1) mod 2053 = 1316
@@ -85,7 +85,7 @@ Row checksum polynomials:
 
 ### 3.2 Column checksums
 
-In `v0.6.0`, each column checksum adds its public tag to the constant term:
+In `v0.5.0`, each column checksum adds its public tag to the constant term:
 
 - Column 1 tag = `10`
 - Column 2 tag = `20`
@@ -146,7 +146,7 @@ printed_gic(x) = (gic_unbound(x) + x) mod 2053
 
 ## 4. Share tables
 
-The `v0.6.0` human-readable share table is 4 rows of words plus row checksums, followed by a footer row carrying the 3 column checksums and the printed GIC.
+The `v0.5.0` human-readable share table is 4 rows of words plus row checksums, followed by a footer row carrying the 3 column checksums and the printed GIC.
 
 ### 4.1 Share 1 (`x = 1`)
 
@@ -334,7 +334,7 @@ Transport Hash: 2DE3EA6C3E903BF04C953B3E0FF6FB5F
 Core Payload:   010002000100A1B2C3D4E5F6070817580ED604F7AF42726572626915BE53F00180035200080419F32C7AE1FD38402DE3EA6C3E903BF04C953B3E0FF6FB5F
 QR Bytes:       53434849010002000100A1B2C3D4E5F6070817580ED604F7AF42726572626915BE53F00180035200080419F32C7AE1FD38402DE3EA6C3E903BF04C953B3E0FF6FB5F
 Audit Hash:     7828A895271A1E33BE142D29A2BB01285AF00683F7D38A477F85D68798A9F875
-Audit QR:       534101020001007828A895271A1E33BE142D29A2BB01285AF00683F7D38A477F85D68798A9F875
+Audit QR:       5341020001007828A895271A1E33BE142D29A2BB01285AF00683F7D38A477F85D68798A9F875
 ```
 
 ### 6.3 Share 2 digital vector
@@ -346,7 +346,7 @@ Transport Hash: D68A69BFC1B41D81E4A2469EE219A780
 Core Payload:   010002000200A1B2C3D4E5F6070817580ED604F7AF42726572626925BD1A07DD2C158D0926BF16A3AE02337C6510D68A69BFC1B41D81E4A2469EE219A780
 QR Bytes:       53434849010002000200A1B2C3D4E5F6070817580ED604F7AF42726572626925BD1A07DD2C158D0926BF16A3AE02337C6510D68A69BFC1B41D81E4A2469EE219A780
 Audit Hash:     0149AFD52D9689E1BF5C9CD8EC245E2FAFFCCA02B17113538CF37002D5DB776A
-Audit QR:       534101020002000149AFD52D9689E1BF5C9CD8EC245E2FAFFCCA02B17113538CF37002D5DB776A
+Audit QR:       5341020002000149AFD52D9689E1BF5C9CD8EC245E2FAFFCCA02B17113538CF37002D5DB776A
 ```
 
 ### 6.4 Share 3 digital vector
@@ -358,7 +358,7 @@ Transport Hash: AE561995EE9400FA8759879C4F58F00B
 Core Payload:   010002000300A1B2C3D4E5F6070817580ED604F7AF42726572626935BC6067B45877C812457A13543009D4FB1190AE561995EE9400FA8759879C4F58F00B
 QR Bytes:       53434849010002000300A1B2C3D4E5F6070817580ED604F7AF42726572626935BC6067B45877C812457A13543009D4FB1190AE561995EE9400FA8759879C4F58F00B
 Audit Hash:     C7B42089773BC61C2E8E27FF2CE533E17EF0AB018F6444B8FB603F2845B21660
-Audit QR:       53410102000300C7B42089773BC61C2E8E27FF2CE533E17EF0AB018F6444B8FB603F2845B21660
+Audit QR:       534102000300C7B42089773BC61C2E8E27FF2CE533E17EF0AB018F6444B8FB603F2845B21660
 ```
 
 ### 6.5 Manifest Header QR
@@ -375,129 +375,6 @@ Hex bytes:
 
 ### 6.6 Notes
 
-Audit QR payloads are versioned in `v0.6.0`: `SA || 0x01 || k || x || hash`.
-
-
-- `v0.6.0` Full Mode serializes `word shares + printed GIC` only. Row and column checksums remain human-readable arithmetic data and are not serialized into the core payload.
-- Optional text export is intentionally unspecified in `v0.6.0`, so no Bech32m or Base64URL representation is part of this vector set.
+- `v0.5.0` Full Mode serializes `word shares + printed GIC` only. Row and column checksums remain human-readable arithmetic data and are not serialized into the core payload.
+- Optional text export is intentionally unspecified in `v0.5.0`, so no Bech32m or Base64URL representation is part of this vector set.
 - The fixed Session Batch ID is for reproducible public test vectors only. Production implementations MUST generate a fresh CSPRNG value for every sharing session.
-
-## 7. Reduced Mode rejection session
-This session uses the same mnemonic and threshold, but targets Reduced Mode. Coefficient candidates are sampled from `0..2052`; word polynomials are rejected if any evaluated share value exceeds `2047`.
-### 7.1 Rejection trace
-| Word | Initial `a1` | Initial share values | Result | Accepted `a1` | Accepted share values |
-|------|--------------|----------------------|--------|---------------|-----------------------|
-| `w5` | `710` | `[2048, 705, 1415]` | Reject: outside `0..2047` | `1` | `[1339, 1340, 1341]` |
-| `w8` | `1728` | `[2052, 1727, 1402]` | Reject: outside `0..2047` | `1` | `[325, 326, 327]` |
-
-Initial Reduced Mode coefficient pool:
-
-```text
-1, 2052, 1126, 2012, 710, 571, 146, 1728, 2000, 130, 122, 383
-```
-
-Accepted coefficients:
-
-```text
-1, 2052, 1126, 2012, 1, 571, 146, 1, 2000, 130, 122, 383
-```
-
-Accepted Reduced Mode checksum polynomials:
-
-- `r1(x) = 1316 + 1126x`
-- `r2(x) = 1661 + 531x`
-- `r3(x) = 649 + 94x`
-- `r4(x) = 603 + 635x`
-- `c1(x) = 215 + 236x`
-- `c2(x) = 891 + 123x`
-- `c3(x) = 1120 + 2027x`
-- `gic_unbound(x) = 183 + 333x`
-
-### 7.2 Reduced Mode share tables
-
-#### Share 1 (`x = 1`)
-
-| Column 1 | Column 2 | Column 3 | Check |
-|----------|----------|----------|-------|
-| `1681-spirit` | `1470-response` | `1343-pond` | `0389-correct` |
-| `0001-abandon` | `1339-point` | `0850-health` | `0139-bacon` |
-| `0000-0000` | `0325-chuckle` | `0415-critic` | `0743-fresh` |
-| `0812-grace` | `1966-volcano` | `0509-display` | `1238-one` |
-| `0451-debate` | `1014-leaf` | `1094-master` | `0517-dog` |
-
-#### Share 2 (`x = 2`)
-
-| Column 1 | Column 2 | Column 3 | Check |
-|----------|----------|----------|-------|
-| `1682-split` | `1469-resource` | `0416-crop` | `1515-run` |
-| `2013-wine` | `1340-polar` | `1421-ranch` | `0670-father` |
-| `0146-banana` | `0326-chunk` | `0362-coffee` | `0837-hammer` |
-| `0942-interest` | `0035-affair` | `0892-hunt` | `1873-tube` |
-| `0687-fiction` | `1137-mix` | `1068-lyrics` | `0851-heart` |
-
-#### Share 3 (`x = 3`)
-
-| Column 1 | Column 2 | Column 3 | Check |
-|----------|----------|----------|-------|
-| `1683-spoil` | `1468-resist` | `1542-scheme` | `0588-enact` |
-| `1972-wait` | `1341-pole` | `1992-wedding` | `1201-noodle` |
-| `0292-caught` | `0327-churn` | `0309-charge` | `0931-inmate` |
-| `1072-magnet` | `0157-bean` | `1275-palm` | `0455-decide` |
-| `0923-infant` | `1260-output` | `1042-lion` | `1185-neglect` |
-
-### 7.3 Reduced Mode digital payload vectors
-
-- Protocol Version: `0x01`
-- Flags: `0x00`
-- Threshold byte: `02`
-- QR prefix: ASCII `SC`
-- Session Batch ID: `0A 1B 2C 3D`
-- MKI (full HASH160): `35 E3 00 A8 CB 4F 45 2C 29 97 CA F4 98 B1 F5 93 86 72 9B 22`
-- Blinded Identity (first 8 bytes of HMAC-SHA256): `2B 01 DE 31 27 A4 05 76`
-
-Share Data packing: 12 word values at 11 bits each, followed by the printed GIC at 12 bits, MSB-first. Total length is 18 bytes with no padding.
-
-#### Share 1 Reduced Mode digital vector
-
-```text
-Header:      01000201
-Share Data:  D236FA9F801A76D480014533ECB3D71FD205
-Core Payload:010002010A1B2C3D2B01DE3127A40576D236FA9F801A76D480014533ECB3D71FD205
-QR Bytes:    5343010002010A1B2C3D2B01DE3127A40576D236FA9F801A76D480014533ECB3D71FD205
-Audit Hash:  DBE5923C2392930684A98357789A0B4B
-Audit QR:    5341010201DBE5923C2392930684A98357789A0B4B
-```
-
-#### Share 2 Reduced Mode digital vector
-
-```text
-Header:      01000202
-Share Data:  D256F4D07DDA79634491462D4EB811B7C353
-Core Payload:010002020A1B2C3D2B01DE3127A40576D256F4D07DDA79634491462D4EB811B7C353
-QR Bytes:    5343010002020A1B2C3D2B01DE3127A40576D256F4D07DDA79634491462D4EB811B7C353
-Audit Hash:  9653B2152D0651028905BED6C146B962
-Audit QR:    53410102029653B2152D0651028905BED6C146B962
-```
-
-#### Share 3 Reduced Mode digital vector
-
-```text
-Header:      01000203
-Share Data:  D276F3037B4A7BF209214726B0C04ECFB4A1
-Core Payload:010002030A1B2C3D2B01DE3127A40576D276F3037B4A7BF209214726B0C04ECFB4A1
-QR Bytes:    5343010002030A1B2C3D2B01DE3127A40576D276F3037B4A7BF209214726B0C04ECFB4A1
-Audit Hash:  CE3F90B4C8C764241303374897D432B5
-Audit QR:    5341010203CE3F90B4C8C764241303374897D432B5
-```
-
-#### Reduced Mode Manifest Header QR
-
-```text
-SM01000A1B2C3D2B01DE3127A40576
-```
-
-Hex bytes:
-
-```text
-534D01000A1B2C3D2B01DE3127A40576
-```

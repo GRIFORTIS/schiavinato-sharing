@@ -24,7 +24,7 @@ The current public signing key in this repo is:
 From the repository root, choose the release version and build the whitepaper:
 
 ```bash
-export VERSION="v0.5.0"
+export VERSION="v0.6.0"
 latexmk -pdf -interaction=nonstopmode -halt-on-error -file-line-error -cd whitepaper/WHITEPAPER.tex
 mkdir -p release-assets
 cp whitepaper/WHITEPAPER.pdf "release-assets/WHITEPAPER.pdf"
