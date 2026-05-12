@@ -19,6 +19,7 @@ playwright-report/
 playwright/.cache/
 
 # Checksums (generated during release)
+release-assets/
 CHECKSUMS.txt
 CHECKSUMS.json
 *.tar.gz

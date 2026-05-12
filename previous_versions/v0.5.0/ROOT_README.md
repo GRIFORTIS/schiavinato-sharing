@@ -1,0 +1,59 @@
+# Schiavinato Sharing (Specification)
+
+> **This is the frozen root README from the v0.5.0 release.** It is preserved for reference inside [`README.md`](README.md). Some links were adjusted so they resolve from this archived location.
+
+[![Security: Experimental](https://img.shields.io/badge/Security-⚠️%20EXPERIMENTAL%20⚠️-red)](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
+[![CI](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/codeql.yml)
+[![Whitepaper: CC BY 4.0](https://img.shields.io/badge/Whitepaper-CC%20BY%204.0-green.svg)](../../LICENSE-WHITEPAPER.md)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](../../LICENSE)
+
+> ## ⚠️ WARNING: EXPERIMENTAL SOFTWARE ⚠️
+> 
+>DO NOT USE IT FOR REAL FUNDS!
+>
+> Schiavinato Sharing specification and implementations have NOT been audited. Use for testing, learning, and experimentation only. See [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md) for details.
+>
+>We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
+
+**Manual and Computational Threshold Secret Sharing for BIP39 Mnemonics over \(GF(2053)\)** — designed to be executable both by software and by hand (pencil & paper), with validation checkpoints to prevent silent mistakes.
+
+## Canonical documents
+- **Current manual execution specification**: [`manual_spec/README`](manual_spec/README.md)
+- **Current software (digital envelope) specification**: [`software_spec/README`](software_spec/README.md)
+- **Proposals**: [`../../proposals/`](../../proposals/)
+- **Test vectors**: [`test_vectors/README`](test_vectors/README.md)
+- **Whitepaper**: [PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](whitepaper/WHITEPAPER.tex)
+- **Previous version archives**: [`../README`](../README.md)
+- **Security policy**: [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
+
+## Implementations
+These implementations aim to be compatible with the canonical spec documents above:
+- **HTML (single-file, air-gapped)**: [`schiavinato-sharing-html`](https://github.com/GRIFORTIS/schiavinato-sharing-html)
+- **JavaScript/TypeScript**: [`schiavinato-sharing-js`](https://github.com/GRIFORTIS/schiavinato-sharing-js)
+- **Python**: [`schiavinato-sharing-py`](https://github.com/GRIFORTIS/schiavinato-sharing-py)
+
+## What reviewers should look at
+Start here:
+- [`docs/review`](docs/review.md)
+
+High-value review targets:
+- Correctness and clarity of manual validation checkpoints (row checksums, column checksums, and GIC)
+- Security analysis and threat model assumptions (see `whitepaper/WHITEPAPER.tex`)
+- Backwards decode/versioning rules for the envelope (`software_spec/`)
+- Conformance vectors (`test_vectors/`)
+
+## Licenses
+- **Code**: [MIT License](../../LICENSE)
+- **Whitepaper**: [CC BY 4.0](../../LICENSE-WHITEPAPER.md)
+
+## Release authenticity
+- Release source state is anchored on signed git tags.
+- Release assets such as `WHITEPAPER.pdf` and `CHECKSUMS.txt` are intended to be signed locally and published with detached `.asc` signatures.
+- Use [`../../RELEASE.md`](../../RELEASE.md) for the current maintainer workflow and [`docs/release-verification.md`](docs/release-verification.md) for the archived public verification guidance.
+
+---
+
+**Status**: Experimental  
+**Created by**: [Renato Schiavinato Lopez](https://github.com/renatoslopes)  
+**Maintained by**: [GRIFORTIS](https://github.com/GRIFORTIS)
