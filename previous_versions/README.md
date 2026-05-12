@@ -11,3 +11,4 @@ This directory contains frozen historical snapshots of released Schiavinato Shar
 ## Available snapshots
 - [`v0.4.0`](v0.4.0/README.md) — vectors-only partial snapshot
 - [`v0.4.1`](v0.4.1/README.md)
+- [`v0.5.0`](v0.5.0/README.md) — vectors-only snapshot

@@ -26,7 +26,7 @@
 - **Proposals**: [`proposals/`](proposals/)
 
 ## Implementations
-These implementations aim to be compatible with the canonical spec documents above:
+Prototype implementations are work in progress and may lag the current v0.6.0 specification. They are useful for experimentation and review, but should not be treated as v0.6.0-conformant until each repository explicitly declares support for the current spec and vectors:
 - **HTML (single-file, air-gapped)**: [`schiavinato-sharing-html`](https://github.com/GRIFORTIS/schiavinato-sharing-html)
 - **JavaScript/TypeScript**: [`schiavinato-sharing-js`](https://github.com/GRIFORTIS/schiavinato-sharing-js)
 - **Python**: [`schiavinato-sharing-py`](https://github.com/GRIFORTIS/schiavinato-sharing-py)
@@ -39,6 +39,7 @@ High-value review targets:
 - Correctness and clarity of manual validation checkpoints (row checksums, column checksums, and GIC)
 - Security analysis and threat model assumptions (see `whitepaper/WHITEPAPER.tex`)
 - Backwards decode/versioning rules for the envelope (`software_spec/`)
+- Software-assisted ceremony flow diagrams (`docs/software-flows/`)
 - Conformance vectors (`test_vectors/`)
 
 ## Licenses

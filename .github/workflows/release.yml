@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to publish (e.g., v0.5.0)'
+        description: 'Release tag to publish (e.g., v0.6.0)'
         required: true
         type: string
 
@@ -88,7 +88,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "${{ inputs.tag }}" ]; then
-            echo "Missing required input: tag (e.g., v0.5.0)" >&2
+            echo "Missing required input: tag (e.g., v0.6.0)" >&2
             exit 1
           fi
 

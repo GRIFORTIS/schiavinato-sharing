@@ -4,6 +4,14 @@ All notable changes to `manual_spec` will be documented here.
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-10
+
+### Changed
+- Manual specification header now targets v0.6.0.
+- Manual coefficient generation now samples each Shamir coefficient independently from the full field range `0..2052`; the highest-power coefficient is no longer forced to be nonzero.
+- Optional manifest guidance now documents sensitivity and leakage from aggregating at least `k` printed GIC values from one session.
+- No manual share-table format change from v0.5.0; v0.6.0 manual behavior keeps position-bound row checksums, column checksums, row/column-total GIC, nested sharing, and RVA guidance.
+
 ## [0.5.0] - 2026-04-09
 
 ### Added

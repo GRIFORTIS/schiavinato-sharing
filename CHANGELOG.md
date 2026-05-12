@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-05-10
+
+### Added
+- Canonical `v0.6.0` live vectors for the public 12-word 2-of-3 mnemonic.
+- Reduced Mode vector session demonstrating coefficient rejection, accepted replacement coefficients, 11-bit word-share packing, 12-bit printed GIC packing, and truncated Audit Hashes.
+- Frozen vectors snapshot for `v0.5.0` under `previous_versions/v0.5.0/test_vectors/`.
+- Non-normative v0.6.0 software implementation flow diagrams under `docs/software-flows/`.
+- Expanded whitepaper sections for peer review, including background and related work, system/threat model, computational deployment and verification, evaluation and reproducibility, and deployment/artifact trust boundaries.
+
+### Changed
+- Per-share Audit QR payloads now include the protocol version byte: `SA || version || k || x || hash`.
+- Live vector metadata now targets `v0.6.0` to match the whitepaper version.
+- Implementation language now frames the HTML, JavaScript/TypeScript, and Python repositories as in-progress prototypes that may lag the v0.6.0 specification.
+- `software_spec/README.md` now reflects the v0.6.0 software-assisted ceremony model, including trust boundaries, resume artifact lifecycle, coefficient sourcing and Reduced Mode rejection, artifact rendering, audit drills, printer tiers, cleanup, and validation semantics.
+- Coefficient generation now samples each Shamir coefficient from the full field range `0..2052`, without forcing the highest-power coefficient to be nonzero. Reduced Mode keeps that coefficient source and rejects word polynomials whose evaluated word-share values exceed `2047`.
+- `docs/security-model.md` was rewritten as a concise current security overview aligned with the manual spec, software spec, manifest audit model, BI/RVA checks, and printer/resume trust boundaries.
+- Release workflow and verification examples now target `v0.6.0`.
+
 ## [0.5.0] - 2026-04-09
 
 ### Added
@@ -120,7 +138,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Python implementation**: [schiavinato-sharing-py](https://github.com/GRIFORTIS/schiavinato-sharing-py)
 - **Organization**: [GRIFORTIS](https://github.com/GRIFORTIS)
 
-[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.3.0...v0.4.0

@@ -10,7 +10,7 @@
 >
 >We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
 
-This document defines the manual execution protocol for Schiavinato Sharing (v0.5.0).
+This document defines the manual execution protocol for Schiavinato Sharing (v0.6.0).
 
 Normative keywords **MUST**, **MUST NOT**, **SHOULD**, **MAY** are used as requirements.
 
@@ -70,27 +70,37 @@ Normative parsing rule:
 - Recovery Verification Address (RVA) — truncated (e.g., `bc1qar0s...zzwf5mdq`). See [RVA](#recovery-verification-address-rva).
 - Passphrase indicator/hint: MAY indicate whether a passphrase is required and where to find it; MUST NOT include the passphrase itself
 
+These fields are share-local recovery metadata. They are outside the \(GF(2053)\) arithmetic and exist to make a valid threshold recovery set self-describing. If RVA-based verification is relied upon, sufficient wallet-context hint SHOULD be recoverable from the shares themselves rather than from a separate manifest alone.
+
 ## Recovery Verification Address (RVA)
 
 The RVA is a user-supplied truncated verification address derived from the intended target wallet, written as the first 8 and last 8 characters of the address (e.g., `bc1qar0s...zzwf5mdq`). It is external metadata, not part of the sharing arithmetic.
 
 Recommended default: the first receive address of the intended wallet. Advanced users MAY intentionally choose a different address that better matches their operational setup (e.g., a known canary address).
 
-The RVA is derived from the mnemonic together with the intended wallet context (derivation settings, wallet profile, and BIP39 passphrase if applicable). The corresponding derivation hint MUST therefore be recorded separately.
+The RVA is derived from the mnemonic together with the intended wallet context (derivation settings, wallet profile, and BIP39 passphrase if applicable). The corresponding derivation hint SHOULD therefore be recorded on each share or otherwise replicated so that any valid threshold set is sufficient for RVA-based verification.
 
 After recovery, recomputing the same target-wallet address and comparing to the recorded RVA detects share substitution and wallet-context errors. For bech32/bech32m addresses, the truncated form yields approximately \(2^{60}\) matching power.
 
 The RVA requires a one-time computational derivation during setup. In fully electronics-free ceremonies, this field MAY be omitted, accepting reduced post-recovery substitution detection.
 
 ## Optional share manifest (non-secret, sensitive)
-A manifest is optional. Its purpose is operational: track where shares are stored and reduce recovery uncertainty.
+A manifest is optional. Its purpose is operational: carry cross-share or session-level metadata, track where shares are stored, and reduce recovery uncertainty.
 
 ### Required fields (if present)
 - Protocol name and version (clear identification)
 - Scheme \(k\)-of-\(n\)
 
 ### Recommended fields (if present)
-Same non-secret context fields as shares (seed name, date, derivation hint, RVA, passphrase hint), plus an optional share list (e.g., mapping share number to printed GIC and a custodian/location note).
+- Optional session identification fields such as seed label/date.
+- Session-level verification metadata such as Session Batch ID and Blinded Identity when available from software-generated shares.
+- An optional share list mapping share number to printed GIC, plus any custodian/location note.
+- Computational-mode audit records such as per-share Audit Hash / Audit QR.
+
+The manifest MAY duplicate selected share-local recovery hints for convenience, but such copies are secondary. If RVA-based verification is expected, the manifest SHOULD NOT be the only place where the wallet context is recorded.
+
+### Sensitivity and leakage
+The manifest is non-secret but sensitive. If it records at least \(k\) distinct printed GIC values from one sharing session, those values reveal one linear relation of the mnemonic over \(GF(2053)\). This is one \(GF(2053)\)-valued quantity, so the leakage is upper-bounded by \(\log_2(2053) \approx 11.0035\) bits; the exact reduction over the BIP39-valid mnemonic space depends on how that relation is distributed on the valid domain. This is small relative to BIP39 entropy, but it means a manifest is not information-theoretically neutral.
 
 ### Co-storage prohibition
 If a manifest exists, it MUST NOT be stored with any share.
@@ -291,8 +301,7 @@ For each word index \(w_i\), construct a Shamir polynomial over \(GF(2053)\):
 f_{w_i}(x) = w_i + a_1 x + \dots + a_{k-1} x^{k-1} \bmod 2053
 \]
 
-- \(a_{k-1}\) MUST be uniform in \(\{1,\dots,2052\}\) (non-zero to preserve polynomial degree).
-- All other coefficients MUST be uniform in \(\{0,\dots,2052\}\).
+- Each coefficient \(a_1,\dots,a_{k-1}\) MUST be sampled independently and uniformly from \(\{0,\dots,2052\}\). Shamir sharing samples from the full field; an individual word polynomial may have degree lower than \(k-1\) without changing the scheme-level threshold construction.
 
 For share indices \(x \in \{1,\ldots,n\}\), compute:
 - \(w_i[x] = f_{w_i}(x)\bmod 2053\)
