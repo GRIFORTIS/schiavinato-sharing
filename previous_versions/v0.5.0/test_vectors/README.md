@@ -9,7 +9,7 @@ This directory contains the canonical test vectors for Schiavinato Sharing.
 - Provide a stable reference for the protocol semantics.
 
 ## Layout
-- `schema.json`: JSON schema for the machine-readable vectors format.
+- `../../../test_vectors/schema.json`: shared JSON schema for the machine-readable vectors format
 - `vectors.json`: machine-readable vectors for this archived release
 - `vectors.md`: human-readable companion for this archived release
 
