@@ -1,6 +1,7 @@
 # Release Process
 
 This document defines the maintainer release flow for `schiavinato-sharing`.
+It is public process documentation, not part of the Schiavinato Sharing protocol specification.
 
 ## Trust model
 - The authoritative source-state attestation is a locally created signed git tag.
