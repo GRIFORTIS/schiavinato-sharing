@@ -29,3 +29,4 @@ CHECKSUMS.json
 .DS_Store
 .vscode/
 .idea/
+~$*.xlsx

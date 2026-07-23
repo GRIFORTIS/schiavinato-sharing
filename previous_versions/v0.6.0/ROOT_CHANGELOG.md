@@ -7,18 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.7.0] - 2026-07-23
-
-### Changed
-- Active docs and specs now use Full / Compact Output Profile terminology.
-- Compact is documented with 12-bit share packing and smaller envelope metadata.
-- Hand Transcribed QR resume now uses a Deterministic Resume Key (DRK) for HMAC-SHA256 coefficient derivation.
-- All four resume modes are documented as available under both Output Profiles.
-- Root test vectors now target v0.7.0, including Full and Compact payloads, RBT, Transport Hash, Manifest Audit Hash, deterministic MAT sample data, and recovery values.
-
-### Removed
-- Removed current-protocol Reduced Mode rejection, 11-bit word-share packing, rejection-pool, and per-position derivation claims from active docs/specs.
-
 ## [0.6.0] - 2026-05-10
 
 ### Added
@@ -150,8 +138,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Python implementation**: [schiavinato-sharing-py](https://github.com/GRIFORTIS/schiavinato-sharing-py)
 - **Organization**: [GRIFORTIS](https://github.com/GRIFORTIS)
 
-[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.7.0...HEAD
-[0.7.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.6.0...v0.7.0
+[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.6.0...HEAD
 [0.6.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.5.0...v0.6.0
 [0.5.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.0...v0.4.1
