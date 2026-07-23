@@ -16,7 +16,7 @@
 
 ## About Schiavinato Sharing
 
-**In one line:** Schiavinato Sharing lets you split a standard **BIP39** recovery phrase into **k-of-n** paper-recoverable backup shares, with optional **per-share audit** before recovery. The normal experience is **offline, software-assisted sharing and recovery**; the same core math remains recoverable by hand if software is unavailable.
+**In one line:** Schiavinato Sharing lets you split a standard **BIP39** recovery phrase into **k-of-n** durable, human-readable backup shares, with optional **per-share audit** before recovery. The normal experience is **offline, software-assisted sharing and recovery**; the same core math can also be executed fully manually when software is unavailable or untrusted.
 
 ### Problem
 
@@ -36,13 +36,13 @@ In practice, the protocol is **software-assisted first**. In the normal path, an
 
 Manual fallback is not the recommended everyday workflow. It is the sovereignty backstop.
 
-The software should make sharing and recovery easier, faster, and less error-prone. But a backup meant for serious self-custody should not become useless just because the original app is gone, a vendor disappears, a subscription lapses, a hosted service shuts down, an app store is blocked, an operating system changes, or the recovery happens years later in a constrained environment. Schiavinato Sharing keeps the software-assisted workflow practical while keeping the arithmetic readable from durable paper artifacts.
+The software should make sharing and recovery easier, faster, and less error-prone. But a backup meant for serious self-custody should not become useless just because the original app is gone, a vendor disappears, a subscription lapses, a hosted service shuts down, an app store is blocked, an operating system changes, or the recovery happens years later in a constrained environment. Schiavinato Sharing keeps the software-assisted workflow practical while keeping the arithmetic readable from durable artifacts such as paper, metal, or other long-lived media.
 
 The same shares can be generated or recovered using paper tables, a basic calculator, modular arithmetic, and precomputed Lagrange coefficients. In other words: use software when you can; keep the paper path specified for when you cannot.
 
 ### Why Per-Share Audit Matters
 
-Long-term backups should be checkable before the day they are needed. Schiavinato Sharing lets a user audit one physical share at a time, without gathering a threshold set, combining shares, or exposing the mnemonic.
+Long-term, geographically distributed backups should be checkable before the day they are needed. Schiavinato Sharing defines a separate **Share Audit Ceremony**: one physical share can be audited at a time, wherever it is stored, without gathering a threshold set, combining shares, or exposing the mnemonic. In many backup systems, a meaningful audit effectively becomes a recovery drill: enough shares must be brought together to reconstruct or nearly reconstruct the secret, increasing coordination burden and creating an unnecessary exposure event. Here, audit and recovery are separate operations.
 
 In the manual path, public row/column/GIC checks detect passive damage or transcription errors, while optional MAT tags can authenticate the word rows against separately stored Manifest key material. In the software-assisted path, Full and Compact payloads plus Manifest Audit Hashes add computational checks when a separate Manifest is available. The result is a practical pre-recovery audit: each custodian artifact can be inspected periodically without turning an audit drill into a recovery ceremony.
 
@@ -54,7 +54,7 @@ Schiavinato Sharing is for people and organizations that want threshold backup o
 - **Individuals and families** setting up backup, succession, or inheritance plans where recovery may involve relatives, heirs, or trusted advisors.
 - **Businesses, family offices, and Bitcoin treasury holders** that need durable backup for seed material, whether the spending setup uses single-sig, multisig, dedicated hardware wallets, or a combination of custody controls.
 - **Professional advisors and service providers** helping clients run self-custody ceremonies while keeping the advisor out of the secret-handling path.
-- **Non-Governmental Organizations, civil-society groups, journalists, and activists** that hold Bitcoin across people or jurisdictions and need recovery arrangements that do not rely on a single account, app store, vendor, or country.
+- **Non-Governmental Organizations, civil-society groups, journalists, activists, and human-rights defenders** that hold Bitcoin across people or jurisdictions and need recovery arrangements that do not rely on a single account, app store, vendor, or country.
 - **Cross-border custody arrangements** where shares are held in different locations and recovery should remain possible even when travel, infrastructure, or access to specific services is disrupted.
 
 ### What it does and how
