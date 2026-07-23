@@ -4,22 +4,6 @@ All notable changes to `software_spec` will be documented here.
 
 ## [Unreleased]
 
-## [0.7.0] - 2026-07-23
-
-### Changed
-- Renamed the active payload distinction from Full Mode / Reduced Mode to Full / Compact Output Profiles.
-- Rebuilt the software specification around the v0.7.0 digital envelope: `SF` / `SC` Payloads, Language/Input byte, RBT, Full complete-table serialization, Compact word-only serialization, and Manifest Audit Hash checks.
-- Full now serializes the complete canonical arithmetic Share table; Compact serializes word-share values only and recomputes row, column, and GIC checks against the printed artifact.
-- Compact now uses 12-bit word-share packing and smaller envelope metadata.
-- Blinded Identity / MKI terminology has been replaced by the Recovery Binding Tag (RBT) model.
-- Manifests are now specified without printed GIC maps; MAT key material and Manifest Audit Hashes remain separate from plaintext Share values.
-- Hand Transcribed QR now uses a 256-bit Deterministic Resume Key (DRK) for HMAC-SHA256 coefficient derivation over public ceremony context.
-- Resume modes are orthogonal to Output Profile: Digital Resume, Hand Transcribed Table, Hand Transcribed QR, and No Resume are available under both Full and Compact.
-
-### Removed
-- Removed current-protocol Reduced Mode sample rejection, rejection pools, 11-bit word-share packing, and per-word Position re-derivation.
-- Removed Blinded Identity / MKI from the active v0.7.0 software specification.
-
 ## [0.6.0] - 2026-05-10
 
 ### Added

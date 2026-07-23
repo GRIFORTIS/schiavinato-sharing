@@ -6,18 +6,29 @@
   "properties": {
     "version": {
       "type": "string",
-      "description": "Spec version these vectors target (e.g., v0.4.0)."
+      "description": "Specification version targeted by this vector set."
     },
     "generated": {
       "type": "string",
-      "description": "ISO-8601 UTC timestamp for when this file was generated."
+      "description": "ISO-8601 UTC timestamp for this vector set."
+    },
+    "notes": {
+      "type": "array",
+      "items": { "type": "string" }
     },
     "vectors": {
       "type": "array",
-      "items": { "type": "object" },
-      "description": "Vector objects (schema to be refined as the format stabilizes)."
+      "items": {
+        "type": "object",
+        "required": ["id", "type", "description"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "description": { "type": "string" }
+        },
+        "additionalProperties": true
+      }
     }
   },
   "additionalProperties": false
 }
-

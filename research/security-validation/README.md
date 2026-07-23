@@ -4,13 +4,19 @@ This directory contains cryptographic security validation experiments for Schiav
 
 ## Purpose
 
-Validate two key security properties:
+Validate key security properties:
 
 1. **Experiment 1: Entropy Conservation Test**  
    Validates that k-1 shares + checksum constraints do not reduce effective search space below 2^256
 
 2. **Experiment 2: Adversarial Constraint Solving**  
    Simulates sophisticated adversary attempting to solve constraint system computationally
+
+3. **LLR Uniformity Check**  
+   Pending publication. This planned lightweight, dependency-free check will exhaustively enumerate GF(2053) to verify that k-1 shares of a single word polynomial leave all 2053 candidate secrets equiprobable at every unseen position (Proposition 7.1, v0.7.0 whitepaper).
+
+4. **QR Hand-Transcription Estimate**  
+   Pending publication. This planned estimate will count dark modules to hand-mark on share QRs (Full vs Compact, template-assisted), supporting QR workload discussion in the whitepaper.
 
 ## Quick Start
 

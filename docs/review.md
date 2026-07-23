@@ -1,42 +1,48 @@
-# Review & feedback
+# Review & Feedback
 
 Schiavinato Sharing is **experimental** and **not audited**.
 
-We welcome review from cryptographers, wallet architects, implementers, and custody practitioners.
+We welcome review from cryptographers, wallet architects, implementers, custody practitioners, and people who have run real-world key-backup ceremonies.
 
-Prototype implementations are work in progress and may lag the current v0.6.0 specification. Please treat the specification, whitepaper, and test vectors as the review targets; implementation repositories should declare explicit spec/vector support before being treated as conformant.
+Prototype implementations may lag the current specification. Treat the whitepaper, `manual_spec/`, `software_spec/`, and `test_vectors/` as the review targets. Implementation repositories should declare explicit spec/vector support before being treated as conformant.
 
-## What to review
+## High-Value Review Targets
 
-High-value review targets:
+- **Arithmetic confidentiality**: Shamir/LSSS secrecy over unrestricted `GF(2053)` shares, including deterministic row, column, and GIC fields.
+- **Linear consistency layer**: the `d = 4` product-code argument, passive-error detection, and single-error repair-candidate claim.
+- **Per-share audit**: Share Audit ceremony, MAT construction, Manifest Audit Hash model, and the exact compromise conditions for each check.
+- **MAT security**: the `1/2053` per-column false-accept bound, Split-Key Manifest reasoning, and what MAT does not authenticate.
+- **RBT / RVA separation**: RBT as protocol-object binding and RVA as wallet-context verification.
+- **Full / Compact profiles**: Full complete-table serialization, Compact word-only serialization, Transport Hash omission in Compact, and paper-table recomputation requirements.
+- **Manual fallback**: recovery procedure, BIP39 language handling, out-of-range field-element rendering, Lagrange coefficients, and expected operator checkpoints.
+- **Threat model**: trusted devices/peripherals, assisted ceremonies, durable artifacts, inheritance scenarios, and denial/replacement attacks.
+- **Test vectors**: v0.7.0 arithmetic, payload bytes, RBT, Transport Hash, Manifest Audit Hash, MAT, and recovery values.
 
-- **Arithmetic confidentiality**: the information-theoretic secrecy claim for the unrestricted `GF(2053)` Shamir layer, including the interaction with deterministic row, column, and GIC fields.
-- **Linear consistency layer**: the minimum-distance argument (`d = 4`) and whether the row/column/GIC construction detects exactly the passive error classes claimed.
-- **Reduced Mode**: the range-restriction leakage/bias bound, the usefulness of the QR/manual-transcription trade-off, and whether this mode should remain in the protocol.
-- **Substitution detection model**: the separation between passive consistency checks, manifest audit hashes, mnemonic-bound BI, wallet-bound RVA, and the conditions under which each check fails.
-- **Manifest metadata sensitivity**: whether the treatment of raw GIC maps, audit hashes, manifest separation, and verification-oracle risk is correct and clearly scoped.
-- **Threat model and operational gaps**: assumptions about trusted devices/peripherals, assisted ceremonies, durable artifacts, inheritance scenarios, and manual fallback.
-- **Test vectors**: clarity, completeness, and usefulness for independent reproduction of the whitepaper claims.
+## Secondary Review Targets
 
-Secondary review targets:
+- **DRK resume mode**: HMAC-SHA256 coefficient derivation and the shift from information-theoretic to computational coefficient generation for that mode.
+- **QR workload claims**: structural hand-mark counts for Full vs Compact and whether the assumptions are clear.
+- **Printer/output tiers**: whether secret-bearing and non-secret-but-sensitive output boundaries are understandable.
+- **Recursive composition**: whether layer semantics, metadata, and MAT independence are clear.
 
-- **Digital envelope specification**: Core Payload encoding, QR prefix/decode rules, and versioning/backwards-compatibility boundaries.
-- **Workflow documentation**: non-normative v0.6.0 flow diagrams in [`software-flows/`](software-flows/) showing ceremony sequence, resume modes, printer-tier branching, and coefficient-generation paths.
-
-Out of scope for the first review pass:
+## Out of Scope for First Review Pass
 
 - Treating prototype implementations as conformant references.
 - Operational deployment recommendations for real funds.
-- UI/UX polish outside its impact on safety or recoverability.
+- UI polish unrelated to safety, recoverability, or auditability.
+- Hardware manufacturing details for manual RNG tools.
 
-## How to contribute feedback
-- Open an issue in the spec repo:
-  - **Spec review** (protocol/spec clarity/correctness)
-  - **Security analysis** (threat model and security properties)
-  - **Reduced Mode** (bias analysis and whether the mode should exist)
-  - **Operational model** (custody workflows, recovery context, and artifact handling)
-- Or open a pull request with edits to `manual_spec/`, `software_spec/`, `test_vectors/`, or the whitepaper.
+## How to Contribute Feedback
 
-## Proposal-first for changes
-If you propose a behavior change (spec or code), please start with a proposal in `proposals/`.
+Open an issue in the spec repo:
 
+- **Spec review**: protocol/spec clarity and correctness.
+- **Security analysis**: threat model, proofs, and security properties.
+- **Implementation conformance**: software spec, payloads, RBT, and vectors.
+- **Operational model**: custody workflows, recovery context, artifact handling, and audit procedures.
+
+Pull requests are welcome for `manual_spec/`, `software_spec/`, `test_vectors/`, docs, and the whitepaper.
+
+## Proposal-First for Behavior Changes
+
+If you propose a protocol behavior change, start with a proposal in [`../proposals/`](../proposals/).

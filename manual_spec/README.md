@@ -1,373 +1,511 @@
-# Schiavinato Sharing — Manual Specification (`manual_spec`)
+# Schiavinato Sharing - Manual Specification (`manual_spec`)
 
-[Jump to Manual recovery](#manual-recovery)
+[Jump to Share Audit](#share-audit) | [Jump to Manual Recovery](#manual-recovery) | [Jump to Manual Sharing](#manual-sharing)
 
-> ## ⚠️ WARNING: EXPERIMENTAL SOFTWARE ⚠️
-> 
->DO NOT USE IT FOR REAL FUNDS!
+> ## WARNING: EXPERIMENTAL SOFTWARE
 >
-> Schiavinato Sharing specification and implementations have NOT been audited. Use for testing, learning, and experimentation only. See [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md) for details.
+> DO NOT USE IT FOR REAL FUNDS.
 >
->We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
+> Schiavinato Sharing specifications and prototype implementations have not been audited. Use for testing, learning, and review only. See the organization security policy for private disclosures.
 
-This document defines the manual execution protocol for Schiavinato Sharing (v0.6.0).
+This document defines the manual execution protocol for Schiavinato Sharing v0.7.0. It is recovery-first: recovery and audit are the continuity-critical procedures, while fully manual sharing is a fallback for cases where software cannot be trusted or used.
 
 Normative keywords **MUST**, **MUST NOT**, **SHOULD**, **MAY** are used as requirements.
 
-For ease of reference in time-critical scenarios, the recovery procedure appears first.
-
 ## Scope
-This spec defines:
-- Field math requirements and representations
-- Paper share semantics (rows, row checksums, column checksums, Global Integrity Check (GIC), and required header fields)
-- Manual share generation and manual recovery procedures
-- Validation + failure semantics (**STOP / WARN / INFO**) to prevent silent mistakes
 
-Everything related to digital envelopes (QR / payload encoding / metadata bytes) is specified in `software_spec/`.
+This spec covers:
 
-## Non-negotiable constraints
-- **1-based BIP39 word indexing** MUST be used throughout: `abandon = 1`, `zoo = 2048`.
-- The input and final recovered mnemonic indices MUST be in \(\{1,\dots,2048\}\).
-- The scheme operates in the prime field **\(GF(2053)\)** (modulus \(p = 2053\), the smallest prime exceeding 2048).
-- Threshold \((k, n)\) with \(2 \leq k \leq n \leq 2052\); share indices MUST be distinct nonzero elements of \(GF(2053)\). See [Nesting](#nesting) for \(k = 1\).
-- The **BIP39 passphrase** ("25th word") is **NOT** stored or recovered. It MUST be backed up separately and re-entered at wallet restore, if necessary.
-- Share payload values are computed in \(GF(2053)\), so intermediate/share values MAY be in \(\{0,2049,2050,2051,2052\}\). These MUST be represented as indices (not mapped to BIP39 words).
-- Supported BIP39 word counts are \(\ell \in \{12,15,18,21,24\}\).
-- Nested sharing is possible; arithmetic is identical per layer. See [Nesting](#nesting).
+- field arithmetic over `GF(2053)`;
+- human-readable Share and Manifest semantics;
+- Share Audit without combining Shares;
+- manual recovery from a valid threshold set;
+- optional MAT generation and verification;
+- fully manual share generation;
+- STOP / WARN / INFO failure semantics.
 
-## Conventions (human-readable encoding)
-### Indices-first rule
-- The canonical value representation is its **index** (a decimal integer).
-- A word label MAY be appended as an annotation (for usability), in any language.
+Digital-envelope byte layouts, QR encodings, text exports, and software decode pipelines belong in `software_spec/`. The whitepaper is the protocol analysis and security reference.
+
+## Non-Negotiable Constraints
+
+- Field operations are modulo `2053`.
+- BIP39 input and recovered output use 1-based word indices: `abandon = 1`, `zoo = 2048`.
+- Supported BIP39 word counts are `12, 15, 18, 21, 24`.
+- Threshold `(k, n)` satisfies `2 <= k <= n <= 2052`, except the degenerate replication case `k = 1`.
+- Share indices `x` are distinct nonzero field elements.
+- Shamir coefficients are sampled independently and uniformly from `0..2052`; no coefficient has a "must be nonzero" exception.
+- The BIP39 passphrase ("25th word") is external. It is never encoded in Shares and must be backed up separately.
+- Intermediate Share values may be `0, 2049, 2050, 2051, 2052`. These are valid `GF(2053)` field elements, not BIP39 words.
+- In BIP39 mode, the selected BIP39 wordlist language MUST be printed prominently on each Share and Manifest.
+
+## Human-Readable Representation
+
+### Index-First Rule
+
+The canonical written value is the decimal field element. A word label MAY be appended for readability.
 
 Examples:
-- In-range: `699-firm` (recommended), `699` (allowed)
-- Out-of-range: `0000-0000`, `2049-2049`, `2050-2050`, `2051-2051`, `2052-2052` (strongly recommended); bare index (e.g., `2052`) is allowed
 
-### Padding, spacing, and hyphen normalization
-Implementations and operators MAY use padding and spacing without changing meaning (e.g., `699-firm`, `0699 - firm`, or mixed styles).
+- In range: `0699-firm` or `699`
+- Out of range: `0000-0000`, `2049-2049`, `2050-2050`, `2051-2051`, `2052-2052`
 
-Normative parsing rule:
-- When a value is written as text, the **leading decimal integer** is the value in \(GF(2053)\). Any suffix is an annotation.
+Out-of-range values SHOULD be visually labeled or explained as numeric `GF(2053)` field elements, not missing BIP39 words.
 
-### Paper share layout
-- A share is a single page.
-- The share table has 4 columns and \(r + 1\) rows, where \(r = \ell / 3\):
-  - **Rows 1 through \(r\)**: three word values followed by the row checksum for that row.
-  - **Footer row**: three column checksums (\(C_1, C_2, C_3\)) followed by the printed GIC.
+When parsing a written value, the leading decimal integer is authoritative; suffixes are annotations.
 
-## Paper header (shares)
+### Share Header
 
-### Required fields
-- Protocol name and version: MUST clearly identify the protocol and version.
-- Threshold \(k\): MUST be present.
-- Share number: share index \(x\) MUST be present. The "\(x\) of \(n\)" form is recommended; \(n\) MAY be omitted.
+Each Share MUST identify:
 
-### Recommended fields (non-secret)
-- Seed name (label)
-- Creation date
-- Derivation hint (e.g., `BIP84`, `HW-Def`)
-- Recovery Verification Address (RVA) — truncated (e.g., `bc1qar0s...zzwf5mdq`). See [RVA](#recovery-verification-address-rva).
-- Passphrase indicator/hint: MAY indicate whether a passphrase is required and where to find it; MUST NOT include the passphrase itself
+- protocol name and version;
+- threshold `k`;
+- Share index `x`;
+- original word count;
+- BIP39 wordlist language in BIP39 mode;
+- MAT selection: none, single, or dual.
 
-These fields are share-local recovery metadata. They are outside the \(GF(2053)\) arithmetic and exist to make a valid threshold recovery set self-describing. If RVA-based verification is relied upon, sufficient wallet-context hint SHOULD be recoverable from the shares themselves rather than from a separate manifest alone.
+Each Share SHOULD also include:
 
-## Recovery Verification Address (RVA)
+- backup label and creation date;
+- passphrase presence/hint, without the passphrase itself;
+- wallet or derivation hint;
+- RVA, if used;
+- layer path for nested sharing, if applicable.
 
-The RVA is a user-supplied truncated verification address derived from the intended target wallet, written as the first 8 and last 8 characters of the address (e.g., `bc1qar0s...zzwf5mdq`). It is external metadata, not part of the sharing arithmetic.
+These fields are recovery metadata. They are not part of the Shamir arithmetic.
 
-Recommended default: the first receive address of the intended wallet. Advanced users MAY intentionally choose a different address that better matches their operational setup (e.g., a known canary address).
+### Share Table Layout
 
-The RVA is derived from the mnemonic together with the intended wallet context (derivation settings, wallet profile, and BIP39 passphrase if applicable). The corresponding derivation hint SHOULD therefore be recorded on each share or otherwise replicated so that any valid threshold set is sufficient for RVA-based verification.
+Let `r = word_count / 3`.
 
-After recovery, recomputing the same target-wallet address and comparing to the recorded RVA detects share substitution and wallet-context errors. For bech32/bech32m addresses, the truncated form yields approximately \(2^{60}\) matching power.
+Without MAT, the human-readable Share table has 4 columns:
 
-The RVA requires a one-time computational derivation during setup. In fully electronics-free ceremonies, this field MAY be omitted, accepting reduced post-recovery substitution detection.
+- three word-share values;
+- one row checksum.
 
-## Optional share manifest (non-secret, sensitive)
-A manifest is optional. Its purpose is operational: carry cross-share or session-level metadata, track where shares are stored, and reduce recovery uncertainty.
+The footer row contains:
 
-### Required fields (if present)
-- Protocol name and version (clear identification)
-- Scheme \(k\)-of-\(n\)
+- three column checksums;
+- printed GIC.
 
-### Recommended fields (if present)
-- Optional session identification fields such as seed label/date.
-- Session-level verification metadata such as Session Batch ID and Blinded Identity when available from software-generated shares.
-- An optional share list mapping share number to printed GIC, plus any custodian/location note.
-- Computational-mode audit records such as per-share Audit Hash / Audit QR.
+With single MAT, the table has one additional MAT column. With dual MAT, it has two additional MAT columns. MAT applies only to word rows; footer cells under MAT columns are marked not applicable.
 
-The manifest MAY duplicate selected share-local recovery hints for convenience, but such copies are secondary. If RVA-based verification is expected, the manifest SHOULD NOT be the only place where the wallet context is recorded.
+MAT values are not interpolated and are not part of the arithmetic Share.
 
-### Sensitivity and leakage
-The manifest is non-secret but sensitive. If it records at least \(k\) distinct printed GIC values from one sharing session, those values reveal one linear relation of the mnemonic over \(GF(2053)\). This is one \(GF(2053)\)-valued quantity, so the leakage is upper-bounded by \(\log_2(2053) \approx 11.0035\) bits; the exact reduction over the BIP39-valid mnemonic space depends on how that relation is distributed on the valid domain. This is small relative to BIP39 entropy, but it means a manifest is not information-theoretically neutral.
+## Constants and Notation
 
-### Co-storage prohibition
-If a manifest exists, it MUST NOT be stored with any share.
+### Layout
 
-## Data model and notation
+- Word values: `w_1, ..., w_l`
+- Row count: `r = l / 3`
+- Row `j` contains `w_{3j-2}, w_{3j-1}, w_{3j}`
+- Column `c` is one of `1, 2, 3`
 
-### Field and layout
-- Field operations are modulo \(p=2053\).
-- Mnemonic word indices: \(w_1,\ldots,w_\ell \in \{1,\ldots,2048\}\).
-- Row count: \(r=\ell/3\).
-- Words are arranged as \(r\) rows × 3 columns. Word \(w_i\) is in row \(\lceil i/3 \rceil\) and column \(((i-1) \bmod 3) + 1\).
+### Domain Separators
 
-### Notation
-To avoid ambiguity between share-state and recovered values, this spec uses:
-- \(\alpha[x]\): value \(\alpha\) as written on the share with index \(x\)
-- \(\alpha\): recovered value at \(x=0\)
+- Row tags: `tauR_j = j`
+- Column tags: `tauC_1 = 100`, `tauC_2 = 200`, `tauC_3 = 300`
+- Row total: `T_R = r(r+1)/2`
+- Column total: `T_C = 100 + 200 + 300 = 600`
 
-### Domain separators (tags and totals)
-- **Row tags**: \(\tau^R_j = j\) for \(j = 1, \ldots, r\).
-- **Column tags**: \(\tau^C_1 = 10\), \(\tau^C_2 = 20\), \(\tau^C_3 = 30\).
-- **Row total**: \(T_R = \sum_{j=1}^{r} j = r(r+1)/2\).
-- **Column total**: \(T_C = 10 + 20 + 30 = 60\) (invariant across configurations).
-
-Column tags are chosen from \(\{10, 20, 30\}\) to be disjoint from row indices \(\{1, \ldots, r\}\) for all supported mnemonic lengths (\(r \leq 8\)), enabling unambiguous error attribution.
-
-| \(\ell\) | \(r\) | \(T_R\) | \(T_C\) |
+| Word count | Rows `r` | `T_R` | `T_C` |
 |---:|---:|---:|---:|
-| 12 | 4 | 10 | 60 |
-| 15 | 5 | 15 | 60 |
-| 18 | 6 | 21 | 60 |
-| 21 | 7 | 28 | 60 |
-| 24 | 8 | 36 | 60 |
+| 12 | 4 | 10 | 600 |
+| 15 | 5 | 15 | 600 |
+| 18 | 6 | 21 | 600 |
+| 21 | 7 | 28 | 600 |
+| 24 | 8 | 36 | 600 |
 
-### Row checksum
-Share-state row checksum consistency (per share \(x\)):
+### Share-State Notation
 
-\[
-R_j[x] = (w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x] + j) \bmod 2053
-\]
+- `A[x]`: value `A` as printed on Share `x`
+- `A`: recovered value at `x = 0`
 
-The row tag \(+j\) provides positional binding: row-swap errors are detected.
+## Failure Semantics
 
-### Column checksum
-Share-state column checksum consistency (per share \(x\)):
+- **STOP**: do not proceed until the problem is corrected.
+- **WARN**: strong warning; proceed only with explicit acknowledgement.
+- **INFO**: informational only.
 
-\[
-C_c[x] = \left(\sum_{i \in \text{col } c} w_i[x] + \tau^C_c\right) \bmod 2053
-\]
+Minimum STOP conditions:
 
-where \(\tau^C_1 = 10\), \(\tau^C_2 = 20\), \(\tau^C_3 = 30\).
+- duplicate Share indices in a recovery set;
+- any Share index `x = 0`;
+- row checksum mismatch;
+- column checksum mismatch;
+- printed GIC mismatch;
+- Lagrange sanity-check failure;
+- recovered final BIP39 index outside `1..2048`;
+- MAT mismatch for a required MAT column;
+- Manifest Audit Hash mismatch, when that check is being performed;
+- unresolved mismatch between paper reading and digital payload.
 
-### Global Integrity Check (GIC)
-Each share stores one GIC value. The GIC includes the share index binding and the row/column totals.
+## Lagrange Coefficients
 
-Per share \(x\), the GIC MUST satisfy all three equivalent checks:
+Lagrange coefficients depend only on public Share indices and contain no secret information. They may be computed on any device, including an untrusted one, or copied from a verified table.
 
-\[
-GIC[x] = \left(\sum_{i=1}^{\ell} w_i[x] + T_R + T_C + x\right)\bmod 2053
-\]
+| Scheme | Shares | Coefficients `gamma` |
+|---|---|---|
+| 2-of-3 | `{1,2}` | `(2, 2052)` |
+|  | `{1,3}` | `(1028, 1026)` |
+|  | `{2,3}` | `(3, 2051)` |
+| 2-of-4 | `{1,2}` | `(2, 2052)` |
+|  | `{1,3}` | `(1028, 1026)` |
+|  | `{1,4}` | `(1370, 684)` |
+|  | `{2,3}` | `(3, 2051)` |
+|  | `{2,4}` | `(2, 2052)` |
+|  | `{3,4}` | `(4, 2050)` |
+| 3-of-5 | `{1,2,3}` | `(3, 2050, 1)` |
+|  | `{1,2,4}` | `(687, 2051, 1369)` |
+|  | `{1,2,5}` | `(1029, 1367, 1711)` |
+|  | `{1,3,4}` | `(2, 2051, 1)` |
+|  | `{1,3,5}` | `(1285, 512, 257)` |
+|  | `{1,4,5}` | `(686, 1367, 1)` |
+|  | `{2,3,4}` | `(6, 2045, 3)` |
+|  | `{2,3,5}` | `(5, 2048, 1)` |
+|  | `{2,4,5}` | `(1372, 2048, 687)` |
+|  | `{3,4,5}` | `(10, 2038, 6)` |
 
-\[
-GIC[x] = \left(\sum_{j=1}^{r} R_j[x] + T_C + x\right)\bmod 2053
-\]
+For any recovery set `{x_1, ..., x_k}`, the coefficient for Share `x_j` is:
 
-\[
-GIC[x] = \left(\sum_{c=1}^{3} C_c[x] + T_R + x\right)\bmod 2053
-\]
+```text
+gamma_j = product over i != j of x_i / (x_i - x_j) mod 2053
+```
 
-## Failure semantics (STOP / WARN / INFO)
-- **STOP**: Must not proceed. Correct inputs and redo the step.
-- **WARN**: Strong warning; proceed only with explicit acknowledgement.
-- **INFO**: Informational.
+Validate the coefficients before recovery:
 
-Minimum **STOP** conditions for manual execution:
-- Any per-share row checksum mismatch.
-- Any per-share column checksum mismatch.
-- Any per-share GIC mismatch (any of the three equivalent checks).
-- Duplicate share indices \(x\) in the recovery set, or any \(x=0\).
-- Lagrange coefficient sanity check failure.
-- Any recovered mnemonic index outside \(\{1,\ldots,2048\}\).
+```text
+sum(gamma_j * x_j) mod 2053 = 0
+```
 
-## Manual recovery
-### Inputs
-- Any \(k\) shares from the same scheme
-- BIP39 word list (1-based indexing)
-- Lagrange coefficients for the chosen share indices \(x\) (from the table below, or computed on any device — Lagrange coefficients contain no secret information)
-- Row total \(T_R\) and column total \(T_C = 60\) for the word count
+Failure is STOP.
 
-#### Pre-computed Lagrange coefficients in \(GF(2053)\)
+## Share Audit
 
-| Scheme | Shares | Coefficients \((\gamma)\) |
-|--------|--------|---------------------------|
-| **2-of-3** | \(\{1, 2\}\) | \((2, 2052)\) |
-| | \(\{1, 3\}\) | \((1028, 1026)\) |
-| | \(\{2, 3\}\) | \((3, 2051)\) |
-| **2-of-4** | \(\{1, 2\}\) | \((2, 2052)\) |
-| | \(\{1, 3\}\) | \((1028, 1026)\) |
-| | \(\{1, 4\}\) | \((1370, 684)\) |
-| | \(\{2, 3\}\) | \((3, 2051)\) |
-| | \(\{2, 4\}\) | \((2, 2052)\) |
-| | \(\{3, 4\}\) | \((4, 2050)\) |
-| **3-of-5** | \(\{1, 2, 3\}\) | \((3, 2050, 1)\) |
-| | \(\{1, 2, 4\}\) | \((687, 2051, 1369)\) |
-| | \(\{1, 2, 5\}\) | \((1029, 1367, 1711)\) |
-| | \(\{1, 3, 4\}\) | \((2, 2051, 1)\) |
-| | \(\{1, 3, 5\}\) | \((1285, 512, 257)\) |
-| | \(\{1, 4, 5\}\) | \((686, 1367, 1)\) |
-| | \(\{2, 3, 4\}\) | \((6, 2045, 3)\) |
-| | \(\{2, 3, 5\}\) | \((5, 2048, 1)\) |
-| | \(\{2, 4, 5\}\) | \((1372, 2048, 687)\) |
-| | \(\{3, 4, 5\}\) | \((10, 2038, 6)\) |
+Share Audit validates exactly one physical Share before recovery. It does not combine Shares and does not recover the mnemonic.
 
-### Step 1: Validate each share (STOP on failure)
-For each share used in recovery:
-- Read the share index \(x\) from the header.
-- Validate every row checksum on that share:
-  - For each row \(j\): \((w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x] + j) \bmod 2053 \stackrel{?}{=} R_j[x]\)
-- Validate every column checksum on that share:
-  - For each column \(c\): \(\left(\sum_{i \in \text{col } c} w_i[x] + \tau^C_c\right) \bmod 2053 \stackrel{?}{=} C_c[x]\)
-- Validate the GIC using any of the three equivalent checks:
-  - \(\left(\sum_{i=1}^{\ell} w_i[x] + T_R + T_C + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
-  - \(\left(\sum_{j=1}^{r} R_j[x] + T_C + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
-  - \(\left(\sum_{c=1}^{3} C_c[x] + T_R + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
+Inputs may include:
 
-### Step 2: Validate the Lagrange coefficients (sanity check, STOP on failure)
-For share indices \(x_1,\dots,x_k\) and corresponding coefficients \(\gamma_1,\dots,\gamma_k\), check:
+- one physical Share;
+- its matching Manifest entry;
+- Whole-Key MAT material, or both Split-Key Manifest halves;
+- digital payload / Audit QR when available.
 
-\[
-(\gamma_1 x_1 + \gamma_2 x_2 + \dots + \gamma_k x_k) \bmod 2053 = 0
-\]
+Procedure:
 
-If not, the coefficients or arithmetic are wrong. STOP and fix before proceeding.
+1. Confirm protocol version, word count, Share index, threshold, BIP39 language, layer path, and MAT selection.
+2. Capture one fixed reading of the physical Share.
+3. Validate every row checksum.
+4. Validate every column checksum.
+5. Validate the printed GIC.
+6. If MAT is selected, reconstruct MAT keys privately when needed and verify every required MAT tag.
+7. If a digital payload and Manifest Audit Hash are available, validate the payload against the fixed paper reading and compare the hash.
 
-### Step 3: Recover values by row-by-row interpolation (STOP on row mismatch)
-For any value position \(\alpha\), recover at \(x=0\):
+Repeating arithmetic over the same fixed reading is allowed to exclude operator error. A failed artifact is never edited, retagged, or resubmitted with altered values. An unresolved missing, unreadable, corrupted, substituted, or inconsistent Share triggers Recovery followed by a new Sharing Ceremony.
 
-\[
-\alpha = (\gamma_1 \alpha[x_1] + \gamma_2 \alpha[x_2] + \dots + \gamma_k \alpha[x_k])\bmod 2053
-\]
+## Row, Column, and GIC Validation
 
-Recover row-by-row:
-- Recover \(w_{3j-2}, w_{3j-1}, w_{3j}\) and \(R_j\).
-- Validate the recovered row checksum immediately:
-  - \((w_{3j-2} + w_{3j-1} + w_{3j} + j)\bmod 2053 \stackrel{?}{=} R_j\) — **STOP** if not. Recompute this row before proceeding.
+### Row Check
 
-### Step 4: Global validation (STOP on mismatch)
+For row `j` on Share `x`:
+
+```text
+R_j[x] = (w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x] + j) mod 2053
+```
+
+### Column Check
+
+For column `c` on Share `x`:
+
+```text
+C_c[x] = (sum of word values in column c on Share x + tauC_c) mod 2053
+```
+
+where `tauC = 100, 200, 300`.
+
+### Printed GIC Check
+
+The printed GIC is share-bound by adding the Share index `x`.
+
+Any of these equivalent checks may be used:
+
+```text
+GIC[x] = (sum all word values on Share x + T_R + T_C + x) mod 2053
+GIC[x] = (sum all row checksums on Share x + T_C + x) mod 2053
+GIC[x] = (sum all column checksums on Share x + T_R + x) mod 2053
+```
+
+## Manual Recovery
+
+Inputs:
+
+- any valid threshold set of `k` Shares from the same session and layer;
+- BIP39 wordlist in the printed language;
+- Lagrange coefficients for the selected Share indices;
+- row/column constants for the word count.
+
+Recommended precondition: complete Share Audit for each available Share when MAT or Manifest audit data exists.
+
+### Step 1: Validate Each Share
+
+For each Share:
+
+1. Confirm header fields and Share index.
+2. Validate all row checksums.
+3. Validate all column checksums.
+4. Validate the printed GIC.
+
+Any mismatch is STOP.
+
+### Step 2: Validate Lagrange Coefficients
+
+Check:
+
+```text
+sum(gamma_j * x_j) mod 2053 = 0
+```
+
+Any mismatch is STOP.
+
+### Step 3: Recover Row by Row
+
+For any value position `A`, recover:
+
+```text
+A = sum(gamma_j * A[x_j]) mod 2053
+```
+
+For each row:
+
+1. Recover the three word values and row checksum.
+2. Immediately validate the recovered row checksum:
+
+```text
+(w_{3j-2} + w_{3j-1} + w_{3j} + j) mod 2053 = R_j
+```
+
+Mismatch is STOP. Recompute or re-read that row before continuing.
+
+### Step 4: Global Validation
+
 After all rows pass:
-- Recover the three column checksums \(C_1, C_2, C_3\) by interpolation.
-- Validate each:
-  - \(\left(\sum_{i \in \text{col } c} w_i + \tau^C_c\right) \bmod 2053 \stackrel{?}{=} C_c\)
-- Recover the GIC by interpolation. The \(+x\) terms cancel automatically (since \(\sum \gamma_i x_i = 0\)). The row tags and column tags do **not** cancel (they are in the constant terms).
-- Validate the recovered GIC using any equivalent path:
-  - \(\left(\sum_{i=1}^{\ell} w_i + T_R + T_C\right)\bmod 2053 \stackrel{?}{=} GIC\)
-  - \(\left(\sum_{j=1}^{r} R_j + T_C\right)\bmod 2053 \stackrel{?}{=} GIC\)
-  - \(\left(\sum_{c=1}^{3} C_c + T_R\right)\bmod 2053 \stackrel{?}{=} GIC\)
 
-### Step 5: Convert indices to BIP39 words and restore
-- Convert recovered indices \(w_i\) using the 1-based BIP39 word list.
-- Restore in the target wallet.
-  - If restoring into a **BIP39** wallet and it rejects the mnemonic, **STOP**: redo recovery arithmetic/transcription and verify passphrase/derivation details.
-  - If restoring into a wallet that uses a **non-BIP39 mnemonic standard**, BIP39 checksum validation is **not applicable** (out of scope for this manual spec); validate using that wallet's rules.
+1. Recover the three column checksums by interpolation.
+2. Validate each recovered column checksum.
+3. Recover the share-bound GIC values by interpolation if available.
 
-### Step 6: Verify RVA (recommended, if recorded)
-If a truncated RVA was recorded on the shares or manifest:
-- Derive the first receive address at the recorded derivation path using the recovered mnemonic (and passphrase, if applicable).
-- Compare the first 8 and last 8 characters against the recorded RVA.
-- Match confirms the recovered mnemonic, passphrase, and derivation path are correct.
-- Mismatch is a **WARN**: possible share substitution, wrong passphrase, or wrong derivation path.
+The `+x` terms cancel because of the Lagrange sanity check. The recovered base GIC must satisfy:
 
-### Cross-share polynomial consistency check (optional, requires more than \(k\) shares)
-If more than \(k\) shares are available, the extra shares satisfy public linear consistency relations (a standard Shamir/Reed-Solomon property, not Schiavinato-specific). This provides an additional substitution detection path within the existing \(GF(2053)\) arithmetic, at the operational cost of requiring physical access to extra shares.
+```text
+G = (sum recovered words + T_R + T_C) mod 2053
+G = (sum recovered row checksums + T_C) mod 2053
+G = (sum recovered column checksums + T_R) mod 2053
+```
 
-For consecutive share indices, the simplest checks are (applied to any fixed value position — word, row checksum, column checksum, or printed GIC — across shares):
+The row and column tags do not cancel; they are embedded in the constant terms.
 
-- **2-of-3** (degree 1, 3 shares available):
-  `share1 - 2×share2 + share3 ≡ 0 (mod 2053)`
+### Step 5: Convert to BIP39 Words
 
-- **2-of-4** (degree 1, 3+ shares available):
-  `share1 - 2×share2 + share3 ≡ 0 (mod 2053)`, and/or
-  `share2 - 2×share3 + share4 ≡ 0 (mod 2053)`
+Every recovered final mnemonic index must be in `1..2048`. Any value outside that range is STOP.
 
-- **3-of-5** (degree 2, 4+ shares available):
-  `share1 - 3×share2 + 3×share3 - share4 ≡ 0 (mod 2053)`, and/or
-  `share2 - 3×share3 + 3×share4 - share5 ≡ 0 (mod 2053)`
+Use the printed BIP39 wordlist language to convert indices to words. If the target wallet rejects the mnemonic, STOP and redo recovery arithmetic/transcription before assuming wallet-context failure.
 
-If any relation fails, suspect cross-session mixing, tampering, or transcription error. If all pass, proceed with normal recovery; this does **not** replace row/column/GIC validation or post-recovery checks.
+### Step 6: Post-Recovery Checks
 
-## Manual share generation
-### Inputs
-- A valid BIP39 mnemonic (12/15/18/21/24 words)
-- Threshold scheme \(k\)-of-\(n\) with \(2 \leq k \leq n \leq 2052\) (if \(k=1\), the share values are copies of the secret)
-- A method to generate uniform randomness for polynomial coefficients
+If recorded:
 
-### Step 1: Per-word polynomials
-For each word index \(w_i\), construct a Shamir polynomial over \(GF(2053)\):
+- verify the BIP39 checksum;
+- verify RBT in software-assisted recovery;
+- verify RVA by deriving the intended target wallet address;
+- verify passphrase and derivation context.
 
-\[
-f_{w_i}(x) = w_i + a_1 x + \dots + a_{k-1} x^{k-1} \bmod 2053
-\]
+RVA mismatch is WARN: possible wrong passphrase, wrong derivation path, share substitution, or wallet-context error.
 
-- Each coefficient \(a_1,\dots,a_{k-1}\) MUST be sampled independently and uniformly from \(\{0,\dots,2052\}\). Shamir sharing samples from the full field; an individual word polynomial may have degree lower than \(k-1\) without changing the scheme-level threshold construction.
+## Manual Authentication Layer (MAT)
 
-For share indices \(x \in \{1,\ldots,n\}\), compute:
-- \(w_i[x] = f_{w_i}(x)\bmod 2053\)
+MAT authenticates word rows before recovery. It is optional and independent of the Shamir arithmetic.
 
-### Step 2: Row checksums (linear derivation + incremental validation)
-For each row \(j\), the row checksum polynomial is:
+Modes:
 
-\[
-f_{R_j}(x) = \bigl(f_{w_{3j-2}}(x) + f_{w_{3j-1}}(x) + f_{w_{3j}}(x)\bigr) + j \bmod 2053
-\]
+- no MAT;
+- single MAT: one tag column;
+- dual MAT: two independently keyed tag columns.
 
-The row tag \(+j\) is added to the constant term only. Compute:
-- \(R_j[x] = f_{R_j}(x)\bmod 2053\)
+MAT applies only to word rows. It does not tag the footer row. MAT values are not interpolated.
 
-Per share \(x\), validate immediately (**STOP** on mismatch):
-- \((w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x] + j) \bmod 2053 \stackrel{?}{=} R_j[x]\)
+For Share `x`, row `j`, and MAT column `c`, let the three word values be:
 
-### Step 3: Column checksums (linear derivation + validation)
-For each column \(c \in \{1, 2, 3\}\), the column checksum polynomial is:
+```text
+W_j = (W_{j,1}, W_{j,2}, W_{j,3})
+```
 
-\[
-f_{C_c}(x) = \sum_{i \in \text{col } c} f_{w_i}(x) + \tau^C_c \bmod 2053
-\]
+For each Share and MAT column, sample independent weights:
 
-where \(\tau^C_1 = 10\), \(\tau^C_2 = 20\), \(\tau^C_3 = 30\). Compute:
-- \(C_c[x] = f_{C_c}(x)\bmod 2053\)
+```text
+u_1, u_2, u_3 in 0..2052
+```
 
-Per share \(x\), validate (**STOP** on mismatch):
-- \(\left(\sum_{i \in \text{col } c} w_i[x] + \tau^C_c\right) \bmod 2053 \stackrel{?}{=} C_c[x]\)
+For each word row, sample an independent Row Pad:
 
-### Step 4: GIC construction and validation
-For each share \(x\), compute:
+```text
+b_j in 0..2052
+```
 
-\[
-GIC[x] = \left(\sum_{i=1}^{\ell} w_i[x] + T_R + T_C + x\right)\bmod 2053
-\]
+The printed MAT tag is:
 
-Then validate (**STOP** on mismatch) using all three equivalent checks:
-- \(\left(\sum_{i=1}^{\ell} w_i[x] + T_R + T_C + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
-- \(\left(\sum_{j=1}^{r} R_j[x] + T_C + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
-- \(\left(\sum_{c=1}^{3} C_c[x] + T_R + x\right)\bmod 2053 \stackrel{?}{=} GIC[x]\)
+```text
+MAT_j = (u_1*W_{j,1} + u_2*W_{j,2} + u_3*W_{j,3} + b_j) mod 2053
+```
 
-### Step 5: Share assembly and transcription
-Each share at index \(x\) contains \(\ell + r + 3 + 1\) field elements:
-- \(\ell\) word values
-- \(r\) row checksums
-- 3 column checksums
-- 1 printed GIC
+Calculator-friendly execution:
 
-The share table has 4 columns and \(r + 1\) rows:
-- **Rows 1–\(r\)**: \(w_{3j-2}[x]\), \(w_{3j-1}[x]\), \(w_{3j}[x]\), \(R_j[x]\)
-- **Footer row**: \(C_1[x]\), \(C_2[x]\), \(C_3[x]\), \(GIC[x]\)
+```text
+T0 = b_j
+T1 = (T0 + u_1*W_{j,1}) mod 2053
+T2 = (T1 + u_2*W_{j,2}) mod 2053
+MAT_j = (T2 + u_3*W_{j,3}) mod 2053
+```
 
-### Transcription validation (MUST)
-After transcribing a share, the following checks MUST pass (**STOP** on mismatch):
-- Every row checksum: \((w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x] + j) \bmod 2053 \stackrel{?}{=} R_j[x]\)
-- Every column checksum: \(\left(\sum_{i \in \text{col } c} w_i[x] + \tau^C_c\right) \bmod 2053 \stackrel{?}{=} C_c[x]\)
-- The printed GIC via any equivalent path (recommended: use all three)
+The largest multiply-add intermediate is `2052^2 + 2052 = 4,212,756`, within an eight-digit calculator.
+
+### MAT Key Counts
+
+Per MAT column:
+
+- 12-word Share: `3` weights + `4` Row Pads = `7` key values
+- 24-word Share: `3` weights + `8` Row Pads = `11` key values
+
+Dual MAT doubles the tag and key counts.
+
+### MAT Placement
+
+- MAT tags are printed on the Share beside word rows.
+- Complete MAT keys or Split-Key halves are stored on the Manifest, never on the Share.
+- A Whole-Key Manifest contains complete MAT keys and is secret material.
+- Split-Key Manifest A and B contain additive shares of each MAT key value.
+
+### Split-Key MAT
+
+For each complete key value `z`, draw random `rho` in `0..2052`:
+
+```text
+z_A = rho
+z_B = z - rho mod 2053
+```
+
+During Share Audit:
+
+```text
+z = z_A + z_B mod 2053
+```
+
+One half alone reveals no complete MAT key, but either half can be withheld or corrupted to cause denial.
+
+### MAT Failure
+
+If any required MAT tag fails verification, STOP. Do not edit the Share, rewrite tags, or retry with altered values. If the mismatch cannot be resolved as an operator reading error over the same fixed artifact, treat the Share as failed and proceed to Recovery followed by a new Sharing Ceremony.
+
+## Manual Sharing
+
+Manual sharing is possible but demanding. The recommended path is software-assisted on an offline device. Fully manual sharing is a continuity fallback.
+
+Inputs:
+
+- valid BIP39 mnemonic;
+- selected threshold scheme;
+- BIP39 wordlist language;
+- share indices;
+- uniform random source for `GF(2053)` values;
+- optional MAT mode and Manifest custody model.
+
+### Manual Randomness
+
+All Shamir coefficients and MAT key values are sampled uniformly from `0..2052`.
+
+Valid physical approaches include:
+
+- DuraDice-39;
+- the 4-bag DIY token method;
+- another auditable method that samples uniformly from `0..2052`.
+
+For DIY token methods, tokens within each bag must be indistinguishable by touch and sufficiently uniform in size, weight, and texture. Bags and token sets should be matching-color coded. Tokens must never migrate to the wrong bag.
+
+### Step 1: Word Polynomials
+
+For each BIP39 word index `w_i`, sample `k-1` independent coefficients:
+
+```text
+f_i(x) = w_i + a_1*x + ... + a_{k-1}*x^{k-1} mod 2053
+```
+
+Evaluate each polynomial at every Share index.
+
+### Step 2: Row Checksums
+
+For each row `j`, compute:
+
+```text
+R_j[x] = (w_{3j-2}[x] + w_{3j-1}[x] + w_{3j}[x] + j) mod 2053
+```
+
+Validate immediately for every Share.
+
+### Step 3: Column Checksums
+
+For each column:
+
+```text
+C_1[x] = (sum column 1 values + 100) mod 2053
+C_2[x] = (sum column 2 values + 200) mod 2053
+C_3[x] = (sum column 3 values + 300) mod 2053
+```
+
+Validate for every Share.
+
+### Step 4: Printed GIC
+
+For each Share:
+
+```text
+GIC[x] = (sum all word values + T_R + T_C + x) mod 2053
+```
+
+Validate using word, row, and column paths.
+
+### Step 5: MAT, If Selected
+
+For each Share and MAT column:
+
+1. Generate the Share Weights.
+2. Generate one Row Pad per word row.
+3. Compute the MAT tag for each word row.
+4. Record MAT tags on the Share.
+5. Record complete MAT keys or split MAT key halves on the Manifest.
+
+### Step 6: Transcription Validation
+
+After transcribing each Share:
+
+- validate every row;
+- validate every column;
+- validate printed GIC;
+- validate every MAT tag if MAT is selected.
+
+After creating a Manifest:
+
+- confirm it is separate from all Shares;
+- confirm it contains no plaintext Share values;
+- confirm it contains no printed GIC map;
+- confirm MAT key material follows the selected Whole-Key or Split-Key custody model.
 
 ## Nesting
 
-The construction supports recursive composition: a completed share from layer \(L\) becomes the protected object of layer \(L+1\). Each layer uses the same \(GF(2053)\) arithmetic with independently computed row checksums, column checksums, and GIC.
+At layer `L > 0`, the values being shared are `GF(2053)` elements from the parent layer, not BIP39 word indices. Values `0, 2049, 2050, 2051, 2052` are valid inputs at nonzero layers.
 
-At layer \(L > 0\), the "word" values being shared are \(GF(2053)\) elements from the parent share, not BIP39 word indices. Values \(\{0, 2049, 2050, 2051, 2052\}\) are valid inputs. BIP39 validity is checked only at the final layer-0 recovery.
+BIP39 wordlist language, RBT, and RVA binding apply at the outermost protocol object as specified by the whitepaper and software profile.
 
-When \(k = 1\), the polynomial is constant and all shares are identical copies. This provides replication for access-control grouping without threshold protection at that layer.
+For `k = 1`, the polynomial is constant and all shares are identical copies. This provides replication without threshold protection.
 
 ## Conformance
-Canonical vectors are in `test_vectors/`. Implementations MUST validate against them.
+
+Canonical vectors are in `test_vectors/`. Implementations claiming v0.7.0 compatibility must validate against the current v0.7.0 vectors and clearly state which vector coverage they implement.

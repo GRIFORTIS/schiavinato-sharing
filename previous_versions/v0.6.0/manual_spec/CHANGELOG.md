@@ -4,18 +4,6 @@ All notable changes to `manual_spec` will be documented here.
 
 ## [Unreleased]
 
-## [0.7.0] - 2026-07-23
-
-### Added
-- Share Audit ceremony guidance for validating one stored Share without combining a threshold set.
-- Manual Authentication Layer (MAT) semantics, including Single MAT and Dual MAT, Whole-Key and Split-Key Manifest custody, and manual verification flow.
-- BIP39 wordlist language handling and Pre-Encrypted Numeric Input guidance for manual artifacts.
-
-### Changed
-- Manual specification is now recovery-first, with Share Audit and Recovery before Manual Sharing.
-- Production column tags now use `100, 200, 300`, with updated row/column/GIC totals and validation examples.
-- Manual artifact terminology now uses Share and Manifest consistently and aligns with the v0.7.0 Full / Compact Output Profile model.
-
 ## [0.6.0] - 2026-05-10
 
 ### Changed

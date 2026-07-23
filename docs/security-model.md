@@ -1,101 +1,122 @@
 # Schiavinato Sharing Security Model
 
-This document is a non-normative security overview for reviewers and implementers. The authoritative security analysis is the whitepaper, the arithmetic rules are in [`../manual_spec/README.md`](../manual_spec/README.md), and the software-facing digital envelope and workflow requirements are in [`../software_spec/README.md`](../software_spec/README.md).
+This is a non-normative security overview for reviewers and implementers. The whitepaper is authoritative for analysis, `manual_spec/` is authoritative for manual arithmetic and Share Audit, and `software_spec/` is authoritative for digital-envelope behavior.
 
 ## Scope
 
-Schiavinato Sharing protects BIP39 mnemonic word indices with Shamir sharing over \(GF(2053)\), then adds a linear consistency layer for passive error detection. Computational deployments add a digital envelope, session metadata, manifest audit records, and post-recovery verification checks.
+Schiavinato Sharing protects BIP39 word indices with standard Shamir sharing over `GF(2053)`. It adds:
 
-The protocol is designed for long-horizon cold-storage backup and disaster recovery. It is not a transaction authorization system, online authentication system, or replacement for physical custody controls.
+- public row, column, and GIC checks for passive error detection;
+- optional MAT for bounded manual pre-recovery substitution detection;
+- Manifest Audit Hashes for computational per-share commitments;
+- RBT and RVA for post-recovery warning checks.
 
-## Threat Model
+The protocol is for cold-storage backup and disaster recovery. It is not a spending policy, online authentication system, MPC wallet, multisig replacement, or substitute for physical custody controls.
 
-### In Scope
+## In Scope
 
-- Passive transcription, arithmetic, share-number, scanning, and media-corruption errors.
-- Accidental mixing of shares from different sessions when computational metadata is available.
-- Pre-recovery share substitution when an uncompromised manifest with Audit Hashes is available.
-- Post-recovery wrong-mnemonic or wallet-context detection through Blinded Identity and RVA checks.
-- Manual fallback when software is unavailable or untrusted, with weaker substitution detection unless RVA or a separately protected manifest is available.
+- Passive arithmetic, transcription, scanning, media-corruption, and share-number errors.
+- Accidental mixing of shares from different sessions.
+- Pre-recovery substitution detection when MAT keys remain secret or an uncompromised Manifest Audit Hash is available.
+- Post-recovery wrong-object detection via RBT.
+- Post-recovery wallet-context detection via RVA.
+- Manual recovery when the original software stack is unavailable.
 
-### Out Of Scope
+## Out of Scope
 
-- Compromise of \(k\) or more valid shares.
+- Compromise of `k` or more valid Shares.
 - Compromised devices or peripherals that observe secret-bearing material.
 - Physical coercion, social engineering, or loss of all recovery context.
-- Compromise of the underlying BIP39 or wallet ecosystem.
-- A compromised manifest: manifest-dependent pre-recovery checks fail if the manifest is also altered.
+- Compromise of the BIP39 or wallet ecosystem.
+- A compromised Manifest used as the only audit anchor.
+- Malicious dealers who intentionally generate bad artifacts.
 
-## Security Properties
+## Confidentiality
 
-### Information-Theoretic Confidentiality
+The arithmetic Share layer provides standard Shamir/LSSS confidentiality for any coalition holding fewer than `k` arithmetic Shares. Row checksums, column checksums, and GIC values are deterministic affine functions of field elements already present on the same Share, so they add no independent information to an unauthorized view.
 
-The unrestricted arithmetic share layer provides standard Shamir/LSSS confidentiality for any \(t < k\) shares. Row checksums, column checksums, and GIC are deterministic linear functions of the word shares and public offsets, so they add no information beyond the shares themselves.
+MAT tags and keys are outside the arithmetic Share. MAT keys are independent randomness: complete keys enable forgery of the matching MAT tags but reveal no mnemonic information.
 
-Reduced Mode intentionally departs from exact perfect secrecy because it rejects word polynomials whose evaluated word-share values exceed `2047`. The whitepaper gives the current conservative bias bound. Full Mode and manual operation use the unrestricted arithmetic layer.
+Hand-Transcribed QR resume derives coefficients from a 256-bit DRK using HMAC-SHA256. That resume mode shifts coefficient generation from information-theoretic randomness to a computational PRF assumption. Other resume modes use true-random coefficient material.
 
-### Passive Error Detection
+## Passive Error Detection
 
-The linear consistency layer includes:
+The public consistency layer detects arithmetic mistakes, transcription errors, damaged cells, and accidental share-number mixups.
 
-- Position-bound row checksums.
-- Column checksums with public column tags.
-- Share-bound GIC with row total, column total, and share index binding.
+The whitepaper proves minimum distance `d = 4`: every passive error pattern affecting up to three cells is detected. Under an explicit single-error assumption, the syndrome identifies a unique repair candidate. These checks are not authentication: an adversary who can rewrite an entire Share can recompute public checks.
 
-The whitepaper proves minimum detection distance \(d = 4\): every one-, two-, and three-cell passive error is detected. This is error detection, not authentication; an active adversary with physical access to a share can recompute consistent checks.
+## Per-Share Audit
 
-### Digital Envelope Integrity
+Share Audit validates one physical Share before recovery, without combining Shares or reconstructing the mnemonic.
 
-Full Mode includes a 16-byte truncated SHA-256 Transport Hash over the encoded share Core Payload fields before the hash. This detects media corruption, scanning errors, or bit flips before recovery processing. Reduced Mode omits the Transport Hash; transport integrity relies on QR error correction plus GIC validation.
+Available checks depend on artifacts:
 
-The canonical digital object is the Core Payload bytes. QR bytes prepend `SCHI` for Full Mode or `SC` for Reduced Mode. Optional text export is intentionally unspecified; if an implementation offers one, it must round-trip to the same Core Payload bytes.
+- Public row/column/GIC checks detect passive corruption.
+- MAT verifies printed word rows when the matching MAT keys are available and uncompromised.
+- Manifest Audit Hashes commit to Payload bytes when a separate Manifest is available.
+- Full Payloads allow complete canonical arithmetic-table comparison.
+- Compact Payloads require word-value comparison followed by recomputation against the printed row, column, and GIC fields.
 
-### Mnemonic And Wallet Verification
+An unresolved Share Audit mismatch is STOP. A failed Share is never edited, retagged, or resubmitted with altered values.
 
-Computational shares carry:
+## Digital Envelope Integrity
 
-- Session Batch ID.
-- Blinded Identity, computed with HMAC-SHA256 keyed by the full 20-byte HASH160 of the compressed BIP32 master public key.
+Full includes a 16-byte Transport Hash over the Full Payload prefix and fields before the hash. A mismatch is STOP.
 
-After recovery, software recomputes the Blinded Identity from the recovered mnemonic. A mismatch is a strong warning for share mixing, corruption, or substitution. Full Mode uses a 12-byte tag; Reduced Mode uses an 8-byte tag.
+Compact omits the Transport Hash. Its smaller QR shifts more verification work back to the printed artifact: software recomputes checks from scanned word-share values and compares against the paper table.
 
-The RVA is a separate wallet-context check. It verifies the intended wallet context, including derivation settings and optional BIP39 passphrase when applicable. For the Bitcoin bech32/bech32m truncation analyzed in the whitepaper, the first-8 plus last-8 character form gives about \(2^{60}\) matching strength. Other address formats require format-specific analysis.
+Manifest Audit Hashes are commitments to one Share Payload. They detect substitution only while the Manifest record remains uncompromised. An adversary who can alter both a Share Payload and its Manifest Audit Hash can defeat that computational commitment.
 
-### Manifest-Based Audit
+## Post-Recovery Checks
 
-The manifest can store session metadata and per-share Audit Hashes without containing plaintext shares. When stored separately from the shares, it enables a per-share audit drill:
+After interpolation produces a candidate protocol object:
 
-1. Scan/import a share.
-2. Validate available local checks.
-3. Recompute the Core Payload hash.
-4. Compare against the manifest Audit QR/hash record.
+- BIP39 checksum detects invalid recovered mnemonics in BIP39 mode.
+- RBT checks whether the recovered protocol object matches the original session binding.
+- RVA checks intended wallet context, including derivation settings and optional BIP39 passphrase when applicable.
 
-This detects active share substitution when the manifest remains uncompromised. Optional raw GIC maps help inventory and accidental mixup detection, but if a manifest carries at least \(k\) GIC values from one session it reveals one \(GF(2053)\)-valued linear relation of the mnemonic, upper-bounded by about 11 bits.
+RBT and RVA are warning layers. They do not replace Shamir confidentiality or MAT/Manifest pre-recovery audit.
 
-## Required Validation Flow
+## Manifest Rules
 
-The current required validation pipeline is specified in `software_spec/` and `manual_spec/`. At a high level:
+Manifests are operationally useful but sensitive. They may contain:
 
-- Parse the digital envelope or manually entered share table.
-- Reject unknown version bytes and malformed field lengths.
-- Validate Full Mode Transport Hash when present.
-- Compare manifest Audit Hashes when a manifest is available.
-- Enforce matching word count, threshold, and session metadata across selected computational shares.
-- Validate GIC and any available row/column checks.
-- Interpolate the mnemonic with Lagrange coefficients.
-- Validate BIP39 checksum when applicable.
-- Recompute Blinded Identity and RVA checks when metadata is available.
+- session metadata;
+- RBT references;
+- per-share Audit Hashes;
+- custody notes;
+- wallet-context hints;
+- Whole-Key MAT material or Split-Key MAT halves.
 
-Generation workflows must also run the runtime consistency assertion before print/export/transcription: recompute row checksums, column checksums, and GIC from original coefficients and independently from generated share values, then compare. Any mismatch is a STOP condition.
+Manifests MUST NOT contain plaintext Share values. They SHOULD NOT contain printed GIC maps.
 
-## Operational Notes
+Whole-Key MAT Manifest sections are secret material. A single Split-Key half reveals no complete MAT key, but it can be withheld or corrupted to cause denial.
 
-- Any device or peripheral that handles secret-bearing material is inside the trusted boundary.
-- Tier 1 offline non-network printers may receive secret-bearing output.
-- Tier 2 printers may receive manifest metadata and blank templates, but not plaintext share content.
-- Tier 3 printers receive blank structure only.
-- Tier 4 is fully hand-transcribed.
-- Resume artifacts are temporary sharing-continuity material only. They are not recovery inputs and should be destroyed or separately secured after successful share creation and validation.
+## Operational Trust Boundary
+
+Any device or peripheral that handles secret-bearing material is in scope for trust:
+
+- air-gapped ceremony device;
+- printer or display used for secret-bearing output;
+- scanner/camera used for secret-bearing input;
+- calculator used for manual secret arithmetic;
+- storage media holding decrypted resume material or MAT keys.
+
+Peripherals that handle only blank templates or non-secret metadata are outside the secret-handling boundary, though their output may still be operationally sensitive.
+
+## Validation Pipeline Summary
+
+Typical recovery validation order:
+
+1. Validate each physical Share with row/column/GIC checks.
+2. Run Share Audit when MAT or Manifest Audit Hashes are available.
+3. Check set-level metadata consistency.
+4. Interpolate using Lagrange coefficients.
+5. Validate recovered rows, columns, and base GIC.
+6. Convert recovered indices using the printed BIP39 wordlist language.
+7. Validate BIP39 checksum.
+8. Recompute RBT when payload metadata is available.
+9. Verify RVA when recorded.
 
 ## References
 

@@ -57,7 +57,7 @@ After fetching tags:
 
 ```bash
 git fetch --tags
-git tag -v v0.7.0
+git tag -v v0.6.0
 ```
 
 ## Verify the checksum file signature
@@ -69,7 +69,7 @@ gpg --verify CHECKSUMS.txt.asc CHECKSUMS.txt
 ## Verify the whitepaper signature
 
 ```bash
-gpg --verify WHITEPAPER-v0.7.0.pdf.asc WHITEPAPER-v0.7.0.pdf
+gpg --verify WHITEPAPER-v0.6.0.pdf.asc WHITEPAPER-v0.6.0.pdf
 ```
 
 Or for the stable filename:
