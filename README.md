@@ -40,6 +40,12 @@ The software should make sharing and recovery easier, faster, and less error-pro
 
 The same shares can be generated or recovered using paper tables, a basic calculator, modular arithmetic, and precomputed Lagrange coefficients. In other words: use software when you can; keep the paper path specified for when you cannot.
 
+### Why Per-Share Audit Matters
+
+Long-term backups should be checkable before the day they are needed. Schiavinato Sharing lets a user audit one physical share at a time, without gathering a threshold set, combining shares, or exposing the mnemonic.
+
+In the manual path, public row/column/GIC checks detect passive damage or transcription errors, while optional MAT tags can authenticate the word rows against separately stored Manifest key material. In the software-assisted path, Full and Compact payloads plus Manifest Audit Hashes add computational checks when a separate Manifest is available. The result is a practical pre-recovery audit: each custodian artifact can be inspected periodically without turning an audit drill into a recovery ceremony.
+
 ### Who This Is For
 
 Schiavinato Sharing is for people and organizations that want threshold backup of an existing BIP39 phrase without turning one vendor, device, custodian, subscription, hosted service, or software stack into a permanent dependency. Common use cases include:
