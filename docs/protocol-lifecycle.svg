@@ -1,0 +1,338 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 1220" width="100%" height="100%" style="background: #0b0f19; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Card & Panel Background Gradients -->
+    <linearGradient id="panelGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#161e2e" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+
+    <!-- Reusable Icons -->
+    <!-- No Wi-Fi Badge -->
+    <g id="no-wifi">
+      <circle cx="0" cy="0" r="16" fill="#ef4444" fill-opacity="0.2" stroke="#ef4444" stroke-width="2"/>
+      <path d="M-8 -4 A 10 10 0 0 1 8 -4 M-5 0 A 6 6 0 0 1 5 0 M-2 4 A 2 2 0 0 1 2 4" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-10" y1="10" x2="10" y2="-10" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+    </g>
+
+    <!-- Hardware Wallet -->
+    <g id="hw-wallet">
+      <rect x="-20" y="-35" width="40" height="70" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="2"/>
+      <rect x="-12" y="-25" width="24" height="18" rx="2" fill="#020617" stroke="#475569" stroke-width="1"/>
+      <circle cx="0" cy="8" r="6" fill="#334155" stroke="#38bdf8" stroke-width="1.5"/>
+      <circle cx="0" cy="24" r="4" fill="#334155"/>
+    </g>
+
+    <!-- Air-gapped Laptop -->
+    <g id="laptop">
+      <rect x="-35" y="-28" width="70" height="45" rx="4" fill="#1e293b" stroke="#64748b" stroke-width="2"/>
+      <rect x="-28" y="-22" width="56" height="33" rx="2" fill="#020617"/>
+      <!-- Screen details -->
+      <line x1="-20" y1="-12" x2="0" y2="-12" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+      <line x1="-20" y1="-5" x2="12" y2="-5" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="-20" y1="2" x2="-5" y2="2" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+      <!-- Base -->
+      <path d="M-45 17 L45 17 L40 23 L-40 23 Z" fill="#334155" stroke="#64748b" stroke-width="1.5"/>
+      <rect x="-8" y="17" width="16" height="3" fill="#64748b" rx="1"/>
+    </g>
+
+    <!-- A4 Document Envelope with Sticking Paper -->
+    <g id="share-envelope">
+      <!-- Paper sticking out from inside envelope -->
+      <rect x="-14" y="-32" width="28" height="26" rx="2" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1"/>
+      <line x1="-10" y1="-26" x2="2" y2="-26" stroke="#64748b" stroke-width="1.5"/>
+      <line x1="-10" y1="-21" x2="6" y2="-21" stroke="#64748b" stroke-width="1.5"/>
+      <rect x="-10" y="-16" width="8" height="8" fill="#f59e0b" rx="1"/>
+      
+      <!-- A4 Vertical Envelope Body -->
+      <rect x="-18" y="-20" width="36" height="48" rx="3" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+      <!-- Flap / Pocket Cutout -->
+      <path d="M -18 -8 L 0 4 L 18 -8" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+      <line x1="-18" y1="-20" x2="18" y2="-20" stroke="#cbd5e1" stroke-width="1" stroke-dasharray="2 2"/>
+    </g>
+
+    <!-- Mnemonic Paper Sheet -->
+    <g id="mnemonic-sheet">
+      <rect x="-20" y="-28" width="40" height="56" rx="3" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="-13" y1="-20" x2="-3" y2="-20" stroke="#64748b" stroke-width="2"/>
+      <line x1="3" y1="-20" x2="13" y2="-20" stroke="#64748b" stroke-width="2"/>
+      <line x1="-13" y1="-12" x2="-1" y2="-12" stroke="#64748b" stroke-width="2"/>
+      <line x1="3" y1="-12" x2="11" y2="-12" stroke="#64748b" stroke-width="2"/>
+      <line x1="-13" y1="-4" x2="-5" y2="-4" stroke="#64748b" stroke-width="2"/>
+      <line x1="3" y1="-4" x2="13" y2="-4" stroke="#64748b" stroke-width="2"/>
+      <line x1="-13" y1="4" x2="-2" y2="4" stroke="#64748b" stroke-width="2"/>
+      <line x1="3" y1="4" x2="10" y2="4" stroke="#64748b" stroke-width="2"/>
+      <line x1="-13" y1="12" x2="-4" y2="12" stroke="#64748b" stroke-width="2"/>
+      <line x1="3" y1="12" x2="12" y2="12" stroke="#64748b" stroke-width="2"/>
+      <line x1="-13" y1="20" x2="-1" y2="20" stroke="#64748b" stroke-width="2"/>
+      <line x1="3" y1="20" x2="13" y2="20" stroke="#64748b" stroke-width="2"/>
+    </g>
+
+    <!-- Basic Calculator -->
+    <g id="calculator">
+      <rect x="-18" y="-26" width="36" height="52" rx="4" fill="#1e293b" stroke="#f59e0b" stroke-width="1.5"/>
+      <rect x="-13" y="-20" width="26" height="10" rx="1" fill="#020617" stroke="#475569" stroke-width="1"/>
+      <text x="7" y="-13" font-size="7" fill="#4ade80" font-family="monospace" text-anchor="end">2053</text>
+      <circle cx="-8" cy="-3" r="2.5" fill="#475569"/><circle cx="0" cy="-3" r="2.5" fill="#475569"/><circle cx="8" cy="-3" r="2.5" fill="#475569"/>
+      <circle cx="-8" cy="5" r="2.5" fill="#475569"/><circle cx="0" cy="5" r="2.5" fill="#475569"/><circle cx="8" cy="5" r="2.5" fill="#475569"/>
+      <circle cx="-8" cy="13" r="2.5" fill="#475569"/><circle cx="0" cy="13" r="2.5" fill="#475569"/><circle cx="8" cy="13" r="2.5" fill="#f59e0b"/>
+      <circle cx="-8" cy="20" r="2.5" fill="#475569"/><circle cx="0" cy="20" r="2.5" fill="#475569"/><circle cx="8" cy="20" r="2.5" fill="#38bdf8"/>
+    </g>
+
+    <!-- Location Pin -->
+    <g id="pin">
+      <path d="M0 -16 A 8 8 0 0 1 8 -8 C 8 0 0 10 0 10 C 0 10 -8 0 -8 -8 A 8 8 0 0 1 0 -16 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="1"/>
+      <circle cx="0" cy="-8" r="3" fill="#ffffff"/>
+    </g>
+
+    <!-- Checkmark Badge -->
+    <g id="check-badge">
+      <circle cx="0" cy="0" r="12" fill="#22c55e"/>
+      <path d="M-5 0 L-1 4 L6 -4" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </defs>
+
+  <!-- MAIN HEADER -->
+  <rect x="30" y="30" width="820" height="60" rx="10" fill="url(#panelGrad)" stroke="#1e293b" stroke-width="2"/>
+  <text x="50" y="66" font-size="20" font-weight="800" fill="#f8fafc" letter-spacing="0.5">PROTOCOL ARCHITECTURE &amp; OPERATIONAL FLOW</text>
+  <rect x="680" y="46" width="150" height="28" rx="14" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+  <text x="755" y="64" font-size="11" font-weight="700" fill="#38bdf8" text-anchor="middle">AIR-GAPPED / BIP39</text>
+
+  <!-- PANEL 1: AIR-GAPPED SHARING CEREMONY -->
+  <g transform="translate(30, 110)">
+    <rect x="0" y="0" width="820" height="270" rx="12" fill="url(#panelGrad)" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="25" y="32" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="1">1. AIR-GAPPED SHARING CEREMONY</text>
+
+    <!-- 1. HW Wallet -->
+    <g transform="translate(80, 135)">
+      <use href="#hw-wallet" x="0" y="0"/>
+      <text x="0" y="50" font-size="11" fill="#94a3b8" text-anchor="middle">Hardware Wallet</text>
+    </g>
+
+    <path d="M 125 135 L 175 135" fill="none" stroke="#38bdf8" stroke-width="2"/>
+    <polygon points="175,130 185,135 175,140" fill="#38bdf8"/>
+
+    <!-- 2. Mnemonic Sheet -->
+    <g transform="translate(230, 135)">
+      <use href="#mnemonic-sheet" x="0" y="0"/>
+      <text x="0" y="42" font-size="11" fill="#94a3b8" text-anchor="middle">12 / 24 Words</text>
+    </g>
+
+    <path d="M 275 135 L 325 135" fill="none" stroke="#38bdf8" stroke-width="2"/>
+    <polygon points="325,130 335,135 325,140" fill="#38bdf8"/>
+
+    <!-- 3. Offline Tool -->
+    <g transform="translate(390, 130)">
+      <use href="#laptop" x="0" y="0"/>
+      <use href="#no-wifi" x="25" y="-22"/>
+      <text x="0" y="42" font-size="11" fill="#f8fafc" font-weight="600" text-anchor="middle">Offline Tool</text>
+    </g>
+
+    <!-- Split Arrows to Shares -->
+    <path d="M 450 115 L 530 55" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+    <polygon points="528,50 538,53 531,60" fill="#f59e0b"/>
+
+    <path d="M 450 135 L 530 135" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+    <polygon points="528,130 538,135 528,140" fill="#f59e0b"/>
+
+    <path d="M 450 155 L 530 215" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+    <polygon points="531,210 538,217 528,220" fill="#f59e0b"/>
+
+    <!-- 4. Generated A4 Shares -->
+    <g transform="translate(575, 55)">
+      <use href="#share-envelope" x="0" y="0"/>
+      <text x="28" y="4" font-size="11" font-weight="700" fill="#f8fafc">Share A</text>
+    </g>
+    <g transform="translate(575, 135)">
+      <use href="#share-envelope" x="0" y="0"/>
+      <text x="28" y="4" font-size="11" font-weight="700" fill="#f8fafc">Share B</text>
+    </g>
+    <g transform="translate(575, 215)">
+      <use href="#share-envelope" x="0" y="0"/>
+      <text x="28" y="4" font-size="11" font-weight="700" fill="#f8fafc">Share C</text>
+    </g>
+
+    <!-- Manifest A4 Envelope -->
+    <g transform="translate(715, 135)">
+      <use href="#share-envelope" x="0" y="0"/>
+      <text x="0" y="38" font-size="11" font-weight="700" fill="#f59e0b" text-anchor="middle">Manifest</text>
+    </g>
+  </g>
+
+  <!-- PANEL 2: GEOGRAPHIC CUSTODY & SHARE AUDIT CEREMONY -->
+  <g transform="translate(30, 400)">
+    <rect x="0" y="0" width="820" height="340" rx="12" fill="url(#panelGrad)" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="25" y="32" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="1">2. GEOGRAPHIC DISTRIBUTED CUSTODY &amp; SHARE AUDIT CEREMONY</text>
+
+    <!-- Globe Area (Left Side) -->
+    <g transform="translate(40, 55)">
+      <rect x="0" y="0" width="360" height="255" rx="10" fill="#020617" stroke="#1e293b" stroke-width="1"/>
+      
+      <!-- Globe grid -->
+      <circle cx="180" cy="125" r="95" fill="none" stroke="#1e293b" stroke-width="1.5"/>
+      <ellipse cx="180" cy="125" rx="95" ry="38" fill="none" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4"/>
+      <ellipse cx="180" cy="125" rx="38" ry="95" fill="none" stroke="#1e293b" stroke-width="1" stroke-dasharray="4 4"/>
+      <line x1="85" y1="125" x2="275" y2="125" stroke="#1e293b" stroke-width="1"/>
+
+      <!-- Single Origin Point (Center of Ceremony) -->
+      <circle cx="180" cy="125" r="5" fill="#38bdf8" stroke="#ffffff" stroke-width="1.5"/>
+
+      <!-- Dotted paths originating from the SAME center point (180, 125) -->
+      <!-- Route to Location A -->
+      <path d="M 180 125 Q 150 80 120 75" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <use href="#pin" x="120" y="75"/>
+      <text x="120" y="52" font-size="10" font-weight="700" fill="#f8fafc" text-anchor="middle">Location A</text>
+      <!-- Repositioned Plane Icon (Down & Right) -->
+      <text x="145" y="85" font-size="18" fill="#38bdf8">✈</text>
+
+      <!-- Route to Location B -->
+      <path d="M 180 125 Q 200 165 230 185" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <use href="#pin" x="230" y="185"/>
+      <text x="230" y="210" font-size="10" font-weight="700" fill="#f8fafc" text-anchor="middle">Location B</text>
+      <!-- Repositioned Ship Icon (Left) -->
+      <text x="170" y="165" font-size="18" fill="#38bdf8">🚢</text>
+
+      <!-- Route to Location C -->
+      <path d="M 180 125 Q 220 110 255 115" fill="none" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="3 3"/>
+      <use href="#pin" x="255" y="115"/>
+      <text x="282" y="130" font-size="10" font-weight="700" fill="#f8fafc">Location C</text>
+      <text x="220" y="105" font-size="18" fill="#38bdf8">🚗</text>
+    </g>
+
+    <!-- Share Audit Ceremony Box (Right Side) -->
+    <g transform="translate(430, 55)">
+      <rect x="0" y="0" width="350" height="255" rx="10" fill="#0f172a" stroke="#22c55e" stroke-width="1.5"/>
+      <rect x="0" y="0" width="350" height="32" rx="10" fill="#14532d" fill-opacity="0.4"/>
+      <text x="175" y="21" font-size="11" font-weight="800" fill="#4ade80" text-anchor="middle" letter-spacing="0.5">SHARE AUDIT CEREMONY</text>
+
+      <!-- Auditor Visiting Share A Only -->
+      <g transform="translate(60, 95)">
+        <use href="#share-envelope" x="0" y="0"/>
+        <text x="0" y="38" font-size="10" font-weight="700" fill="#f8fafc" text-anchor="middle">Share A Only</text>
+      </g>
+
+      <!-- Arrow -->
+      <path d="M 100 95 L 150 95" fill="none" stroke="#22c55e" stroke-width="2"/>
+      <polygon points="150,90 160,95 150,100" fill="#22c55e"/>
+
+      <!-- Offline Inspector Device -->
+      <g transform="translate(210, 95)">
+        <use href="#laptop" x="0" y="0"/>
+        <use href="#no-wifi" x="25" y="-22"/>
+        <use href="#check-badge" x="25" y="15"/>
+        <text x="0" y="42" font-size="10" fill="#4ade80" font-weight="700" text-anchor="middle">VALID ✅</text>
+      </g>
+
+      <!-- Status of Other Shares -->
+      <rect x="25" y="165" width="300" height="70" rx="6" fill="#020617" stroke="#1e293b" stroke-width="1"/>
+      
+      <g transform="translate(45, 192)">
+        <circle cx="0" cy="0" r="9" fill="#334155"/>
+        <text x="0" y="3" font-size="9" fill="#94a3b8" text-anchor="middle">🔒</text>
+        <text x="20" y="4" font-size="11" fill="#cbd5e1" font-weight="600">Share B: Untouched at Location B</text>
+      </g>
+      
+      <g transform="translate(45, 217)">
+        <circle cx="0" cy="0" r="9" fill="#334155"/>
+        <text x="0" y="3" font-size="9" fill="#94a3b8" text-anchor="middle">🔒</text>
+        <text x="20" y="4" font-size="11" fill="#cbd5e1" font-weight="600">Share C: Untouched at Location C</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- PANEL 3: RECOVERY CEREMONY (ANY 2 SHARES OF 3) -->
+  <g transform="translate(30, 760)">
+    <rect x="0" y="0" width="820" height="430" rx="12" fill="url(#panelGrad)" stroke="#1e293b" stroke-width="1.5"/>
+    <text x="25" y="32" font-size="13" font-weight="700" fill="#38bdf8" letter-spacing="1">3. RECOVERY CEREMONY (ANY 2 SHARES OF 3)</text>
+
+    <!-- Gathered Shares Input -->
+    <g transform="translate(70, 220)">
+      <rect x="-45" y="-140" width="90" height="280" rx="8" fill="#020617" stroke="#334155" stroke-width="1"/>
+      <text x="0" y="-115" font-size="10" font-weight="700" fill="#94a3b8" text-anchor="middle">RECOVERY</text>
+
+      <g transform="translate(0, -50)">
+        <use href="#share-envelope"/>
+        <text x="0" y="38" font-size="10" font-weight="700" fill="#f8fafc" text-anchor="middle">Share A</text>
+      </g>
+      
+      <text x="0" y="20" font-size="16" font-weight="800" fill="#38bdf8" text-anchor="middle">+</text>
+      
+      <g transform="translate(0, 75)">
+        <use href="#share-envelope"/>
+        <text x="0" y="38" font-size="10" font-weight="700" fill="#f8fafc" text-anchor="middle">Share B</text>
+      </g>
+      
+      <text x="0" y="130" font-size="10" font-weight="700" fill="#4ade80" text-anchor="middle">(k = 2)</text>
+    </g>
+
+    <!-- PATH A: SOFTWARE ASSISTED -->
+    <g transform="translate(180, 55)">
+      <rect x="0" y="0" width="610" height="155" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5"/>
+      <rect x="0" y="0" width="180" height="24" rx="10" fill="#1e3a8a"/>
+      <text x="90" y="16" font-size="10" font-weight="800" fill="#38bdf8" text-anchor="middle">PATH A: SOFTWARE ASSISTED</text>
+
+      <!-- Flow A -->
+      <g transform="translate(80, 88)">
+        <use href="#laptop" x="0" y="0"/>
+        <use href="#no-wifi" x="25" y="-22"/>
+        <text x="0" y="40" font-size="10" fill="#94a3b8" text-anchor="middle">Offline Tool</text>
+      </g>
+
+      <path d="M 140 88 L 210 88" fill="none" stroke="#38bdf8" stroke-width="2"/>
+      <polygon points="210,83 220,88 210,93" fill="#38bdf8"/>
+
+      <g transform="translate(260, 88)">
+        <use href="#mnemonic-sheet" x="0" y="0"/>
+        <text x="0" y="42" font-size="10" fill="#4ade80" font-weight="700" text-anchor="middle">BIP39 Seed</text>
+      </g>
+
+      <path d="M 310 88 L 380 88" fill="none" stroke="#38bdf8" stroke-width="2"/>
+      <polygon points="380,83 390,88 380,93" fill="#38bdf8"/>
+
+      <g transform="translate(440, 88)">
+        <use href="#hw-wallet" x="0" y="0"/>
+        <text x="0" y="48" font-size="10" fill="#94a3b8" text-anchor="middle">Any Wallet</text>
+      </g>
+
+      <rect x="510" y="48" width="80" height="80" rx="6" fill="#020617" stroke="#1e293b"/>
+      <text x="550" y="83" font-size="10" fill="#38bdf8" font-weight="700" text-anchor="middle">FAST</text>
+      <text x="550" y="101" font-size="9" fill="#94a3b8" text-anchor="middle">Automated</text>
+    </g>
+
+    <!-- PATH B: MANUAL FALLBACK -->
+    <g transform="translate(180, 230)">
+      <rect x="0" y="0" width="610" height="160" rx="10" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5"/>
+      <rect x="0" y="0" width="160" height="24" rx="10" fill="#451a03"/>
+      <text x="80" y="16" font-size="10" font-weight="800" fill="#f59e0b" text-anchor="middle">PATH B: MANUAL FALLBACK</text>
+
+      <!-- Flow B -->
+      <g transform="translate(80, 92)">
+        <use href="#calculator" x="-25" y="0"/>
+        <rect x="10" y="-20" width="30" height="40" rx="2" fill="#fff" stroke="#cbd5e1"/>
+        <path d="M 15 -10 Q 25 -12 35 -10 M 15 -2 Q 25 0 35 -2 M 15 6 Q 25 4 35 6" fill="none" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="38" y1="-22" x2="28" y2="-5" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+        <text x="0" y="42" font-size="10" fill="#f59e0b" font-weight="700" text-anchor="middle">Math mod 2053</text>
+      </g>
+
+      <path d="M 140 92 L 210 92" fill="none" stroke="#f59e0b" stroke-width="2"/>
+      <polygon points="210,87 220,92 210,97" fill="#f59e0b"/>
+
+      <g transform="translate(260, 92)">
+        <use href="#mnemonic-sheet" x="0" y="0"/>
+        <text x="0" y="42" font-size="10" fill="#4ade80" font-weight="700" text-anchor="middle">BIP39 Seed</text>
+      </g>
+
+      <path d="M 310 92 L 380 92" fill="none" stroke="#f59e0b" stroke-width="2"/>
+      <polygon points="380,87 390,92 380,97" fill="#f59e0b"/>
+
+      <g transform="translate(440, 92)">
+        <use href="#hw-wallet" x="0" y="0"/>
+        <text x="0" y="48" font-size="10" fill="#94a3b8" text-anchor="middle">Any Wallet</text>
+      </g>
+
+      <rect x="510" y="48" width="80" height="85" rx="6" fill="#020617" stroke="#1e293b"/>
+      <text x="550" y="78" font-size="9" fill="#f59e0b" font-weight="700" text-anchor="middle">NO VENDOR</text>
+      <text x="550" y="91" font-size="9" fill="#f59e0b" font-weight="700" text-anchor="middle">LOCK-IN</text>
+      <text x="550" y="111" font-size="8" fill="#94a3b8" text-anchor="middle">Pen &amp; Paper</text>
+    </g>
+  </g>
+</svg>
