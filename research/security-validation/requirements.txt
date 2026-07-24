@@ -17,6 +17,9 @@ seaborn>=0.12.0
 # BIP39 mnemonic handling
 mnemonic>=0.20
 
+# QR workload estimate
+qrcode>=7.4.0
+
 # JSON schema validation
 jsonschema>=4.17.0
 

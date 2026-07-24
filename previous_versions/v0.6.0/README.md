@@ -16,6 +16,7 @@ This directory is the frozen archive snapshot for the `v0.6.0` release.
 - [`test_vectors/vectors.md`](test_vectors/vectors.md)
 - [`whitepaper/WHITEPAPER.tex`](whitepaper/WHITEPAPER.tex)
 - [`docs/`](docs/)
+- [`research/security-validation/reduced-mode-analysis/`](research/security-validation/reduced-mode-analysis/)
 
 ## Notes
 
@@ -23,4 +24,5 @@ This directory is the frozen archive snapshot for the `v0.6.0` release.
 - Compiled PDFs are not duplicated in this archive. The signed `v0.6.0` PDF release asset remains available from the [`v0.6.0` GitHub Release](https://github.com/GRIFORTIS/schiavinato-sharing/releases/tag/v0.6.0).
 - The live/current protocol docs remain at the repo root, starting from [`../../README.md`](../../README.md).
 - This snapshot preserves the `v0.6.0` whitepaper before additive academic edits (LLR analysis, structured-leakage discussion, expanded related work) moved the live whitepaper to `v0.7.0`.
+- The `reduced-mode-analysis/` folder is historical design-rationale material for the deprecated range-restricted Reduced Mode, which was active before v0.7.0 and is not part of the current Compact profile.
 - Broader historical repository state still lives in the signed git tag and release history.
