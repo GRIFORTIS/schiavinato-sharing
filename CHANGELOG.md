@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Public toy-model spreadsheet supporting the whitepaper examples.
+- LLR uniformity and QR hand-transcription validation artifacts supporting the v0.7.0 whitepaper analysis.
+- Historical Reduced Mode design-rationale analysis archived under `previous_versions/v0.6.0/`.
+
 ## [0.7.0] - 2026-07-23
 
 ### Changed

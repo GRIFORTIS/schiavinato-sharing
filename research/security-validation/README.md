@@ -12,11 +12,11 @@ Validate key security properties:
 2. **Experiment 2: Adversarial Constraint Solving**  
    Simulates sophisticated adversary attempting to solve constraint system computationally
 
-3. **LLR Uniformity Check**  
-   Pending publication. This planned lightweight, dependency-free check will exhaustively enumerate GF(2053) to verify that k-1 shares of a single word polynomial leave all 2053 candidate secrets equiprobable at every unseen position (Proposition 7.1, v0.7.0 whitepaper).
+3. **LLR Uniformity Check** ([`llr-uniformity/`](llr-uniformity/))  
+   Lightweight, dependency-free exhaustive enumeration over GF(2053), verifying that k-1 shares of a single word polynomial leave all 2053 candidate secrets equiprobable at every unseen position.
 
-4. **QR Hand-Transcription Estimate**  
-   Pending publication. This planned estimate will count dark modules to hand-mark on share QRs (Full vs Compact, template-assisted), supporting QR workload discussion in the whitepaper.
+4. **QR Hand-Transcription Estimate** ([`qr-hand-transcription/`](qr-hand-transcription/))  
+   Structural count of dark modules to hand-mark on representative share QRs (Full vs Compact, template-assisted), supporting the QR workload discussion in the whitepaper.
 
 ## Quick Start
 
@@ -58,6 +58,14 @@ cd experiment-1-entropy
 # Experiment 2: Constraint Solver (3-5 hours)
 cd experiment-3-constraints
 ./run_experiment.sh --configs "2-3,3-5"
+
+# LLR uniformity check (dependency-free)
+cd ../llr-uniformity
+python3 llr_uniformity.py
+
+# QR hand-transcription estimate (requires qrcode)
+cd ../qr-hand-transcription
+python3 qr_hand_transcription_estimate.py
 ```
 
 ## Results
@@ -77,7 +85,7 @@ All experimental results are stored in `experiment-*/results/` with:
 ```
 security-validation/
 ├── README.md                       (this file)
-├── requirements.txt                (Python dependencies)
+├── requirements.txt                (Python dependencies, including qrcode for QR estimate)
 ├── requirements-sage.txt           (SageMath dependencies)
 ├── run_all_experiments.sh          (Master script)
 │
