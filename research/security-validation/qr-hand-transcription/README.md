@@ -1,6 +1,6 @@
 # QR hand-transcription workload estimate
 
-Structural module counts supporting the QR hand-transcription workload discussion in the Schiavinato Sharing whitepaper v0.7.0.
+Structural module counts supporting the QR hand-transcription workload discussion in the DuraShare whitepaper v0.7.0.
 
 ## What it measures
 

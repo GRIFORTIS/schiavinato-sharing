@@ -1,6 +1,6 @@
 # LLR Uniformity Check
 
-Exhaustive enumeration over GF(2053) verifying the posterior uniformity statement of [Proposition 7.1 (Confidentiality)](../../../whitepaper/WHITEPAPER.tex) of Schiavinato Sharing v0.7.0.
+Exhaustive enumeration over GF(2053) verifying the posterior uniformity statement of [Proposition 7.1 (Confidentiality)](../../../whitepaper/WHITEPAPER.tex) of DuraShare v0.7.0.
 
 ## What this checks
 

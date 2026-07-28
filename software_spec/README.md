@@ -1,12 +1,12 @@
-# Schiavinato Sharing - Software Specification (`software_spec`)
+# DuraShare - Software Specification (`software_spec`)
 
 > ## WARNING: EXPERIMENTAL SOFTWARE
 >
 > DO NOT USE IT FOR REAL FUNDS.
 >
-> Schiavinato Sharing specifications and prototype implementations have not been audited. Use for testing, learning, and review only. See the organization security policy for private disclosures.
+> DuraShare specifications and prototype implementations have not been audited. Use for testing, learning, and review only. See the organization security policy for private disclosures.
 
-This document defines the v0.7.0 software-assisted workflow and digital envelope for Schiavinato Sharing.
+This document defines the v0.7.0 software-assisted workflow and digital envelope for DuraShare.
 
 Normative keywords **MUST**, **MUST NOT**, **SHOULD**, **MAY** are used as requirements.
 

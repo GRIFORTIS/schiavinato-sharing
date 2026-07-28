@@ -1,17 +1,21 @@
 # Changelog
 
-All notable changes to the Schiavinato Sharing specification will be documented in this file.
+All notable changes to the DuraShare specification will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+- Renamed the protocol brand from **Schiavinato Sharing** to **DuraShare**. Brand-only: protocol lineage through v0.7.0, mathematics, test vectors, and `previous_versions/` archives are unchanged. Canonical repositories renamed to `GRIFORTIS/durashare` (and `durashare-html` / `durashare-js` / `durashare-py`); old `schiavinato-sharing*` URLs redirect.
+- Renamed the public toy-model spreadsheet to `docs/DuraShare_Toy_Model.xlsx`.
+
 ### Added
-- Public toy-model spreadsheet supporting the whitepaper examples.
+- Public toy-model spreadsheet supporting the whitepaper examples (`docs/DuraShare_Toy_Model.xlsx`).
 - LLR uniformity and QR hand-transcription validation artifacts supporting the v0.7.0 whitepaper analysis.
 - Historical Reduced Mode design-rationale analysis archived under `previous_versions/v0.6.0/`.
-- Non-normative protocol lifecycle overview diagram in the README.
+- Non-normative protocol lifecycle overview diagram in the README (`docs/protocol-lifecycle.png`, SVG source retained).
 
 ## [0.7.0] - 2026-07-23
 
@@ -150,19 +154,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Vectors: `test_vectors/`
 
 ## Links
-- **Repository**: [schiavinato-sharing](https://github.com/GRIFORTIS/schiavinato-sharing)
-- **HTML implementation**: [schiavinato-sharing-html](https://github.com/GRIFORTIS/schiavinato-sharing-html)
-- **JavaScript/TypeScript implementation**: [schiavinato-sharing-js](https://github.com/GRIFORTIS/schiavinato-sharing-js)
-- **Python implementation**: [schiavinato-sharing-py](https://github.com/GRIFORTIS/schiavinato-sharing-py)
+- **Repository**: [durashare](https://github.com/GRIFORTIS/durashare)
+- **HTML implementation**: [durashare-html](https://github.com/GRIFORTIS/durashare-html)
+- **JavaScript/TypeScript implementation**: [durashare-js](https://github.com/GRIFORTIS/durashare-js)
+- **Python implementation**: [durashare-py](https://github.com/GRIFORTIS/durashare-py)
 - **Organization**: [GRIFORTIS](https://github.com/GRIFORTIS)
 
-[Unreleased]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.7.0...HEAD
-[0.7.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.6.0...v0.7.0
-[0.6.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.5.0...v0.6.0
-[0.5.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.1...v0.5.0
-[0.4.1]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/GRIFORTIS/schiavinato-sharing/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/GRIFORTIS/schiavinato-sharing/releases/tag/v0.1.0
+[Unreleased]: https://github.com/GRIFORTIS/durashare/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/GRIFORTIS/durashare/compare/v0.6.0...v0.7.0
+[0.6.0]: https://github.com/GRIFORTIS/durashare/compare/v0.5.0...v0.6.0
+[0.5.0]: https://github.com/GRIFORTIS/durashare/compare/v0.4.1...v0.5.0
+[0.4.1]: https://github.com/GRIFORTIS/durashare/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/GRIFORTIS/durashare/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/GRIFORTIS/durashare/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/GRIFORTIS/durashare/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/GRIFORTIS/durashare/releases/tag/v0.1.0
 

@@ -1,10 +1,14 @@
-# Schiavinato Sharing (Specification)
+# DuraShare (Specification)
 
 **Current version:** v0.7.0
 
+> ## Schiavinato Sharing is now DuraShare
+>
+> **Schiavinato Sharing is now DuraShare.** This is a brand rename only: the protocol lineage through v0.7.0, mathematics, test vectors, and historical archives are unchanged. Older release assets and `previous_versions/` keep their original titles. Canonical repositories are now `GRIFORTIS/durashare` (and `durashare-html` / `durashare-js` / `durashare-py`); old `schiavinato-sharing*` URLs redirect.
+
 [![Security: Experimental](https://img.shields.io/badge/Security-⚠️%20EXPERIMENTAL%20⚠️-red)](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md)
-[![CI](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/schiavinato-sharing/actions/workflows/codeql.yml)
+[![CI](https://github.com/GRIFORTIS/durashare/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/durashare/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/GRIFORTIS/durashare/actions/workflows/codeql.yml/badge.svg?branch=main)](https://github.com/GRIFORTIS/durashare/actions/workflows/codeql.yml)
 [![Whitepaper: CC BY 4.0](https://img.shields.io/badge/Whitepaper-CC%20BY%204.0-green.svg)](LICENSE-WHITEPAPER.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -12,19 +16,19 @@
 > 
 > DO NOT USE IT FOR REAL FUNDS!
 >
-> Schiavinato Sharing specification and implementations have NOT been audited. Use for testing, learning, and experimentation only. See [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md) for details.
+> DuraShare specification and implementations have NOT been audited. Use for testing, learning, and experimentation only. See [SECURITY](https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md) for details.
 >
 > We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
 
-## About Schiavinato Sharing
+## About DuraShare
 
-**In one line:** Schiavinato Sharing lets you split a standard **BIP39** recovery phrase into **k-of-n** durable, human-readable backup shares, with optional **per-share audit** before recovery. The normal experience is **offline, software-assisted sharing and recovery**; the same core math can also be executed fully manually when software is unavailable or untrusted.
+**In one line:** DuraShare lets you split a standard **BIP39** recovery phrase into **k-of-n** durable, human-readable backup shares, with optional **per-share audit** before recovery. The normal experience is **offline, software-assisted sharing and recovery**; the same core math can also be executed fully manually when software is unavailable or untrusted.
 
 ### Typical lifecycle
 
-![Schiavinato Sharing operational flow](docs/protocol-lifecycle.svg)
+![DuraShare operational flow](docs/protocol-lifecycle.png)
 
-Non-normative overview: Sharing → geographic custody with per-share audit → Recovery (software-assisted or fully manual). The whitepaper and specs remain authoritative.
+Non-normative overview: Sharing → geographic custody with per-share audit → Recovery (software-assisted or fully manual). The whitepaper and specs remain authoritative. Vector source: [`docs/protocol-lifecycle.svg`](docs/protocol-lifecycle.svg).
 
 ## Start here
 
@@ -39,9 +43,9 @@ Non-normative overview: Sharing → geographic custody with per-share audit → 
 
 ### Implementations
 Prototype implementations are work in progress and may lag the current specification. They are useful for experimentation and review, but should not be treated as conformant until each repository explicitly declares support for the current spec and vectors:
-- **HTML (single-file, air-gapped)**: [`schiavinato-sharing-html`](https://github.com/GRIFORTIS/schiavinato-sharing-html)
-- **JavaScript/TypeScript**: [`schiavinato-sharing-js`](https://github.com/GRIFORTIS/schiavinato-sharing-js)
-- **Python**: [`schiavinato-sharing-py`](https://github.com/GRIFORTIS/schiavinato-sharing-py)
+- **HTML (single-file, air-gapped)**: [`durashare-html`](https://github.com/GRIFORTIS/durashare-html)
+- **JavaScript/TypeScript**: [`durashare-js`](https://github.com/GRIFORTIS/durashare-js)
+- **Python**: [`durashare-py`](https://github.com/GRIFORTIS/durashare-py)
 
 **Deployment note:** For higher-assurance Sharing, Share Audit, or Recovery ceremonies, the single-file HTML tool can be verified by PGP signature, loaded from a USB stick, and run in a [Tails OS](https://tails.boum.org/) session on a laptop with networking disabled. Share artifacts are then printed, engraved, or hand-transcribed according to the chosen printer-trust tier and media.
 
@@ -60,11 +64,11 @@ High-value review targets:
 
 Self-custody often depends on one recovery phrase. If it is lost, funds may be gone forever; if it is exposed, funds may be stolen. A good backup needs more than secrecy: it should survive missing people, damaged artifacts, copying mistakes, unavailable devices, expired subscriptions, unavailable services, and future recovery by someone who may not have the original setup.
 
-Schiavinato Sharing focuses on **cold storage and disaster recovery** for an existing BIP39 phrase. It is meant for people, families, businesses, advisors, and organizations that want threshold backup without permanently depending on one app, hardware vendor, custodian, paid subscription, hosted recovery service, software implementation, or custom share alphabet.
+DuraShare focuses on **cold storage and disaster recovery** for an existing BIP39 phrase. It is meant for people, families, businesses, advisors, and organizations that want threshold backup without permanently depending on one app, hardware vendor, custodian, paid subscription, hosted recovery service, software implementation, or custom share alphabet.
 
-## What Schiavinato Sharing is
+## What DuraShare is
 
-At the technical layer, Schiavinato Sharing is a **Shamir-style** secret sharing scheme applied directly to the words of a valid BIP39 mnemonic. Each word is treated as its **1-based index** in the BIP39 word list (`abandon` = 1, `zoo` = 2048), and the sharing math runs modulo **2053**, the smallest prime larger than the word list.
+At the technical layer, DuraShare is a **Shamir-style** secret sharing scheme applied directly to the words of a valid BIP39 mnemonic. Each word is treated as its **1-based index** in the BIP39 word list (`abandon` = 1, `zoo` = 2048), and the sharing math runs modulo **2053**, the smallest prime larger than the word list.
 
 Any **k** of **n** shares reconstruct the original mnemonic. Fewer than **k** shares reveal no information about it, under the standard information-theoretic secrecy claim of Shamir sharing. The optional **BIP39 passphrase** ("25th word") is **NOT** stored in the shares and must be backed up and re-entered separately if you use one.
 
@@ -74,19 +78,19 @@ In practice, the protocol is **software-assisted first**. In the normal path, an
 
 Manual fallback is not the recommended everyday workflow. It is the sovereignty backstop.
 
-The software should make Sharing and Recovery easier, faster, and less error-prone. But a backup meant for serious self-custody should not become useless just because the original app is gone, a vendor disappears, a subscription lapses, a hosted service shuts down, an app store is blocked, an operating system changes, or Recovery happens years later in a constrained environment. Schiavinato Sharing keeps the software-assisted workflow practical while keeping the arithmetic readable from durable artifacts such as paper, metal, or other long-lived media.
+The software should make Sharing and Recovery easier, faster, and less error-prone. But a backup meant for serious self-custody should not become useless just because the original app is gone, a vendor disappears, a subscription lapses, a hosted service shuts down, an app store is blocked, an operating system changes, or Recovery happens years later in a constrained environment. DuraShare keeps the software-assisted workflow practical while keeping the arithmetic readable from durable artifacts such as paper, metal, or other long-lived media.
 
 The same shares can be generated or recovered using printed or engraved tables, a basic calculator, modular arithmetic, and precomputed Lagrange coefficients. In other words: use software when you can; keep the fully manual ceremony path specified for when you cannot.
 
 ## Why Per-Share Audit Matters
 
-Long-term, geographically distributed backups should be checkable before the day they are needed. Schiavinato Sharing defines a separate **Share Audit Ceremony**: one physical share can be audited at a time, wherever it is stored, without gathering a threshold set, combining shares, or exposing the mnemonic. In many backup systems, a meaningful audit effectively becomes a recovery drill: enough shares must be brought together to reconstruct or nearly reconstruct the secret, increasing coordination burden and creating an unnecessary exposure event. Here, Share Audit and Recovery are separate ceremonies.
+Long-term, geographically distributed backups should be checkable before the day they are needed. DuraShare defines a separate **Share Audit Ceremony**: one physical share can be audited at a time, wherever it is stored, without gathering a threshold set, combining shares, or exposing the mnemonic. In many backup systems, a meaningful audit effectively becomes a recovery drill: enough shares must be brought together to reconstruct or nearly reconstruct the secret, increasing coordination burden and creating an unnecessary exposure event. Here, Share Audit and Recovery are separate ceremonies.
 
 In the manual Share Audit Ceremony, public row/column/GIC checks detect passive damage or transcription errors, while optional MAT tags can authenticate the word rows against separately stored Manifest key material. In the software-assisted Share Audit Ceremony, Full and Compact payloads plus Manifest Audit Hashes add computational checks when a separate Manifest is available. The result is a practical pre-recovery check: each geographically distributed custodian artifact can be inspected periodically without gathering a threshold set or turning Share Audit into Recovery.
 
 ## Who This Is For
 
-Schiavinato Sharing is for people and organizations that want threshold backup of an existing BIP39 phrase without turning one vendor, device, custodian, subscription, hosted service, or software stack into a permanent dependency. Common use cases include:
+DuraShare is for people and organizations that want threshold backup of an existing BIP39 phrase without turning one vendor, device, custodian, subscription, hosted service, or software stack into a permanent dependency. Common use cases include:
 
 - **Security-conscious self-custodians** who want a smoother way to split and later recover a seed without locking themselves into a proprietary backup format.
 - **Individuals and families** setting up backup, succession, or inheritance plans where recovery may involve relatives, heirs, or trusted advisors.
@@ -119,13 +123,13 @@ Schiavinato Sharing is for people and organizations that want threshold backup o
 
 ## Comparison with related approaches
 
-MPC wallets, on-chain multisig, and social-recovery contracts mostly answer **who may spend** and **under what online policy**. Schiavinato Sharing answers a narrower backup question: how to split an **existing BIP39 mnemonic** into durable threshold share artifacts, optionally run a Share Audit Ceremony on one share at a time, and later run Recovery for the **same standard mnemonic** ordinary wallets already import—with a software-assisted path and a fully manual path.
+MPC wallets, on-chain multisig, and social-recovery contracts mostly answer **who may spend** and **under what online policy**. DuraShare answers a narrower backup question: how to split an **existing BIP39 mnemonic** into durable threshold share artifacts, optionally run a Share Audit Ceremony on one share at a time, and later run Recovery for the **same standard mnemonic** ordinary wallets already import—with a software-assisted path and a fully manual path.
 
 **Manual-capable mnemonic backup schemes**
 
 Codex32 uses BCH codes and paper aids such as volvelles and tables. It provides strong manual error handling, but it does not round-trip a standard BIP39 mnemonic. SeedXOR is deliberately minimal: XOR splitting has a simple mental model and BIP39-shaped output, but it is n-of-n only and offers little structured detection when something is wrong. Neither defines a per-share audit: a meaningful backup check still requires assembling enough shares for a full recovery.
 
-| Feature | Schiavinato | Codex32 | SeedXOR |
+| Feature | DuraShare | Codex32 | SeedXOR |
 | --- | --- | --- | --- |
 | Primary scope | BIP39 | Bitcoin/BIP32 only | BIP39 |
 | Threshold flexibility | Full *k-of-n* | *k-of-n* (k<=9, n<=31) | *n-of-n* only |
@@ -143,7 +147,7 @@ Codex32 uses BCH codes and paper aids such as volvelles and tables. It provides 
 
 SLIP39 and SSKR are built for software-led recovery. Both use sound finite-field sharing, but neither specifies a plain pencil-and-paper prime-field path for the full sharing and recovery flow. SLIP39 uses a different derivation model than BIP39, so the same underlying material does not restore the same wallet as a normal BIP39 mnemonic. SSKR preserves BIP39 round-trip behavior by operating on raw entropy and packaging shares as Bytewords or UR; recovery still assumes the decoding stack is available. Share checksums catch transport damage, but a meaningful backup check still requires assembling a threshold set and running a full recovery.
 
-| Feature | Schiavinato | SLIP39 | SSKR |
+| Feature | DuraShare | SLIP39 | SSKR |
 | --- | --- | --- | --- |
 | Arithmetic domain | Prime GF(2053) | GF(2^8) + RS1024 checksum | Extension GF(2^8) |
 | Wallet compatibility | Native BIP39 | Different derivation (a) | BIP39 round-trip via raw entropy (b) |
@@ -180,8 +184,7 @@ Feedback on earlier drafts of the protocol or related specification material (no
 
 Dated public discussion of the protocol. This is not an endorsement.
 
-- 2026-07-23 — [São Paulo BitDevs, Seminário Socrático 046](https://saopaulobitdevs.org/2026-07-23-socratic-seminar-046) — protocol discussion (listed as DuraShare / Schiavinato Sharing)
-
+- 2026-07-23 — [São Paulo BitDevs, Seminário Socrático 046](https://saopaulobitdevs.org/2026-07-23-socratic-seminar-046) — protocol discussion
 ---
 
 **Status**: Experimental  

@@ -119,9 +119,9 @@ jobs:
           latest_release = release_sections[0]
           expected_version = f"v{latest_release}"
 
-          m = re.search(r"\\newcommand\{\\SchiavinatoSharingVersion\}\{([^}]+)\}", whitepaper)
+          m = re.search(r"\\newcommand\{\\DuraShareVersion\}\{([^}]+)\}", whitepaper)
           if not m:
-              raise SystemExit("Missing \\SchiavinatoSharingVersion macro in whitepaper/WHITEPAPER.tex")
+              raise SystemExit("Missing \\DuraShareVersion macro in whitepaper/WHITEPAPER.tex")
           whitepaper_version = m.group(1).strip()
           vectors_version = vectors.get("version")
 

@@ -2,7 +2,7 @@
 
 The whitepaper:
 
-> **“Schiavinato Sharing: BIP39-Native Threshold Backup over GF(2053) with Full Manual Fallback and Per-Share Audit”**
+> **“DuraShare: BIP39-Native Threshold Backup over GF(2053) with Full Manual Fallback and Per-Share Audit”**
 > (`WHITEPAPER.tex` and its compiled PDF `WHITEPAPER.pdf`)
 
 is licensed under the **Creative Commons Attribution 4.0 International License (CC BY 4.0)**.
@@ -21,6 +21,6 @@ For the full legal text of the license, see:
 
 When attributing this work, a recommended form is:
 
-> “Schiavinato Sharing: BIP39-Native Threshold Backup over GF(2053) with Full Manual Fallback and Per-Share Audit” by Renato Schiavinato Lopez / GRIFORTIS, used under CC BY 4.0.
+> “DuraShare: BIP39-Native Threshold Backup over GF(2053) with Full Manual Fallback and Per-Share Audit” by Renato Schiavinato Lopez / GRIFORTIS, used under CC BY 4.0.
 
 

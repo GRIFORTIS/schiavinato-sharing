@@ -1,5 +1,5 @@
 """
-Shared utilities for Schiavinato Sharing security validation experiments.
+Shared utilities for DuraShare security validation experiments.
 
 This module provides common functionality used across all three experiments:
 - Bridge to JavaScript reference implementation

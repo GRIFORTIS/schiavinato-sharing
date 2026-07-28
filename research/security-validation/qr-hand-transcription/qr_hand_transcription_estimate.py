@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Structural estimate of QR hand-mark burden for Schiavinato share payloads.
+"""Structural estimate of QR hand-mark burden for DuraShare share payloads.
 
 Reproduces the v0.7.0 whitepaper's representative Full vs Compact
 QR hand-transcription workload estimate. Requires: pip install qrcode
@@ -81,7 +81,7 @@ def analyze(label: str, version: int, ec, payload: bytes) -> None:
 
 
 def main() -> None:
-    print("Schiavinato share QR hand-mark estimate (template-assisted)\n")
+    print("DuraShare share QR hand-mark estimate (template-assisted)\n")
     analyze(
         "Full 24-word (V6-M, 99 B payload)",
         6,

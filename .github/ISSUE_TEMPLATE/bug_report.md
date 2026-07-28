@@ -49,7 +49,7 @@ Never include real seeds/mnemonics, private keys, or real shares in issues, logs
 
 ## If this is an implementation bug
 If the issue is specific to an implementation (HTML / JS / Python), please open it in the appropriate repository:
-- HTML: https://github.com/GRIFORTIS/schiavinato-sharing-html/issues
-- JS/TS: https://github.com/GRIFORTIS/schiavinato-sharing-js/issues
-- Python: https://github.com/GRIFORTIS/schiavinato-sharing-py/issues
+- HTML: https://github.com/GRIFORTIS/durashare-html/issues
+- JS/TS: https://github.com/GRIFORTIS/durashare-js/issues
+- Python: https://github.com/GRIFORTIS/durashare-py/issues
 

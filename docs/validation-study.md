@@ -6,7 +6,7 @@
 
 ## Abstract
 
-This document presents findings from preliminary validation trials of manual recovery procedures for the Schiavinato Sharing scheme. Four family members (ages 28-72, zero self-custody experience) successfully completed manual wallet recovery using a 4-of-16 threshold configuration without pre-computed Lagrange coefficients—at the time of testing, pre-computation was not yet part of the design approach. Trials conducted 13 months apart demonstrate that the process is learnable from self-documenting written materials without prior experience or verbal instruction. Results validate core human-executability claims and provide empirical grounding for published time estimates. Formal usability study with controlled conditions scheduled for January 2026.
+This document presents findings from preliminary validation trials of manual recovery procedures for the DuraShare scheme. Four family members (ages 28-72, zero self-custody experience) successfully completed manual wallet recovery using a 4-of-16 threshold configuration without pre-computed Lagrange coefficients—at the time of testing, pre-computation was not yet part of the design approach. Trials conducted 13 months apart demonstrate that the process is learnable from self-documenting written materials without prior experience or verbal instruction. Results validate core human-executability claims and provide empirical grounding for published time estimates. Formal usability study with controlled conditions scheduled for January 2026.
 
 ---
 
@@ -622,4 +622,4 @@ Formal usability study (January 2026) needed to:
 
 **Document Version:** 2.0  
 **Last Updated:** December 2025  
-**Status:** Approved for publication in schiavinato-sharing repository
+**Status:** Approved for publication in the DuraShare specification repository

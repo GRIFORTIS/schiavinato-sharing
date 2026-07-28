@@ -1,6 +1,6 @@
 # Security Validation Experiments
 
-This directory contains cryptographic security validation experiments for Schiavinato Sharing as described in the Whitepaper ([PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](../../whitepaper/WHITEPAPER.tex)).
+This directory contains cryptographic security validation experiments for DuraShare as described in the Whitepaper ([PDF (latest)](https://github.com/GRIFORTIS/durashare/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/durashare/releases) | [LaTeX](../../whitepaper/WHITEPAPER.tex)).
 
 ## Purpose
 
@@ -121,7 +121,7 @@ All experiments are designed for complete reproducibility:
 
 ### Reproducing Paper Results
 
-The results cited in the Whitepaper ([PDF (latest)](https://github.com/GRIFORTIS/schiavinato-sharing/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/schiavinato-sharing/releases) | [LaTeX](../../whitepaper/WHITEPAPER.tex)) were generated with:
+The results cited in the Whitepaper ([PDF (latest)](https://github.com/GRIFORTIS/durashare/releases/latest/download/WHITEPAPER.pdf) | [Releases (versioned PDF)](https://github.com/GRIFORTIS/durashare/releases) | [LaTeX](../../whitepaper/WHITEPAPER.tex)) were generated with:
 
 ```bash
 ./run_all_experiments.sh --seed 42 --trials 1000 --configs "2-3,3-5,4-7"
@@ -134,16 +134,16 @@ The results cited in the Whitepaper ([PDF (latest)](https://github.com/GRIFORTIS
 If you reproduce or build upon these experiments, please cite:
 
 ```
-Schiavinato, R. (2025). Schiavinato Sharing: Dual-Mode Threshold 
-Secret Sharing for BIP39 Mnemonics. Section 6: Security Analysis.
-https://github.com/GRIFORTIS/schiavinato-sharing
+Schiavinato Lopez, R. (2026). DuraShare: BIP39-Native Threshold Backup
+over GF(2053) with Full Manual Fallback and Per-Share Audit.
+https://github.com/GRIFORTIS/durashare
 ```
 
 ## Contributing
 
 Found an issue or have suggestions for additional validation experiments?
 
-1. Open an issue: [GitHub Issues](https://github.com/GRIFORTIS/schiavinato-sharing/issues)
+1. Open an issue: [GitHub Issues](https://github.com/GRIFORTIS/durashare/issues)
 2. Propose changes via pull request
 3. Follow guidelines in [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md)
 
@@ -157,5 +157,5 @@ See `LICENSE` in repository root for details.
 
 **Status**: Active development (December 2024)  
 **Maintainer**: GRIFORTIS  
-**Contact**: [schiavinato-sharing/discussions](https://github.com/GRIFORTIS/schiavinato-sharing/discussions)
+**Contact**: [GitHub Discussions](https://github.com/GRIFORTIS/durashare/discussions)
 

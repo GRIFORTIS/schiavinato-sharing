@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""LLR uniformity check for Schiavinato Sharing.
+"""LLR uniformity check for DuraShare.
 
 Exhaustive enumeration verifying that, for the protocol's field GF(2053)
 and any (k, n) configuration of interest, an adversary holding any
@@ -32,7 +32,7 @@ result and is not re-verified here.
 
 References
 ----------
-- Schiavinato Sharing v0.7.0, confidentiality and local-leakage-resilience
+- DuraShare v0.7.0, confidentiality and local-leakage-resilience
   discussion.
 - A. Shamir, "How to share a secret", Communications of the ACM, 1979.
 

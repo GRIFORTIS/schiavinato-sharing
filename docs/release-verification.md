@@ -1,6 +1,6 @@
 # Release Verification
 
-This document explains what the release signatures and checksums do, what they do not do, and how to verify a published Schiavinato Sharing release.
+This document explains what the release signatures and checksums do, what they do not do, and how to verify a published DuraShare release.
 
 ## What is signed
 

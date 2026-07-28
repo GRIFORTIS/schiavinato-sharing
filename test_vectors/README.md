@@ -1,6 +1,6 @@
 # Test vectors
 
-This directory contains the canonical test vectors for Schiavinato Sharing.
+This directory contains the canonical test vectors for DuraShare.
 
 ## Goals
 - Provide stable, version-scoped references for protocol semantics.

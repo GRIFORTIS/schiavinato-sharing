@@ -1,7 +1,7 @@
 """
 Finite field arithmetic over GF(2053).
 
-Provides field operations used in Schiavinato Sharing:
+Provides field operations used in DuraShare:
 - Addition/subtraction (modulo 2053)
 - Multiplication (modulo 2053)
 - Modular inverse
@@ -16,7 +16,7 @@ class GF2053:
     """
     Galois Field GF(2053) arithmetic.
     
-    Prime field used in Schiavinato Sharing for human-executable operations.
+    Prime field used in DuraShare for human-executable operations.
     """
     
     PRIME = 2053

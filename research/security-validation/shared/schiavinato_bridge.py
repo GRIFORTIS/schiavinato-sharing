@@ -16,7 +16,7 @@ from dataclasses import dataclass
 
 @dataclass
 class Share:
-    """Represents a single Schiavinato share."""
+    """Represents a single DuraShare share."""
     
     index: int
     words: List[int]  # 24 word indices in GF(2053)
@@ -93,7 +93,7 @@ class SchiavatoJS:
         seed: Optional[int] = None
     ) -> List[Share]:
         """
-        Create Schiavinato shares using JS reference implementation.
+        Create DuraShare shares using JS reference implementation.
         
         Args:
             mnemonic: BIP39 mnemonic (12 or 24 words)
@@ -169,7 +169,7 @@ class SchiavatoJS:
 # Fallback: Pure Python implementation for development
 class SchiavanatoPython:
     """
-    Pure Python implementation of Schiavinato Sharing.
+    Pure Python implementation of DuraShare.
     
     Used as fallback if JS bridge not working, or for debugging.
     NOT authoritative - use SchiavatoJS for validation experiments.
@@ -187,7 +187,7 @@ class SchiavanatoPython:
 
 def get_implementation(prefer_js: bool = True) -> Any:
     """
-    Get Schiavinato implementation (JS or Python).
+    Get DuraShare implementation (JS or Python).
     
     Args:
         prefer_js: If True, try JS first, fallback to Python

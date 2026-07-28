@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Verify SHA256 checksums for Schiavinato Sharing Specification
+# Verify SHA256 checksums for DuraShare Specification
 #
 # Usage:
 #   ./scripts/verify-checksums.sh [version]
@@ -12,9 +12,9 @@
 set -e
 
 VERSION="${1:-latest}"
-REPO="GRIFORTIS/schiavinato-sharing"
+REPO="GRIFORTIS/durashare"
 
-echo "🔐 Verifying checksums for Schiavinato Sharing Specification"
+echo "🔐 Verifying checksums for DuraShare Specification"
 echo ""
 echo "Note: checksum validation confirms file integrity only."
 echo "For authenticity, also verify the signed git tag and any detached .asc signatures."
