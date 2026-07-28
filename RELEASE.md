@@ -1,7 +1,7 @@
 # Release Process
 
-This document defines the maintainer release flow for `schiavinato-sharing`.
-It is public process documentation, not part of the Schiavinato Sharing protocol specification.
+This document defines the maintainer release flow for `durashare`.
+It is public process documentation, not part of the DuraShare protocol specification.
 
 ## Trust model
 - The authoritative source-state attestation is a locally created signed git tag.
@@ -13,7 +13,7 @@ It is public process documentation, not part of the Schiavinato Sharing protocol
 Before tagging, make sure all of the following are true on the target commit:
 - CI is green.
 - `CHANGELOG.md` has the intended dated release section at the top.
-- `whitepaper/WHITEPAPER.tex` contains the same version in `\SchiavinatoSharingVersion`.
+- `whitepaper/WHITEPAPER.tex` contains the same version in `\DuraShareVersion`.
 - `test_vectors/vectors.json` contains the same `version`.
 - `whitepaper/WHITEPAPER.pdf` builds successfully from the checked-in LaTeX source.
 

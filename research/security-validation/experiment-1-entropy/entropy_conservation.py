@@ -41,7 +41,7 @@ from shared.reporting import (
     plot_convergence
 )
 
-# Import Schiavinato Sharing library
+# Import DuraShare library
 from schiavinato_sharing import split_mnemonic
 from schiavinato_sharing.checksums import compute_row_checks, compute_global_integrity_check
 from schiavinato_sharing.polynomial import evaluate_polynomial

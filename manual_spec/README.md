@@ -1,4 +1,4 @@
-# Schiavinato Sharing - Manual Specification (`manual_spec`)
+# DuraShare - Manual Specification (`manual_spec`)
 
 [Jump to Share Audit](#share-audit) | [Jump to Manual Recovery](#manual-recovery) | [Jump to Manual Sharing](#manual-sharing)
 
@@ -6,9 +6,9 @@
 >
 > DO NOT USE IT FOR REAL FUNDS.
 >
-> Schiavinato Sharing specifications and prototype implementations have not been audited. Use for testing, learning, and review only. See the organization security policy for private disclosures.
+> DuraShare specifications and prototype implementations have not been audited. Use for testing, learning, and review only. See the organization security policy for private disclosures.
 
-This document defines the manual execution protocol for Schiavinato Sharing v0.7.0. It is recovery-first: recovery and audit are the continuity-critical procedures, while fully manual sharing is a fallback for cases where software cannot be trusted or used.
+This document defines the manual execution protocol for DuraShare v0.7.0. It is recovery-first: recovery and audit are the continuity-critical procedures, while fully manual sharing is a fallback for cases where software cannot be trusted or used.
 
 Normative keywords **MUST**, **MUST NOT**, **SHOULD**, **MAY** are used as requirements.
 

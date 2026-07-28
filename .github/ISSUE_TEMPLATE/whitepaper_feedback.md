@@ -1,6 +1,6 @@
 ---
 name: Whitepaper Feedback
-about: Provide feedback on the Schiavinato Sharing whitepaper
+about: Provide feedback on the DuraShare whitepaper
 title: '[WHITEPAPER] '
 labels: ["whitepaper", "documentation"]
 assignees: ""

@@ -16,7 +16,7 @@ This experiment serves as an **implementation-level sanity check**, verifying th
 
 For each trial:
 1. Generate random valid BIP39 mnemonic (24 words)
-2. Create k-of-n Schiavinato shares
+2. Create k-of-n DuraShare shares
 3. Give adversary k-1 shares (all 33 polynomials)
 4. Sample N random valid BIP39 mnemonics
 5. Check how many are consistent with adversary's knowledge
@@ -220,6 +220,6 @@ Key functions:
 ## Contact
 
 Questions about this experiment:
-- GitHub Issues: [schiavinato-sharing/issues](https://github.com/GRIFORTIS/schiavinato-sharing/issues)
-- Discussion: [schiavinato-sharing/discussions](https://github.com/GRIFORTIS/schiavinato-sharing/discussions)
+- GitHub Issues: [Issues](https://github.com/GRIFORTIS/durashare/issues)
+- Discussion: [Discussions](https://github.com/GRIFORTIS/durashare/discussions)
 

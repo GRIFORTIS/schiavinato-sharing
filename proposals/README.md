@@ -1,6 +1,6 @@
 # Proposals
 
-This directory contains proposals for changes to Schiavinato Sharing.
+This directory contains proposals for changes to DuraShare.
 
 ## Purpose
 - **Proposals** are the decision record: motivation, trade-offs, compatibility, and acceptance/rejection.

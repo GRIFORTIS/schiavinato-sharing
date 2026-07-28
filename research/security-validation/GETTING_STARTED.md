@@ -119,7 +119,7 @@ cd ../experiment-3-constraints
 ## Interpreting Results
 
 ### ✅ All Pass (Expected)
-- Update WHITEPAPER_V4.tex Section 6.1 with results
+- Update `whitepaper/WHITEPAPER.tex` with results where appropriate
 - Change Q1 from "open question" to "empirically validated"
 - Proceed with publication
 
@@ -140,8 +140,8 @@ If experiments pass and results are used in academic publications, cite as:
 > Computational validation across 1000 random trials found no detectable
 > entropy reduction (< 0.01 bits). Statistical analysis found no distinguishable
 > patterns in share distributions. Adversarial constraint solving failed to
-> reduce search space below 2^256. Complete methodology available at
-> https://github.com/GRIFORTIS/schiavinato-sharing/tree/main/research/security-validation
+> reduce search space below 2^256. Complete methodology for DuraShare is available at
+> https://github.com/GRIFORTIS/durashare/tree/main/research/security-validation
 
 ## Troubleshooting
 

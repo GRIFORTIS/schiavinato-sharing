@@ -1,4 +1,4 @@
-# Schiavinato Sharing - v0.7.0 Test Vectors
+# DuraShare - v0.7.0 Test Vectors
 
 These public vectors are for interoperability testing only. Never use the mnemonic, coefficients, Session Batch IDs, MAT keys, DRKs, or derived values for real funds.
 

@@ -372,7 +372,7 @@ if __name__ == "__main__":
     test_data = list(np.random.normal(1000, 10, 100))
     
     # Create temp directory
-    temp_dir = Path("/tmp/schiavinato_reporting_test")
+    temp_dir = Path("/tmp/durashare_reporting_test")
     temp_dir.mkdir(exist_ok=True)
     
     # Test save

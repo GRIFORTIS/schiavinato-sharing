@@ -1,6 +1,6 @@
 # Review & Feedback
 
-Schiavinato Sharing is **experimental** and **not audited**.
+DuraShare is **experimental** and **not audited**.
 
 We welcome review from cryptographers, wallet architects, implementers, custody practitioners, and people who have run real-world key-backup ceremonies.
 

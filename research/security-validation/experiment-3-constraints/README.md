@@ -10,7 +10,7 @@
 
 Tests whether an adversary with k-1 shares can exploit algebraic constraint solving (Gröbner basis methods) to find exploitable structure in the Shamir + linear checksum polynomial system.
 
-**Critical limitation**: This experiment models only the Shamir polynomial evaluations and the 9 linear Schiavinato checksum equations over GF(2053). It does **NOT** encode BIP39's SHA-256 checksum constraint. Therefore, it tests the Shamir + linear checksum subsystem, not the full coupled system including BIP39's nonlinear checksum (which remains the primary open question per Section 6.1.4 of the whitepaper).
+**Critical limitation**: This experiment models only the Shamir polynomial evaluations and the 9 linear DuraShare checksum equations over GF(2053). It does **NOT** encode BIP39's SHA-256 checksum constraint. Therefore, it tests the Shamir + linear checksum subsystem, not the full coupled system including BIP39's nonlinear checksum (which remains the primary open question per Section 6.1.4 of the whitepaper).
 
 ## Methodology
 
@@ -22,7 +22,7 @@ With k-1 shares, the modeled adversary has:
    For each of 33 elements (24 words + 8 row checksums + 1 GIC), adversary knows:
    - P_i(x_1), P_i(x_2), ..., P_i(x_{k-1})
    
-2. **9 linear Schiavinato constraints** (public knowledge):  
+2. **9 linear DuraShare constraints** (public knowledge):  
    - c_r = w_1 + w_2 + w_3 (mod 2053) for r = 1,...,8 (row checksums)
    - GIC = sum of all 24 words (mod 2053) (Global Integrity Check)
 
@@ -279,6 +279,6 @@ This experiment validates that the Shamir + linear checksum polynomial system ov
 ## Contact
 
 Questions:
-- GitHub Issues: [schiavinato-sharing/issues](https://github.com/GRIFORTIS/schiavinato-sharing/issues)
-- Discussion: [schiavinato-sharing/discussions](https://github.com/GRIFORTIS/schiavinato-sharing/discussions)
+- GitHub Issues: [Issues](https://github.com/GRIFORTIS/durashare/issues)
+- Discussion: [Discussions](https://github.com/GRIFORTIS/durashare/discussions)
 

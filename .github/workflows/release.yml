@@ -43,9 +43,9 @@ jobs:
           if not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
               raise SystemExit(f"Invalid tag format: {tag!r} (expected vX.Y.Z)")
           tex = Path("whitepaper/WHITEPAPER.tex").read_text(encoding="utf-8")
-          m = re.search(r"\\newcommand\{\\SchiavinatoSharingVersion\}\{([^}]+)\}", tex)
+          m = re.search(r"\\newcommand\{\\DuraShareVersion\}\{([^}]+)\}", tex)
           if not m:
-              raise SystemExit("Missing \\SchiavinatoSharingVersion macro in whitepaper/WHITEPAPER.tex")
+              raise SystemExit("Missing \\DuraShareVersion macro in whitepaper/WHITEPAPER.tex")
           version = m.group(1).strip()
           if version != tag:
               raise SystemExit(f"Tag/whitepaper mismatch: tag={tag!r} whitepaper={version!r}")
@@ -112,9 +112,9 @@ jobs:
           if not re.fullmatch(r"v\d+\.\d+\.\d+", tag):
               raise SystemExit(f"Invalid tag format: {tag!r} (expected vX.Y.Z)")
           tex = Path("whitepaper/WHITEPAPER.tex").read_text(encoding="utf-8")
-          m = re.search(r"\\newcommand\{\\SchiavinatoSharingVersion\}\{([^}]+)\}", tex)
+          m = re.search(r"\\newcommand\{\\DuraShareVersion\}\{([^}]+)\}", tex)
           if not m:
-              raise SystemExit("Missing \\SchiavinatoSharingVersion macro in whitepaper/WHITEPAPER.tex")
+              raise SystemExit("Missing \\DuraShareVersion macro in whitepaper/WHITEPAPER.tex")
           version = m.group(1).strip()
           if version != tag:
               raise SystemExit(f"Tag/whitepaper mismatch: tag={tag!r} whitepaper={version!r}")

@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: General questions / support (public)
-    url: https://github.com/GRIFORTIS/schiavinato-sharing/discussions
+    url: https://github.com/GRIFORTIS/durashare/discussions
     about: Ask usage and integration questions. No sensitive data.
   - name: Security vulnerability report (private)
     url: https://github.com/GRIFORTIS/.github/blob/main/SECURITY.md

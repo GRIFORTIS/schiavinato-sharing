@@ -1,5 +1,5 @@
 # Python dependencies for security validation experiments
-# Schiavinato Sharing - Security Validation
+# DuraShare - Security Validation
 # Last updated: December 2024
 
 # Core scientific computing

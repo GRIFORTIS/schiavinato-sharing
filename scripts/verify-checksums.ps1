@@ -1,4 +1,4 @@
-# Verify SHA256 checksums for Schiavinato Sharing Specification (Windows PowerShell)
+# Verify SHA256 checksums for DuraShare Specification (Windows PowerShell)
 #
 # Usage:
 #   .\scripts\verify-checksums.ps1 [version]
@@ -12,9 +12,9 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$Repo = "GRIFORTIS/schiavinato-sharing"
+$Repo = "GRIFORTIS/durashare"
 
-Write-Host "🔐 Verifying checksums for Schiavinato Sharing Specification" -ForegroundColor Cyan
+Write-Host "🔐 Verifying checksums for DuraShare Specification" -ForegroundColor Cyan
 Write-Host ""
 Write-Host "Note: checksum validation confirms file integrity only." -ForegroundColor Yellow
 Write-Host "For authenticity, also verify the signed git tag and any detached .asc signatures." -ForegroundColor Yellow

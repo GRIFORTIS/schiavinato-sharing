@@ -1,10 +1,10 @@
-# Schiavinato Sharing Security Model
+# DuraShare Security Model
 
 This is a non-normative security overview for reviewers and implementers. The whitepaper is authoritative for analysis, `manual_spec/` is authoritative for manual arithmetic and Share Audit, and `software_spec/` is authoritative for digital-envelope behavior.
 
 ## Scope
 
-Schiavinato Sharing protects BIP39 word indices with standard Shamir sharing over `GF(2053)`. It adds:
+DuraShare protects BIP39 word indices with standard Shamir sharing over `GF(2053)`. It adds:
 
 - public row, column, and GIC checks for passive error detection;
 - optional MAT for bounded manual pre-recovery substitution detection;
