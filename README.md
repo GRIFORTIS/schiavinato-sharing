@@ -187,7 +187,6 @@ Feedback on earlier drafts of the protocol or related specification material (no
 Dated public discussion of the protocol. This is not an endorsement.
 
 - 2026-07-23 — [São Paulo BitDevs, Seminário Socrático 046](https://saopaulobitdevs.org/2026-07-23-socratic-seminar-046) — protocol discussion
-- 2026-07-29 — [Belo Horizonte BitDevs, Seminário Socrático 027](https://bhbitdevs.org/2026-07-29-socratic-seminar-27) — protocol discussion
 ---
 
 **Status**: Experimental  
