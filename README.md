@@ -20,17 +20,18 @@
 >
 > We invite **cryptographers** and **developers** to review the spec and software. See [CONTRIBUTING](https://github.com/GRIFORTIS/.github/blob/main/CONTRIBUTING.md) to know more.
 
-## About DuraShare
+## Quick Start
 
-**In one line:** DuraShare lets you split a standard **BIP39** recovery phrase into **k-of-n** durable, human-readable backup shares, with optional **per-share audit** before recovery. The normal experience is **offline, software-assisted sharing and recovery**; the same core math can also be executed fully manually when software is unavailable or untrusted.
+### What reviewers should look at
+- [`docs/review`](docs/review.md)
 
-### Typical lifecycle
-
-![DuraShare operational flow](docs/protocol-lifecycle.png)
-
-Non-normative overview: Sharing → geographic custody with per-share audit → Recovery (software-assisted or fully manual). The whitepaper and specs remain authoritative. Vector source: [`docs/protocol-lifecycle.svg`](docs/protocol-lifecycle.svg).
-
-## Start here
+High-value review targets:
+- Correctness and clarity of manual validation checkpoints (row checksums, column checksums, and GIC)
+- Per-share audit semantics (Share Audit Ceremony, MAT, Manifest Audit Hash)
+- Security analysis and threat model assumptions (see `whitepaper/WHITEPAPER.tex`)
+- RBT derivation and Full/Compact Payload semantics (`software_spec/`)
+- Software-assisted Sharing ceremony flow diagrams (`docs/software-flows/`)
+- Conformance vectors (`test_vectors/`)
 
 ### Canonical documents
 - **Whitepaper**: [PDF](whitepaper/WHITEPAPER.pdf) | [LaTeX](whitepaper/WHITEPAPER.tex)
@@ -49,16 +50,17 @@ Prototype implementations are work in progress and may lag the current specifica
 
 **Deployment note:** For higher-assurance Sharing, Share Audit, or Recovery ceremonies, the single-file HTML tool can be verified by PGP signature, loaded from a USB stick, and run in a [Tails OS](https://tails.boum.org/) session on a laptop with networking disabled. Share artifacts are then printed, engraved, or hand-transcribed according to the chosen printer-trust tier and media.
 
-### What reviewers should look at
-- [`docs/review`](docs/review.md)
 
-High-value review targets:
-- Correctness and clarity of manual validation checkpoints (row checksums, column checksums, and GIC)
-- Per-share audit semantics (Share Audit Ceremony, MAT, Manifest Audit Hash)
-- Security analysis and threat model assumptions (see `whitepaper/WHITEPAPER.tex`)
-- RBT derivation and Full/Compact Payload semantics (`software_spec/`)
-- Software-assisted Sharing ceremony flow diagrams (`docs/software-flows/`)
-- Conformance vectors (`test_vectors/`)
+
+## About DuraShare
+
+**In one line:** DuraShare lets you split a standard **BIP39** recovery phrase into **k-of-n** durable, human-readable backup shares, with optional **per-share audit** before recovery. The normal experience is **offline, software-assisted sharing and recovery**; the same core math can also be executed fully manually when software is unavailable or untrusted.
+
+### Typical lifecycle
+
+![DuraShare operational flow](docs/protocol-lifecycle.png)
+
+Non-normative overview: Sharing → geographic custody with per-share audit → Recovery (software-assisted or fully manual). The whitepaper and specs remain authoritative. Vector source: [`docs/protocol-lifecycle.svg`](docs/protocol-lifecycle.svg).
 
 ## Problem
 
